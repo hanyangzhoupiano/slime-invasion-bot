@@ -15,3 +15,5 @@ async def on_ready():
 @bot.command()
 async def ping(ctx):
     await ctx.send("Pong! I am a super cool bot!")
+
+bot.run("MTI5NjYwMTU0MDM4NzE0Nzg2OQ.GpBnjT.x7weeYWyRHXfCG6RGXsYsbGoZBNZq_WDRHAPWc")

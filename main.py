@@ -32,7 +32,7 @@ async def on_message(msg):
     if "oh no" in message.lower():
         await msg.channel.send(f"Oh no! What has gone wrong?")
     if "work" in message.lower():
-        await msg.channel.send(f"Wow, you really like working, " + name + "!")
+        await msg.channel.send(f"Wow, you really like working, " + msg.author.name + "!")
     await bot.process_commands(message)
 
 @bot.command()

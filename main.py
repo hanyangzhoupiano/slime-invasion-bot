@@ -7,9 +7,33 @@ intents.messages = True
 
 bot = commands.Bot(command_prefix="!", intents=intents)
 
+def load_data():
+    try:
+        with open("data.json", "w") as file:
+            json.load(file)
+    except FileNotFoundError:
+        return {}
+
 @bot.event
 async def on_ready():
-  print("ready!")
+    print("ready!")
+
+@bot.event
+async def on_message(msg):
+    if msg.author == bot.user:
+        return
+    message = msg.content
+    if "ok" in message.lower() or "okay" in message.lower():
+        await msg.channel.send(f"Okay, too!")
+    if "hi" in message.lower() or "hello" in message.lower():
+        await msg.channel.send(f"Hello! I am a bot and would like to engage in this conversation.")
+    if "yay" in message.lower():
+        await msg.channel.send(f"Yay to you! What are you so happy about?")
+    if "oh no" in message.lower():
+        await msg.channel.send(f"Oh no! What has gone wrong?")
+    if "work" in message.lower():
+        await msg.channel.send(f"Wow, you really like working, " + name + "!")
+    await bot.process_commands(message)
 
 @bot.command()
 async def hello(ctx):

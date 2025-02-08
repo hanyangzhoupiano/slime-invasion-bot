@@ -1,6 +1,17 @@
 import discord
 import json
 from discord.ext import commands
+from flask import Flask
+
+# Create a simple web server
+app = Flask(__name__)
+@app.route('/')
+def home():
+    return "Bot is running!"
+def run_web():
+    port = int(os.environ.get("PORT", 8080))
+    app.run(host="0.0.0.0", port=port)
+Thread(target=run_web).start()
 
 intents = discord.Intents.all()
 intents.messages = True

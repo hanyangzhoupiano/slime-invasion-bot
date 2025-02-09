@@ -31,7 +31,11 @@ Thread(target=run_web).start()
 
 @bot.event
 async def on_ready():
-    print("ready!")
+    if not bot.get_guild():
+        print("Bot is not in any guild, disabling...")
+        await bot.close()
+    else:
+        print(f"Bot is ready and connected to guild: {bot.guilds[0].name}")
 
 @bot.event
 async def on_message(msg):

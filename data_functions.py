@@ -18,10 +18,10 @@ def setup_database():
     if conn:
         with conn.cursor() as cur:
             cur.execute("""
-                CREATE TABLE IF NOT EXISTS messages (
-                    user_id BIGINT PRIMARY KEY,
-                    message_count INT DEFAULT 0
-                )
+                CREATE TABLE IF NOT EXISTS prefixes (
+                    guild_id BIGINT PRIMARY KEY,
+                    prefix TEXT NOT NULL
+                );
             """)
             conn.commit()
         conn.close()

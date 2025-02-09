@@ -61,7 +61,7 @@ async def viewprefix(ctx):
 @bot.command()
 async def setprefix(ctx, new_prefix: str = None):
     if ctx.author.guild_permissions.manage_guild and new_prefix is not None:
-        if len(new_prefix) > 4:
+        if len(new_prefix) > 32:
             await ctx.send(embed=discord.Embed(
                 color=int("50B4E6", 16),
                 description="The prefix chosen is too long. Please try again with a shorter prefix.",

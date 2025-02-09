@@ -52,13 +52,6 @@ async def on_message(msg):
     await bot.process_commands(msg)
 
 @bot.command()
-async def help(ctx):
-    await ctx.send(embed=discord.Embed(
-        color=int("50B4E6", 16),
-        description="**Information:**\nThe symbols *<>* around an argument indicate that the argument is required, while the symbols *[]* indicate that it is optional.\n**List of Commands:**\nsetprefix <new_prefix>\nviewmessages [user]",
-    ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
-
-@bot.command()
 async def viewprefix(ctx):
     await ctx.send(embed=discord.Embed(
         color=int("50B4E6", 16),

@@ -56,11 +56,16 @@ async def on_message(msg):
 async def setprefix(ctx, new_prefix: str = None):
     if ctx.author.guild_permissions.manage_guild and new_prefix is not None:
         if len(new_prefix) > 8:
-            await ctx.send("Prefix is too long! Please provide a shorter one.")
+            await ctx.send(embed=discord.Embed(
+                color=int("50B4E6", 16),
+                description="The prefix chosen is too long. Please try again with a shorter prefix.",
+            ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
             return
-        
         set_prefix(ctx.guild.id, new_prefix)
-        await ctx.send(f"Prefix updated to `{new_prefix}`!")
+        await ctx.send(embed=discord.Embed(
+            color=int("50B4E6", 16),
+            description=f"The prefix has been changed to {new_prefix}.",
+        ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
 
 @bot.command()
 async def viewmessages(ctx, name: str = None):

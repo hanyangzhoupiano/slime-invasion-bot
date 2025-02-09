@@ -107,8 +107,8 @@ async def viewmessages(ctx, name: str = None):
                         return
                     else:
                         if selection is not None:
-                            if (selection - 1) >= 0 and selection <= (len(matching_names) - 1):
-                                matching_name = matching_names[selection]
+                            if (selection - 1) >= 0 and (selection - 1) <= (len(matching_names) - 1):
+                                matching_name = matching_names[selection - 1]
                                 for member in ctx.guild.members:
                                     if member.name.lower() == matching_name.lower():
                                         user = member

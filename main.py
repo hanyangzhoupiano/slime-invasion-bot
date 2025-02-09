@@ -92,7 +92,7 @@ async def viewmessages(ctx, name: str = None):
                 if name.lower() in member.name.lower():
                     matching_names.append(member.name)
             if matching_names:
-                if len(matching_names) > 1
+                if len(matching_names) > 1:
                     msg = ""
                     for i, n in enumerate(matching_names):
                         msg += str(i + 1) + ". " + n
@@ -159,5 +159,13 @@ async def viewmessages(ctx, name: str = None):
                 title="Statistics",
                 description=f"**Messages:** {messages}\n**Server Join Date:** {user.joined_at}\n**Role:** {user.top_role}",
             ).set_author(name=user.name, icon_url=user.avatar.url))
+
+@bot.command()
+async def echo(ctx, message: str = None):
+    if message is not None:
+        await ctx.send(embed=discord.Embed(
+            color=int("50B4E6", 16),
+            description=message,
+        ).set_author(name=user.name, icon_url=user.avatar.url))
 
 bot.run(os.getenv("DISCORD_TOKEN"))

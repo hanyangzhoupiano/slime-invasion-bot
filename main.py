@@ -31,7 +31,7 @@ async def view_messages(ctx):
     messages = get_messages(ctx.author.id)
     await ctx.send("You currently have " + str(messages) + " messages.")
 
-bot.run("DISCORD_TOKEN")
+bot.run(os.getenv("DISCORD_TOKEN"))
 
 from flask import Flask
 

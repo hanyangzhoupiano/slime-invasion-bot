@@ -159,6 +159,6 @@ async def echo(ctx, message: str = None):
         await ctx.send(embed=discord.Embed(
             color=int("50B4E6", 16),
             description=message,
-        ).set_author(name=user.name, icon_url=user.avatar.url))
+        ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
 
 bot.run(os.getenv("DISCORD_TOKEN"))

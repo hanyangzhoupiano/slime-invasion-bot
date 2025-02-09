@@ -6,17 +6,7 @@ import asyncio
 from discord.ext import commands
 from threading import Thread
 
-from data_functions import setup_database, set_messages, get_messages, set_prefixes, get_prefixes
-
-intents = discord.Intents.all()
-intents.messages = True
-
-default_prefixes = {"!"}
-prefixes = {}
-
-bot = commands.Bot(command_prefix=default_prefixes, intents=intents)
-
-setup_database()
+from data_functions import setup_database, set_messages, get_messages, set_prefix, get_prefix
 
 from flask import Flask
 
@@ -31,6 +21,20 @@ def run_web():
     port = int(os.environ.get("PORT", 8080))
     app.run(host="0.0.0.0", port=port)
 Thread(target=run_web).start()
+
+intents = discord.Intents.all()
+intents.messages = True
+
+default_prefixes = {"!"}
+prefixes = {}
+
+async def prefix(bot, message):
+    guild_id = message.guild.id
+    return get_prefix(guild_id)
+
+bot = commands.Bot(command_prefix=prefix, intents=intents)
+
+setup_database()
 
 @bot.event
 async def on_ready():
@@ -47,6 +51,16 @@ async def on_message(msg):
     user_id = msg.author.id
     set_messages(user_id, get_messages(user_id) + 1)
     await bot.process_commands(msg)
+
+@bot.command()
+async def setprefix(ctx, new_prefix: str = None):
+    if ctx.author.guild_permissions.manage_guild and new_prefix is not None:
+        if len(new_prefix) > 8:
+            await ctx.send("Prefix is too long! Please provide a shorter one.")
+            return
+        
+        set_prefix(ctx.guild.id, new_prefix)
+        await ctx.send(f"Prefix updated to `{new_prefix}`!")
 
 @bot.command()
 async def viewmessages(ctx, name: str = None):

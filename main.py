@@ -153,8 +153,8 @@ async def viewmessages(ctx, name: str = None):
                 description=f"**Messages:** {messages}\n**Server Join Date:** {user.joined_at}\n**Role:** {user.top_role}",
             ).set_author(name=user.name, icon_url=user.avatar.url))
 
-@bot.command()
-async def echo(ctx, message: str = None):
+@bot.command(rest_is_raw=True)
+async def echo(ctx, *, message: str = None):
     if message is not None:
         await ctx.send(embed=discord.Embed(
             color=int("50B4E6", 16),

@@ -22,12 +22,19 @@ async def on_ready():
 async def on_message(msg):
     if msg.author == bot.user:
         return
-    user = msg.author.id
-    
+    id = msg.author.id
+    if data["User_" + str(id)]["messages"]:
+        data["User_" + str(id)]["messages"] += 1
+        data_functions.save_data(data)
+    else:
+        data["User_" + str(id)]["messages"] = 1
+        data_functions.save_data(data)
 
 @bot.command()
-async def hello(ctx):
-    await ctx.send("Hello! I am a bot programmed by Hanyang Zhou.")
+async def view_messages(ctx):
+    messages = data[ctx.author.id]
+    if messages:
+        await ctx.send("You currently have " + str(messages) + " messages.")
 
 bot.run("MTI5NjYwMTU0MDM4NzE0Nzg2OQ.GpBnjT.x7weeYWyRHXfCG6RGXsYsbGoZBNZq_WDRHAPWc")
 

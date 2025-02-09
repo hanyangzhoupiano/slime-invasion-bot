@@ -27,9 +27,75 @@ async def on_message(msg):
     await bot.process_commands(msg)
 
 @bot.command()
-async def view_messages(ctx):
-    messages = get_messages(ctx.author.id)
-    await ctx.send("You currently have " + str(messages) + " messages.")
+async def viewmessages(ctx, name: str = None):
+    if not ctx.author.bot:
+        if name is None:
+            user = ctx.author
+        else:
+            matching_names = []
+            for member in ctx.guild.members:
+                if name.lower() in member.name.lower():
+                    matching_names.append(member.name)
+            if matching_names:
+                msg = ""
+                for n in matching_names:
+                    msg += str(n.index + 1) + ". " + n
+                    if n.index != len(matching_names) - 1:
+                        msg += ",\n"
+                try:
+                    await ctx.send(embed=discord.Embed(
+                        color=int("87C8F5", 16),
+                        description="Mutiple users found. Please select a user below, or type cancel:\n{msg}",
+                    ).set_author(name=ctx.author.name, icon_url=ctx,author.avatar.url))
+
+                    selection = None
+                    response = await bot.wait_for('message', check=lambda msg: msg.channel == ctx.channel and msg.author == ctx.author, timeout=10.0)
+
+                    if "cancel" in response.content.lower():
+                        await ctx.send(embed=discord.Embed(
+                            color=int("FA3939", 16),
+                            description="The command has been canceled.",
+                        ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
+                        return
+                    try:
+                        selection = int(response)
+                    except ValueError:
+                        await ctx.send(embed=discord.Embed(
+                            color=int("FA3939", 16),
+                            description="Invalid selection.",
+                        ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
+                        return
+                    else:
+                        if selection is not None:
+                            if (selection - 1) >= 0 and selection <= len(matching_names):
+                                matching_name = matching_names[selection]
+                                for member in ctx.guild.members:
+                                    if member.name.lower() == matching_name.lower():
+                                        user = member
+                                        break
+                            else:
+                                await ctx.send(embed=discord.Embed(
+                                    color=int("FA3939", 16),
+                                    description="Invalid selection.",
+                                ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
+                                return
+                except asyncio.TimeoutError:
+                    await ctx.send(embed=discord.Embed(
+                        color=int("FA3939", 16),
+                        description="The command has been canceled because you took too long to reply.",
+                    ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
+                    return
+        msg = await ctx.send(embed=discord.Embed(
+            color=int("87C8F5", 16),
+            description="Retrieving data...",
+        ).set_author(name=user.name, icon_url=user.avatar.url))
+
+        messages = get_messages(user.id)
+
+        await msg.edit(embed=discord.Embed(
+            color=int("96F587", 16),
+            description=f"**Messages:** {messages}",
+        ).set_author(name=user.name, icon_url=user.avatar.url))
 
 bot.run(os.getenv("DISCORD_TOKEN"))
 

@@ -12,7 +12,7 @@ intents.messages = True
 
 bot = commands.Bot(command_prefix="!", intents=intents)
 
-data = data_functions.load_data()
+setup_database()
 
 @bot.event
 async def on_ready():
@@ -22,19 +22,14 @@ async def on_ready():
 async def on_message(msg):
     if msg.author == bot.user:
         return
-    id = msg.author.id
-    if data["User_" + str(id)]["messages"]:
-        data["User_" + str(id)]["messages"] += 1
-        data_functions.save_data(data)
-    else:
-        data["User_" + str(id)]["messages"] = 1
-        data_functions.save_data(data)
+    user_id = msg.author.id
+    set_messages(user_id, get_messages(user_id) + 1)
+    await bot.process_commands(msg)
 
 @bot.command()
 async def view_messages(ctx):
-    messages = data[ctx.author.id]
-    if messages:
-        await ctx.send("You currently have " + str(messages) + " messages.")
+    messages = get_messages(ctx.author.id)
+    await ctx.send("You currently have " + str(messages) + " messages.")
 
 bot.run("DISCORD_TOKEN")
 

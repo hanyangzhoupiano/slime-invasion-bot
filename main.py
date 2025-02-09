@@ -5,7 +5,7 @@ import random
 from discord.ext import commands
 from threading import Thread
 
-import data_functions
+from data_functions import setup_database, set_messages, get_messages
 
 intents = discord.Intents.all()
 intents.messages = True

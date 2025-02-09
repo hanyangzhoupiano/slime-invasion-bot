@@ -48,3 +48,26 @@ def set_messages(user_id, amount):
             """, (user_id, amount))
             conn.commit()
         conn.close()
+
+def get_prefix(guild_id):
+    conn = connect()
+    if not conn:
+        return "!"
+    with conn.cursor() as cur:
+        cur.execute("SELECT prefix FROM prefixes WHERE guild_id = %s", (guild_id,))
+        row = cur.fetchone()
+        conn.close()
+        return row[0] if row else "!"
+
+def set_prefix(guild_id, prefix):
+    conn = connect()
+    if conn:
+        with conn.cursor() as cur:
+            cur.execute("""
+                INSERT INTO prefixes (guild_id, prefix) 
+                VALUES (%s, %s)
+                ON CONFLICT (guild_id) 
+                DO UPDATE SET prefix = EXCLUDED.prefix
+            """, (guild_id, prefix))
+            conn.commit()
+        conn.close()

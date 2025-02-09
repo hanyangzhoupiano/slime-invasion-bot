@@ -38,8 +38,7 @@ setup_database()
 
 @bot.event
 async def on_ready():
-    if not bot.get_guild():
-        print("Bot is not in any guild, disabling...")
+    if not bot.get_guild(1292978415552434196):
         await bot.close()
     else:
         print(f"Bot is ready and connected to guild: {bot.guilds[0].name}")

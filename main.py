@@ -2,6 +2,7 @@ import os
 import discord
 import json
 import random
+import asyncio
 from discord.ext import commands
 from threading import Thread
 
@@ -38,14 +39,14 @@ async def viewmessages(ctx, name: str = None):
                     matching_names.append(member.name)
             if matching_names:
                 msg = ""
-                for n in matching_names:
-                    msg += str(n.index + 1) + ". " + n
-                    if n.index != len(matching_names) - 1:
+                for i, n in enumerate(matching_names):
+                    msg += str(i + 1) + ". " + n
+                    if i != len(matching_names) - 1:
                         msg += ",\n"
                 try:
                     await ctx.send(embed=discord.Embed(
                         color=int("87C8F5", 16),
-                        description="Mutiple users found. Please select a user below, or type cancel:\n{msg}",
+                        description=f"Mutiple users found. Please select a user below, or type cancel:\n{msg}",
                     ).set_author(name=ctx.author.name, icon_url=ctx,author.avatar.url))
 
                     selection = None
@@ -58,7 +59,7 @@ async def viewmessages(ctx, name: str = None):
                         ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
                         return
                     try:
-                        selection = int(response)
+                        selection = int(response.content)
                     except ValueError:
                         await ctx.send(embed=discord.Embed(
                             color=int("FA3939", 16),

@@ -36,7 +36,7 @@ async def view_messages(ctx):
     if messages:
         await ctx.send("You currently have " + str(messages) + " messages.")
 
-bot.run("MTI5NjYwMTU0MDM4NzE0Nzg2OQ.GpBnjT.x7weeYWyRHXfCG6RGXsYsbGoZBNZq_WDRHAPWc")
+bot.run("DISCORD_TOKEN")
 
 from flask import Flask
 

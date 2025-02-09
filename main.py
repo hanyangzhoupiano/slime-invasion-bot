@@ -6,12 +6,15 @@ import asyncio
 from discord.ext import commands
 from threading import Thread
 
-from data_functions import setup_database, set_messages, get_messages
+from data_functions import setup_database, set_messages, get_messages, set_prefixes, get_prefixes
 
 intents = discord.Intents.all()
 intents.messages = True
 
-bot = commands.Bot(command_prefix="!", intents=intents)
+default_prefixes = {"!"}
+prefixes = {}
+
+bot = commands.Bot(command_prefix=default_prefixes, intents=intents)
 
 setup_database()
 

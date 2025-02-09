@@ -59,7 +59,7 @@ async def viewmessages(ctx, name: str = None):
                         msg += ",\n"
                 try:
                     await ctx.send(embed=discord.Embed(
-                        color=int("87C8F5", 16),
+                        color=int("50B4E6", 16),
                         description=f"Mutiple users found. Please select a user below, or type cancel:\n{msg}",
                     ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
 
@@ -100,15 +100,15 @@ async def viewmessages(ctx, name: str = None):
                         description="The command has been canceled because you took too long to reply.",
                     ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
                     return
-        msg = await ctx.send(embed=discord.Embed(
-            color=int("87C8F5", 16),
+        await ctx.send(embed=discord.Embed(
+            color=int("50B4E6", 16),
             description="Retrieving data...",
         ).set_author(name=user.name, icon_url=user.avatar.url))
 
         messages = get_messages(user.id)
 
-        await msg.edit(embed=discord.Embed(
-            color=int("96F587", 16),
+        await ctx.send(embed=discord.Embed(
+            color=int("50B4E6", 16),
             description=f"**Messages:** {messages}",
         ).set_author(name=user.name, icon_url=user.avatar.url))
 

@@ -149,14 +149,15 @@ async def viewmessages(ctx, name: str = None):
         if user is not None:
             await ctx.send(embed=discord.Embed(
                 color=int("50B4E6", 16),
-                description="Retrieving data...",
+                description="**Retrieving data...**",
             ).set_author(name=user.name, icon_url=user.avatar.url))
     
             messages = get_messages(user.id)
     
             await ctx.send(embed=discord.Embed(
                 color=int("50B4E6", 16),
-                description=f"**Messages:** {messages}",
+                title="Statistics",
+                description=f"**Messages:** {messages}\n**Server Join Date:** {user.joined_at}\n**Role:** {user.top_role}",
             ).set_author(name=user.name, icon_url=user.avatar.url))
 
 bot.run(os.getenv("DISCORD_TOKEN"))

@@ -47,7 +47,7 @@ async def viewmessages(ctx, name: str = None):
                     await ctx.send(embed=discord.Embed(
                         color=int("87C8F5", 16),
                         description=f"Mutiple users found. Please select a user below, or type cancel:\n{msg}",
-                    ).set_author(name=ctx.author.name, icon_url=ctx,author.avatar.url))
+                    ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
 
                     selection = None
                     response = await bot.wait_for('message', check=lambda msg: msg.channel == ctx.channel and msg.author == ctx.author, timeout=10.0)

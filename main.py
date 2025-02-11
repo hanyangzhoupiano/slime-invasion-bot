@@ -67,9 +67,9 @@ async def on_message(msg):
     await bot.process_commands(msg)
 
 bot.remove_command("help")
-@bot.command(name="help", help="Shows this help message.", aliases=["commands", "cmds"])
+@bot.command(help="Shows this help message.", aliases=["commands", "cmds"])
 @commands.cooldown(1, 3, commands.BucketType.user)
-async def custom_help(ctx, command_name: str = None):
+async def help(ctx, command_name: str = None):
     if command_name:
         command = bot.get_command(command_name)
         if command:
@@ -90,7 +90,7 @@ async def viewprefix(ctx):
 
 @bot.command(aliases=["sp", "newp"], help="Changes the prefix of this bot.")
 @commands.cooldown(2, 10, commands.BucketType.user)
-async def data_functions.setprefix(ctx, new_prefix: str = None):
+async def setprefix(ctx, new_prefix: str = None):
     if ctx.author.guild_permissions.manage_guild and new_prefix is not None:
         if len(new_prefix) > 32:
             await ctx.send(embed=discord.Embed(
@@ -188,7 +188,7 @@ async def viewstats(ctx, name: str = None):
                 description=f"**Level:** {level}\n**Experience:** {experience}\n**Until Next Level:** {experience_left}\n**Messages:** {messages}\n**Server Join Date:** {user.joined_at.strftime('%m/%d/%Y').lstrip('0').replace('/0', '/')}\n**Role:** {user.top_role}",
             ).set_author(name=user.name, icon_url=user.avatar.url))
 
-@bot.command()
+@bot.command(aliases=["ec"], help="Repeats the inputted message.")
 @commands.cooldown(2, 5, commands.BucketType.user)
 async def echo(ctx, *, message: str = None):
     if message is not None:

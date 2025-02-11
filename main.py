@@ -59,24 +59,6 @@ async def on_message(msg):
     current_time = time.time()
     if msg.author.bot:
         return
-    
-    if user_id in user_last_experience_time:
-        time_diff = current_time - user_last_experience_time[user_id]
-        if time_diff < 10:
-            return
-    
-    user_last_experience_time[user_id] = current_time
-    data_functions.set_messages(user_id, data_functions.get_messages(user_id) + 1)
-    data_functions.set_experience(user_id, data_functions.get_experience(user_id) + math.floor(random.random() * 10 + 5))
-    level = data_functions.get_levels(user_id)
-    experience = data_functions.get_experience(user_id)
-    if ((25 * (level**2) - (25 * level))/level + 50) - experience <= 0:
-        data_functions.set_levels(user_id, data_functions.get_levels(user_id) + 1)
-        data_functions.set_experience(user_id, 0)
-        await msg.channel.send(embed=discord.Embed(
-            color=int("50B4E6", 16),
-            description=f"Congratulations! The user *'{msg.author.name}'* has leveled up to **Level {data_functions.get_levels(user_id)}**!",
-        ).set_author(name=msg.author.name, icon_url=msg.author.avatar.url))
 
     if math.floor(random.random() * 100 + 1) < 5:
         amount = random.randint(50, 200)
@@ -101,6 +83,24 @@ async def on_message(msg):
                 description="Nobody claimed the experience drop in time.",
             ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
             return
+    
+    if user_id in user_last_experience_time:
+        time_diff = current_time - user_last_experience_time[user_id]
+        if time_diff < 10:
+            return
+    
+    user_last_experience_time[user_id] = current_time
+    data_functions.set_messages(user_id, data_functions.get_messages(user_id) + 1)
+    data_functions.set_experience(user_id, data_functions.get_experience(user_id) + math.floor(random.random() * 10 + 5))
+    level = data_functions.get_levels(user_id)
+    experience = data_functions.get_experience(user_id)
+    if ((25 * (level**2) - (25 * level))/level + 50) - experience <= 0:
+        data_functions.set_levels(user_id, data_functions.get_levels(user_id) + 1)
+        data_functions.set_experience(user_id, 0)
+        await msg.channel.send(embed=discord.Embed(
+            color=int("50B4E6", 16),
+            description=f"Congratulations! The user *'{msg.author.name}'* has leveled up to **Level {data_functions.get_levels(user_id)}**!",
+        ).set_author(name=msg.author.name, icon_url=msg.author.avatar.url))
     await bot.process_commands(msg)
 
 bot.remove_command("help")

@@ -260,21 +260,21 @@ async def say(ctx, *, message: str = None):
             description=message,
         ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
 
-@bot.command(aliases=["addl", "al"], help="Adds levels to the specificed user.")
+@bot.command(aliases=["setl", "sl"], help="Adds levels to the specificed user.")
 @commands.cooldown(2, 10, commands.BucketType.user)
-async def add_levels(ctx, amount: int = None):
+async def set_levels(ctx, amount: int = None):
     if amount is not None and ctx.author.guild_permissions.manage_guild:
         if str(amount).isnumeric():
-            if amount <= 10:
+            if amount <= 1000:
                 data_functions.set_levels(ctx.author.id, int(amount))
                 await ctx.send(embed=discord.Embed(
                     color=int("50B4E6", 16),
-                    description=f"Successfully {amount} levels to {ctx.author.name}.",
+                    description=f"Successfully added {amount} levels to {ctx.author.name}.",
                 ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
             else:
                 await ctx.send(embed=discord.Embed(
                     color=int("FA3939", 16),
-                    description="You can only add a maximum of 10 levels at a time.",
+                    description="You can only set your levels to a maximum of 1000.",
                 ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
                 return
         else:
@@ -283,21 +283,21 @@ async def add_levels(ctx, amount: int = None):
                 description="Invalid amount.",
             ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
 
-@bot.command(aliases=["addm", "am"], help="Adds messages to the specified user.")
-@commands.cooldown(1, 5, commands.BucketType.user)
-async def add_messages(ctx, amount: int = None):
+@bot.command(aliases=["setm", "sm"], help="Adds messages to the specified user.")
+@commands.cooldown(2, 10, commands.BucketType.user)
+async def set_messages(ctx, amount: int = None):
     if amount is not None and ctx.author.guild_permissions.manage_guild:
         if str(amount).isnumeric():
-            if amount <= 10:
+            if amount <= 20000:
                 data_functions.set_messages(ctx.author.id, int(amount))
                 await ctx.send(embed=discord.Embed(
                     color=int("50B4E6", 16),
-                    description=f"Successfully {amount} messages to {ctx.author.name}.",
+                    description=f"Successfully added {amount} messages to {ctx.author.name}.",
                 ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
             else:
                 await ctx.send(embed=discord.Embed(
                     color=int("FA3939", 16),
-                    description="You can only add a maximum of 10 messages at a time.",
+                    description="You can only set your messages to a maximum of 20000.",
                 ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
                 return
         else:

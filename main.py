@@ -62,7 +62,7 @@ async def on_message(msg):
 
     if math.floor(random.random() * 100 + 1) < 5:
         amount = random.randint(50, 200)
-        await ctx.send(embed=discord.Embed(
+        await msg.channel.send(embed=discord.Embed(
             color=int("50B4E6", 16),
             title="Experience Drop",
             description=f"An experience drop of {amount} has started! Type 'claim' to claim it before the time runs out!",
@@ -71,14 +71,14 @@ async def on_message(msg):
             response = await bot.wait_for('message', check=lambda msg: msg.channel == ctx.channel, timeout=10.0)
             if response.content.lower() == "claim":
                 if not response.author.bot:
-                    await ctx.send(embed=discord.Embed(
+                    await msg.channel.send(embed=discord.Embed(
                         color=int("50B4E6", 16),
                         title="Experience Drop",
                         description=f"*{response.author.name}* was the first to claim the experience drop of {amount}!",
                     ))
                     data_functions.set_experience(response.author.id, data_functions.get_experience(ctx.author.id) + amount)
         except asyncio.TimeoutError:
-            await ctx.send(embed=discord.Embed(
+            await msg.channel.send(embed=discord.Embed(
                 color=int("FA3939", 16),
                 description="Nobody claimed the experience drop in time.",
             ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))

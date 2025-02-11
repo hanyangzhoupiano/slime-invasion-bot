@@ -1,4 +1,4 @@
 discord.py
 asyncio
 flask
-psycopg2-binary
+asyncpg

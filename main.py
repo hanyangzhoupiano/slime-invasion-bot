@@ -56,6 +56,7 @@ async def on_message(msg):
     user_id = msg.author.id
     data_functions.set_messages(user_id, data_functions.get_messages(user_id) + 1)
     data_functions.set_experience(user_id, data_functions.get_experience(user_id) + math.floor(random.random() * 10 + 5))
+    level = data_functions.get_levels(user_id)
     if data_functions.get_experience(user_id) >= (25*(level**2)-(25*level)+100) - experience:
         data_functions.set_levels(user_id, data_functions.get_levels(user_id) + 1)
         data_functions.set_experience(user_id, 0)

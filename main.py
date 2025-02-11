@@ -57,12 +57,13 @@ async def on_message(msg):
     data_functions.set_messages(user_id, data_functions.get_messages(user_id) + 1)
     data_functions.set_experience(user_id, data_functions.get_experience(user_id) + math.floor(random.random() * 10 + 5))
     level = data_functions.get_levels(user_id)
-    if data_functions.get_experience(user_id) >= (25*(level**2)-(25*level)+100) - experience:
+    evperience = data_functions.get_experience(user_id)
+    if (25*(level**2)-(25*level)+100) - experience <= 0:
         data_functions.set_levels(user_id, data_functions.get_levels(user_id) + 1)
         data_functions.set_experience(user_id, 0)
         await ctx.send(embed=discord.Embed(
             color=int("50B4E6", 16),
-            description=f"Congratulations! The user *'{msg.author.name}'* has leveled up to **Level {await data_functions.get_levels(user_id)}**!",
+            description=f"Congratulations! The user *'{msg.author.name}'* has leveled up to **Level {data_functions.get_levels(user_id)}**!",
         ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
         
     await bot.process_commands(msg)

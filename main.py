@@ -202,7 +202,7 @@ async def view_stats(ctx, name: str = None):
 @bot.command(aliases=["expdrop, edrop, expd, ed"], help="Create an experience drop of a specified amount.")
 @commands.cooldown(1, 10, commands.BucketType.user)
 async def experience_drop(ctx, amount: int = None):
-    if amount is not None amount.isnumberic():
+    if amount is not None and amount.isnumeric():
         global experience_drops
         if amount <= 1000:
             drop_index = random.random() * 1000 + 1

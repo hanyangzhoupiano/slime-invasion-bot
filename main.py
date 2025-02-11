@@ -3,10 +3,11 @@ import discord
 import json
 import random
 import asyncio
+import math
 from discord.ext import commands
 from threading import Thread
 
-from data_functions import setup_database, set_messages, get_messages, set_prefix, get_prefix
+from data_functions import *
 
 from flask import Flask
 
@@ -28,11 +29,7 @@ intents.messages = True
 default_prefixes = {"!"}
 prefixes = {}
 
-async def prefix(bot, message):
-    guild_id = message.guild.id
-    return get_prefix(guild_id)
-
-bot = commands.Bot(command_prefix=prefix, intents=intents)
+bot = commands.Bot(command_prefix=lambda bot, message: get_prefix(message.guild.id), intents=intents)
 
 setup_database()
 
@@ -44,21 +41,51 @@ async def on_ready():
         print(f"Bot is ready and connected to guild: {bot.guilds[0].name}")
 
 @bot.event
+async def on_disconnect():
+    print("Bot disconnected! Attempting to reconnect in 5 seconds...")
+    await asyncio.sleep(5)
+
+@bot.event
+async def on_resumed():
+    print("Bot reconnected!")
+
+@bot.event
 async def on_message(msg):
     if msg.author == bot.user:
         return
     user_id = msg.author.id
     set_messages(user_id, get_messages(user_id) + 1)
+    set_experience(user_id, get_experience(user_id) + math.floor(random.random() * 10 + 5))
+    if get_experience(user_id) >= (25*(level**2)-(25*level)+100) - experience:
+        set_levels(user_id, get_levels(user_id) + 1)
+        set_experience(user_id, 0)
+        await ctx.send(embed=discord.Embed(
+            color=int("50B4E6", 16),
+            description=f"Congratulations! The user *'{msg.author.name}'* has leveled up to **Level {get_levels(user_id)}**!",
+        ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
+        
     await bot.process_commands(msg)
 
-@bot.command()
+@bot.command(name="help", help="Shows this help message.", aliases=["commands", "cmds"])
+async def custom_help(ctx, command_name: str = None):
+    if command_name:
+        command = bot.get_command(command_name)
+        if command:
+            await ctx.send(f"**{command.name}** - {command.help}\nAliases: {', '.join(command.aliases) if command.aliases else 'None'}")
+        else:
+            await ctx.send("Command not found!")
+    else:
+        help_text = "\n".join([f"**{cmd.name}** - {cmd.help}" for cmd in bot.commands])
+        await ctx.send(f"Here are the available commands:\n{help_text}")
+
+@bot.command(aliases=["vp", "viewp"], help="Shows the current prefix of this bot.")
 async def viewprefix(ctx):
     await ctx.send(embed=discord.Embed(
         color=int("50B4E6", 16),
-        description=f"The current prefix is {get_prefix(ctx.guild.id)}.",
+        description=f"The current prefix is '{get_prefix(ctx.guild.id)}'.",
     ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
 
-@bot.command()
+@bot.command(aliases=["sp", "newp"], help="Changes the prefix of this bot.")
 async def setprefix(ctx, new_prefix: str = None):
     if ctx.author.guild_permissions.manage_guild and new_prefix is not None:
         if len(new_prefix) > 32:
@@ -70,11 +97,12 @@ async def setprefix(ctx, new_prefix: str = None):
         set_prefix(ctx.guild.id, new_prefix)
         await ctx.send(embed=discord.Embed(
             color=int("50B4E6", 16),
-            description=f"The prefix has been changed to {new_prefix}.",
+            description=f"The prefix has been changed to '{new_prefix}'.",
         ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
-
-@bot.command()
-async def viewmessages(ctx, name: str = None):
+        
+@bot.command(aliases=["vs", "msgs", "lvls", "stats"], help="Shows the statistics of a user, such as levels, experience, and messages.")
+@commands.cooldown(2, 10, commands.BucketType.user)
+async def viewstats(ctx, name: str = None):
     if not ctx.author.bot:
         user = None
         if name is None:
@@ -146,22 +174,23 @@ async def viewmessages(ctx, name: str = None):
             ).set_author(name=user.name, icon_url=user.avatar.url))
     
             messages = get_messages(user.id)
+            level = get_levels(user.id)
+            experience = get_experience(user.id)
+            experience_left = (25*(level**2)-(25*level)+100) - experience
     
             await ctx.send(embed=discord.Embed(
                 color=int("50B4E6", 16),
                 title="Statistics",
-                description=f"**Messages:** {messages}\n**Server Join Date:** {user.joined_at}\n**Role:** {user.top_role}",
+                description=f"**Level:** {level}\n**Experience:** {experience}\n**Until Next Level:** {experience_left}\n**Messages:** {messages}\n**Server Join Date:** {user.joined_at.strftime("%m/%d/%Y").lstrip("0").replace("/0", "/")}\n**Role:** {user.top_role}",
             ).set_author(name=user.name, icon_url=user.avatar.url))
 
 @bot.command()
-async def echo(ctx, embed: bool = True, *, message: str = None):
+@commands.cooldown(2, 5, commands.BucketType.user)
+async def echo(ctx, *, message: str = None):
     if message is not None:
-        if embed:
-            await ctx.send(embed=discord.Embed(
-                color=int("50B4E6", 16),
-                description=message,
-            ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
-        else:
-            await ctx.send(message)
+        await ctx.send(embed=discord.Embed(
+            color=int("50B4E6", 16),
+            description=message,
+        ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
 
 bot.run(os.getenv("DISCORD_TOKEN"))

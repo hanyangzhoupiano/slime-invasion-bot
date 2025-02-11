@@ -1,23 +1,22 @@
-import asyncpg
-import asyncio
+import psycopg2
+from psycopg2 import sql
 import os
 
 DATABASE_URL = os.getenv("DATABASE_URL")
 
-pool = None  # Global connection pool
+# Connection object
+conn = None
 
-async def connect_db():
-    """Initialize the database connection pool."""
-    global pool
-    if pool is None:
-        pool = await asyncpg.create_pool(DATABASE_URL, min_size=1, max_size=5)
+def connect_db():
+    """Initialize the database connection."""
+    global conn
+    if conn is None:
+        conn = psycopg2.connect(DATABASE_URL)
 
-asyncio.run(connect_db())
-
-async def setup_database():
+def setup_database():
     """Create necessary tables if they don't exist."""
-    async with pool.acquire() as conn:
-        await conn.execute("""
+    with conn.cursor() as cursor:
+        cursor.execute("""
             CREATE TABLE IF NOT EXISTS messages (
                 user_id BIGINT PRIMARY KEY,
                 count INTEGER DEFAULT 0
@@ -32,83 +31,76 @@ async def setup_database():
                 prefix TEXT DEFAULT '!'
             );
         """)
+        conn.commit()
 
-async def get_messages(user_id):
+def get_messages(user_id):
     """Retrieve the message count for a user."""
-    if pool is None:
-        return
-    async with pool.acquire() as conn:
-        row = await conn.fetchrow("SELECT count FROM messages WHERE user_id = $1", user_id)
-        return row["count"] if row else 0
+    with conn.cursor() as cursor:
+        cursor.execute("SELECT count FROM messages WHERE user_id = %s", (user_id,))
+        row = cursor.fetchone()
+        return row[0] if row else 0
 
-async def set_messages(user_id, count):
+def set_messages(user_id, count):
     """Set or update the message count for a user."""
-    if pool is None:
-        return
-    async with pool.acquire() as conn:
-        await conn.execute("""
+    with conn.cursor() as cursor:
+        cursor.execute("""
             INSERT INTO messages (user_id, count) 
-            VALUES ($1, $2) 
+            VALUES (%s, %s) 
             ON CONFLICT (user_id) 
             DO UPDATE SET count = EXCLUDED.count
-        """, user_id, count)
+        """, (user_id, count))
+        conn.commit()
 
-async def get_experience(user_id):
+def get_experience(user_id):
     """Retrieve the experience points of a user."""
-    if pool is None:
-        return
-    async with pool.acquire() as conn:
-        row = await conn.fetchrow("SELECT exp FROM experience WHERE user_id = $1", user_id)
-        return row["exp"] if row else 0
+    with conn.cursor() as cursor:
+        cursor.execute("SELECT exp FROM experience WHERE user_id = %s", (user_id,))
+        row = cursor.fetchone()
+        return row[0] if row else 0
 
-async def set_experience(user_id, exp):
+def set_experience(user_id, exp):
     """Set or update the experience points of a user."""
-    if pool is None:
-        return
-    async with pool.acquire() as conn:
-        await conn.execute("""
+    with conn.cursor() as cursor:
+        cursor.execute("""
             INSERT INTO experience (user_id, exp) 
-            VALUES ($1, $2) 
+            VALUES (%s, %s) 
             ON CONFLICT (user_id) 
             DO UPDATE SET exp = EXCLUDED.exp
-        """, user_id, exp)
+        """, (user_id, exp))
+        conn.commit()
 
-async def get_levels(user_id):
+def get_levels(user_id):
     """Retrieve the level of a user."""
-    if pool is None:
-        return
-    async with pool.acquire() as conn:
-        row = await conn.fetchrow("SELECT level FROM experience WHERE user_id = $1", user_id)
-        return row["level"] if row else 1
+    with conn.cursor() as cursor:
+        cursor.execute("SELECT level FROM experience WHERE user_id = %s", (user_id,))
+        row = cursor.fetchone()
+        return row[0] if row else 1
 
-async def set_levels(user_id, level):
+def set_levels(user_id, level):
     """Set or update the level of a user."""
-    if pool is None:
-        return
-    async with pool.acquire() as conn:
-        await conn.execute("""
+    with conn.cursor() as cursor:
+        cursor.execute("""
             INSERT INTO experience (user_id, level) 
-            VALUES ($1, $2) 
+            VALUES (%s, %s) 
             ON CONFLICT (user_id) 
             DO UPDATE SET level = EXCLUDED.level
-        """, user_id, level)
+        """, (user_id, level))
+        conn.commit()
 
-async def get_prefix(guild_id):
+def get_prefix(guild_id):
     """Retrieve the prefix for a specific guild."""
-    if pool is None:
-        return
-    async with pool.acquire() as conn:
-        row = await conn.fetchrow("SELECT prefix FROM prefixes WHERE guild_id = $1", guild_id)
-        return row["prefix"] if row else "!"
+    with conn.cursor() as cursor:
+        cursor.execute("SELECT prefix FROM prefixes WHERE guild_id = %s", (guild_id,))
+        row = cursor.fetchone()
+        return row[0] if row else "!"
 
-async def set_prefix(guild_id, prefix):
+def set_prefix(guild_id, prefix):
     """Set or update the prefix for a specific guild."""
-    if pool is None:
-        return
-    async with pool.acquire() as conn:
-        await conn.execute("""
+    with conn.cursor() as cursor:
+        cursor.execute("""
             INSERT INTO prefixes (guild_id, prefix) 
-            VALUES ($1, $2) 
+            VALUES (%s, %s) 
             ON CONFLICT (guild_id) 
             DO UPDATE SET prefix = EXCLUDED.prefix
-        """, guild_id, prefix)
+        """, (guild_id, prefix))
+        conn.commit()

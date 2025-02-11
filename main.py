@@ -228,7 +228,7 @@ async def view_stats(ctx, name: str = None):
             ).set_author(name=user.name, icon_url=user.avatar.url))
 
 @bot.command(aliases=["expdrop", "expd", "ed"], help="Create an experience drop in a channel.")
-@commands.cooldown(1, 10, commands.BucketType.user)
+@commands.cooldown(1, 5, commands.BucketType.user)
 async def experience_drop(ctx):
     if ctx.author.guild_permissions.manage_guild:
         amount = random.randint(50, 200)

@@ -7,7 +7,7 @@ import math
 from discord.ext import commands
 from threading import Thread
 
-from data_functions import *
+import data_functions
 
 from flask import Flask
 
@@ -31,7 +31,7 @@ prefixes = {}
 
 bot = commands.Bot(command_prefix=lambda bot, message: get_prefix(message.guild.id), intents=intents)
 
-setup_database()
+data_functions.setup_database()
 
 @bot.event
 async def on_ready():
@@ -54,11 +54,11 @@ async def on_message(msg):
     if msg.author == bot.user:
         return
     user_id = msg.author.id
-    set_messages(user_id, get_messages(user_id) + 1)
-    set_experience(user_id, get_experience(user_id) + math.floor(random.random() * 10 + 5))
+    data_functions.set_messages(user_id, get_messages(user_id) + 1)
+    data_functions.set_experience(user_id, get_experience(user_id) + math.floor(random.random() * 10 + 5))
     if get_experience(user_id) >= (25*(level**2)-(25*level)+100) - experience:
-        set_levels(user_id, get_levels(user_id) + 1)
-        set_experience(user_id, 0)
+        data_functions.set_levels(user_id, get_levels(user_id) + 1)
+        data_functions.set_experience(user_id, 0)
         await ctx.send(embed=discord.Embed(
             color=int("50B4E6", 16),
             description=f"Congratulations! The user *'{msg.author.name}'* has leveled up to **Level {get_levels(user_id)}**!",
@@ -90,7 +90,7 @@ async def viewprefix(ctx):
 
 @bot.command(aliases=["sp", "newp"], help="Changes the prefix of this bot.")
 @commands.cooldown(2, 10, commands.BucketType.user)
-async def setprefix(ctx, new_prefix: str = None):
+async def data_functions.setprefix(ctx, new_prefix: str = None):
     if ctx.author.guild_permissions.manage_guild and new_prefix is not None:
         if len(new_prefix) > 32:
             await ctx.send(embed=discord.Embed(
@@ -98,7 +98,7 @@ async def setprefix(ctx, new_prefix: str = None):
                 description="The prefix chosen is too long. Please try again with a shorter prefix.",
             ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
             return
-        set_prefix(ctx.guild.id, new_prefix)
+        data_functions.set_prefix(ctx.guild.id, new_prefix)
         await ctx.send(embed=discord.Embed(
             color=int("50B4E6", 16),
             description=f"The prefix has been changed to '{new_prefix}'.",

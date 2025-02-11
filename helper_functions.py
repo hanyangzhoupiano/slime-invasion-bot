@@ -1,7 +1,7 @@
 import asyncio
 import discord
 
-def experience_drop(ctx, amount):
+async def experience_drop(ctx, amount):
     if amount is not None and str(amount).isnumeric():
         global experience_drops
         if amount <= 10000:

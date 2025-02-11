@@ -282,6 +282,11 @@ async def set_levels(ctx, amount: int = None):
                 color=int("FA3939", 16),
                 description="Invalid amount.",
             ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
+    else:
+        await ctx.send(embed=discord.Embed(
+            color=int("FA3939", 16),
+            description="You do not have permission to use this command.\n**Missing permissions:** *Manage Server*",
+        ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
 
 @bot.command(aliases=["setm", "sm"], help="Adds messages to the specified user.")
 @commands.cooldown(2, 10, commands.BucketType.user)
@@ -305,5 +310,10 @@ async def set_messages(ctx, amount: int = None):
                 color=int("FA3939", 16),
                 description="Invalid amount.",
             ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
+    else:
+        await ctx.send(embed=discord.Embed(
+            color=int("FA3939", 16),
+            description="You do not have permission to use this command.\n**Missing permissions:** *Manage Server*",
+        ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
 
 bot.run(os.getenv("DISCORD_TOKEN"))

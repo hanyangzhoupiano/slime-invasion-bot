@@ -31,7 +31,6 @@ intents.messages = True
 default_prefixes = {"!"}
 prefixes = {}
 user_last_experience_time = {}
-experience_drops = {}
 
 bot = commands.Bot(command_prefix=lambda bot, message: data_functions.get_prefix(message.guild.id), intents=intents)
 
@@ -63,6 +62,7 @@ async def on_message(msg):
         time_diff = current_time - user_last_experience_time[user_id]
         if time_diff < 5:
             return
+    
     user_last_experience_time[user_id] = current_time
     data_functions.set_messages(user_id, data_functions.get_messages(user_id) + 1)
     data_functions.set_experience(user_id, data_functions.get_experience(user_id) + math.floor(random.random() * 10 + 5))
@@ -75,7 +75,9 @@ async def on_message(msg):
             color=int("50B4E6", 16),
             description=f"Congratulations! The user *'{msg.author.name}'* has leveled up to **Level {data_functions.get_levels(user_id)}**!",
         ).set_author(name=msg.author.name, icon_url=msg.author.avatar.url))
-        
+
+    if math.floor(random.random() * 100 + 1) < 5:
+        helper_functions.experience_drop(ctx, random.randint(50, 200))
     await bot.process_commands(msg)
 
 bot.remove_command("help")

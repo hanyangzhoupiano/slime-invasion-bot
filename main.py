@@ -87,7 +87,7 @@ async def help(ctx, command_name: str = None):
 async def viewprefix(ctx):
     await ctx.send(embed=discord.Embed(
         color=int("50B4E6", 16),
-        description=f"The current prefix is '{get_prefix(ctx.guild.id)}'.",
+        description=f"The current prefix is '{data_functions.get_prefix(ctx.guild.id)}'.",
     ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
 
 @bot.command(aliases=["sp", "newp"], help="Changes the prefix of this bot.")

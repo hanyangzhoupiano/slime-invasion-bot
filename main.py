@@ -77,6 +77,8 @@ async def on_message(msg):
                         description=f"*{response.author.name}* was the first to claim the experience drop of {amount}!",
                     ))
                     data_functions.set_experience(response.author.id, data_functions.get_experience(ctx.author.id) + amount)
+                else:
+                    response = await bot.wait_for('message', check=lambda m: m.channel == msg.channel, timeout=10.0)
         except asyncio.TimeoutError:
             await msg.channel.send(embed=discord.Embed(
                 color=int("FA3939", 16),
@@ -228,15 +230,15 @@ async def view_stats(ctx, name: str = None):
 @bot.command(aliases=["expdrop", "expd", "ed"], help="Create an experience drop in a channel.")
 @commands.cooldown(1, 10, commands.BucketType.user)
 async def experience_drop(ctx):
-    amount = random.randint(50, 200)
-    await ctx.send(embed=discord.Embed(
-        color=int("50B4E6", 16),
-        title="Experience Drop",
-        description=f"An experience drop of {amount} has started! Type 'claim' to claim it before the time runs out!",
-    ))
-    try:
-        response = await bot.wait_for('message', check=lambda msg: msg.channel == ctx.channel, timeout=10.0)
-        if response.content.lower() == "claim":
+    if ctx.author.guild_permissions.manage_guild:
+        amount = random.randint(50, 200)
+        await ctx.send(embed=discord.Embed(
+            color=int("50B4E6", 16),
+            title="Experience Drop",
+            description=f"An experience drop of {amount} has started! Type 'claim' to claim it before the time runs out!",
+        ))
+        try:
+            response = await bot.wait_for('message', check=lambda msg: msg.channel == ctx.channel and msg.content.lower() == "claim", timeout=10.0)
             if not response.author.bot:
                 await ctx.send(embed=discord.Embed(
                     color=int("50B4E6", 16),
@@ -244,12 +246,17 @@ async def experience_drop(ctx):
                     description=f"*{response.author.name}* was the first to claim the experience drop of {amount}!",
                 ))
                 data_functions.set_experience(response.author.id, data_functions.get_experience(ctx.author.id) + amount)
-    except asyncio.TimeoutError:
+        except asyncio.TimeoutError:
+            await ctx.send(embed=discord.Embed(
+                color=int("FA3939", 16),
+                description="Nobody claimed the experience drop in time.",
+            ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
+            return
+    else:
         await ctx.send(embed=discord.Embed(
             color=int("FA3939", 16),
-            description="Nobody claimed the experience drop in time.",
+            description="You do not have permission to use this command.\n**Missing permissions:** *Manage Server*",
         ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
-        return
     
 @bot.command(aliases=["s", "sy"], help="Make the bot say a specified message.")
 @commands.cooldown(2, 10, commands.BucketType.user)

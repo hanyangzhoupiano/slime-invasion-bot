@@ -54,10 +54,10 @@ async def on_message(msg):
     if msg.author == bot.user:
         return
     user_id = msg.author.id
-    data_functions.set_messages(user_id, await data_functions.get_messages(user_id) + 1)
-    data_functions.set_experience(user_id, await data_functions.get_experience(user_id) + math.floor(random.random() * 10 + 5))
-    if await data_functions.get_experience(user_id) >= (25*(level**2)-(25*level)+100) - experience:
-        data_functions.set_levels(user_id, await data_functions.get_levels(user_id) + 1)
+    data_functions.set_messages(user_id, data_functions.get_messages(user_id) + 1)
+    data_functions.set_experience(user_id, data_functions.get_experience(user_id) + math.floor(random.random() * 10 + 5))
+    if data_functions.get_experience(user_id) >= (25*(level**2)-(25*level)+100) - experience:
+        data_functions.set_levels(user_id, data_functions.get_levels(user_id) + 1)
         data_functions.set_experience(user_id, 0)
         await ctx.send(embed=discord.Embed(
             color=int("50B4E6", 16),
@@ -85,7 +85,7 @@ async def help(ctx, command_name: str = None):
 async def viewprefix(ctx):
     await ctx.send(embed=discord.Embed(
         color=int("50B4E6", 16),
-        description=f"The current prefix is '{await get_prefix(ctx.guild.id)}'.",
+        description=f"The current prefix is '{get_prefix(ctx.guild.id)}'.",
     ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
 
 @bot.command(aliases=["sp", "newp"], help="Changes the prefix of this bot.")
@@ -177,9 +177,9 @@ async def viewstats(ctx, name: str = None):
                 description="**Retrieving data...**",
             ).set_author(name=user.name, icon_url=user.avatar.url))
     
-            messages = await data_functions.get_messages(user.id)
-            level = await data_functions.get_levels(user.id)
-            experience = await data_functions.get_experience(user.id)
+            messages = data_functions.get_messages(user.id)
+            level = data_functions.get_levels(user.id)
+            experience = data_functions.get_experience(user.id)
             experience_left = (25*(level**2)-(25*level)+100) - experience
     
             await ctx.send(embed=discord.Embed(

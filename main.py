@@ -31,7 +31,7 @@ prefixes = {}
 
 bot = commands.Bot(command_prefix=lambda bot, message: get_prefix(message.guild.id), intents=intents)
 
-await setup_database()
+setup_database()
 
 @bot.event
 async def on_ready():

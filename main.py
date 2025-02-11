@@ -202,7 +202,7 @@ async def view_stats(ctx, name: str = None):
 @bot.command(aliases=["expdrop, edrop, expd, ed"], help="Create an experience drop of a specified amount.")
 @commands.cooldown(1, 10, commands.BucketType.user)
 async def experience_drop(ctx, amount: int = None):
-    if amount is not None and amount.isnumeric():
+    if amount is not None and str(amount).isnumeric():
         global experience_drops
         if amount <= 1000:
             drop_index = random.random() * 1000 + 1
@@ -250,7 +250,7 @@ async def say(ctx, *, message: str = None):
 @commands.cooldown(2, 10, commands.BucketType.user)
 async def add_levels(ctx, amount: int = None):
     if amount is not None and ctx.author.guild_permissions.manage_guild:
-        if amount.isnumeric():
+        if str(amount).isnumeric():
             if amount <= 10:
                 data_functions.set_levels(ctx.author.id, int(amount))
                 await ctx.send(embed=discord.Embed(
@@ -273,7 +273,7 @@ async def add_levels(ctx, amount: int = None):
 @commands.cooldown(1, 5, commands.BucketType.user)
 async def add_messages(ctx, amount: int = None):
     if amount is not None and ctx.author.guild_permissions.manage_guild:
-        if amount.isnumeric():
+        if str(amount).isnumeric():
             if amount <= 10:
                 data_functions.set_messages(ctx.author.id, int(amount))
                 await ctx.send(embed=discord.Embed(

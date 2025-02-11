@@ -184,7 +184,7 @@ async def viewstats(ctx, name: str = None):
             await ctx.send(embed=discord.Embed(
                 color=int("50B4E6", 16),
                 title="Statistics",
-                description=f"**Level:** {level}\n**Experience:** {experience}\n**Until Next Level:** {experience_left}\n**Messages:** {messages}\n**Server Join Date:** {user.joined_at.strftime("%m/%d/%Y").lstrip("0").replace("/0", "/")}\n**Role:** {user.top_role}",
+                description=f"**Level:** {level}\n**Experience:** {experience}\n**Until Next Level:** {experience_left}\n**Messages:** {messages}\n**Server Join Date:** {user.joined_at.strftime('%m/%d/%Y').lstrip('0').replace('/0', '/')}\n**Role:** {user.top_role}",
             ).set_author(name=user.name, icon_url=user.avatar.url))
 
 @bot.command()

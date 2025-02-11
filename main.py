@@ -9,7 +9,6 @@ from discord.ext import commands
 from threading import Thread
 
 import data_functions
-import helper_functions
 
 from flask import Flask
 

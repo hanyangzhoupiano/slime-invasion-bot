@@ -88,7 +88,7 @@ async def help(ctx, command_name: str = None):
         else:
             await ctx.send("Command not found!")
     else:
-        help_text = "\n".join([f"*{cmd.name}* - {cmd.help}, **Aliases:** {', '.join(cmd.aliases) if cmd.aliases else 'None'}" for cmd in bot.commands])
+        help_text = "- " + "\n- ".join([f"**{cmd.name}** - {cmd.help}\n**Aliases:** {', '.join(cmd.aliases) if cmd.aliases else 'None'}" for cmd in bot.commands])
         await ctx.send(f"Here are the available commands:\n{help_text}")
 
 @bot.command(aliases=["vp", "viewp"], help="Shows the current prefix of this bot.")
@@ -199,7 +199,7 @@ async def view_stats(ctx, name: str = None):
                 description=f"**Level:** {level}\n**Experience:** {experience}\n**Until Next Level:** {experience_left}\n**Messages:** {messages}\n**Server Join Date:** {user.joined_at.strftime('%m/%d/%Y').lstrip('0').replace('/0', '/')}\n**Role:** {user.top_role}",
             ).set_author(name=user.name, icon_url=user.avatar.url))
 
-@bot.command(aliases=["expdrop, edrop, expd, ed"], help="Create an experience drop of a specified amount.")
+@bot.command(aliases=["expdrop", "expd", "ed"], help="Create an experience drop of a specified amount.")
 @commands.cooldown(1, 10, commands.BucketType.user)
 async def experience_drop(ctx, amount: int = None):
     if amount is not None and str(amount).isnumeric():
@@ -237,7 +237,7 @@ async def experience_drop(ctx, amount: int = None):
                 description="You can only drop 1000 experience at a time.",
             ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
 
-@bot.command(aliases=["s"], help="Make the bot say a specified message.")
+@bot.command(aliases=["s", "sy"], help="Make the bot say a specified message.")
 @commands.cooldown(2, 10, commands.BucketType.user)
 async def say(ctx, *, message: str = None):
     if message is not None:

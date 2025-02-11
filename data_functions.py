@@ -3,6 +3,8 @@ import os
 
 DATABASE_URL = os.getenv("DATABASE_URL")
 
+if DATABASE_URL is None:
+    raise ValueError("DATABASE_URL not found!")
 def connect():
     """Initialize the database connection."""
     try:
@@ -43,7 +45,6 @@ def get_messages(user_id):
                 cursor.execute("SELECT count FROM messages WHERE user_id = %s", (user_id,))
                 row = cursor.fetchone()
                 return row[0] if row else 0
-            conn.close()
     except Exception as e:
         print(f"Error in set_messages: {e}")
         conn.rollback()

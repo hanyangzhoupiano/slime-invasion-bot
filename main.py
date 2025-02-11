@@ -66,6 +66,7 @@ async def on_message(msg):
         
     await bot.process_commands(msg)
 
+bot.remove_command("help")
 @bot.command(name="help", help="Shows this help message.", aliases=["commands", "cmds"])
 @commands.cooldown(1, 3, commands.BucketType.user)
 async def custom_help(ctx, command_name: str = None):

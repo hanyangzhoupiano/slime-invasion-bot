@@ -83,11 +83,11 @@ async def help(ctx, command_name: str = None):
     if command_name:
         command = bot.get_command(command_name)
         if command:
-            await ctx.send(f"**{command.name}** - {command.help}\nAliases: {', '.join(command.aliases) if command.aliases else 'None'}")
+            await ctx.send(f"**{command.name}** - {command.help}\n**Aliases:** {', '.join(command.aliases) if command.aliases else 'None'}")
         else:
             await ctx.send("Command not found!")
     else:
-        help_text = "\n".join([f"**{cmd.name}** - {cmd.help}" for cmd in bot.commands])
+        help_text = "\n".join([f"*{cmd.name}* - {cmd.help}, **Aliases:** {', '.join(command.aliases) if command.aliases else 'None'}" for cmd in bot.commands])
         await ctx.send(f"Here are the available commands:\n{help_text}")
 
 @bot.command(aliases=["vp", "viewp"], help="Shows the current prefix of this bot.")

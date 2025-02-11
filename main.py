@@ -4,6 +4,7 @@ import json
 import random
 import asyncio
 import math
+import time
 from discord.ext import commands
 from threading import Thread
 
@@ -28,6 +29,7 @@ intents.messages = True
 
 default_prefixes = {"!"}
 prefixes = {}
+user_last_experience_time = {}
 
 bot = commands.Bot(command_prefix=lambda bot, message: data_functions.get_prefix(message.guild.id), intents=intents)
 
@@ -54,6 +56,11 @@ async def on_message(msg):
     if msg.author == bot.user:
         return
     user_id = msg.author.id
+    if user_id in user_last_experience_time:
+        time_diff = current_time - user_last_experience_time[user_id]
+        if time_diff < 5:
+            return
+    user_last_experience_time[user_id] = current_time
     data_functions.set_messages(user_id, data_functions.get_messages(user_id) + 1)
     data_functions.set_experience(user_id, data_functions.get_experience(user_id) + math.floor(random.random() * 10 + 5))
     level = data_functions.get_levels(user_id)

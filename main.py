@@ -7,7 +7,7 @@ import math
 from discord.ext import commands
 from threading import Thread
 
-from data_functions import Database as data_functions, setup_database
+import data_functions
 
 from flask import Flask
 
@@ -31,7 +31,7 @@ prefixes = {}
 
 bot = commands.Bot(command_prefix=lambda bot, message: data_functions.get_prefix(message.guild.id), intents=intents)
 
-setup_database()
+data_functions.setup_database()
 
 @bot.event
 async def on_ready():

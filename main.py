@@ -58,9 +58,12 @@ async def on_message(msg):
         return
     user_id = msg.author.id
     current_time = time.time()
+    if msg.author.bot:
+        return
+    
     if user_id in user_last_experience_time:
         time_diff = current_time - user_last_experience_time[user_id]
-        if time_diff < 5:
+        if time_diff < 10:
             return
     
     user_last_experience_time[user_id] = current_time
@@ -68,7 +71,7 @@ async def on_message(msg):
     data_functions.set_experience(user_id, data_functions.get_experience(user_id) + math.floor(random.random() * 10 + 5))
     level = data_functions.get_levels(user_id)
     experience = data_functions.get_experience(user_id)
-    if (25 * (level**2) - (25 * level) + 100) - experience <= 0:
+    if ((25 * (level**2) - (25 * level))/level + 50) - experience <= 0:
         data_functions.set_levels(user_id, data_functions.get_levels(user_id) + 1)
         data_functions.set_experience(user_id, 0)
         await msg.channel.send(embed=discord.Embed(
@@ -136,7 +139,7 @@ async def view_stats(ctx, name: str = None):
                     for i, n in enumerate(matching_names):
                         msg += str(i + 1) + ". " + n
                         if i != len(matching_names) - 1:
-                            msg += ",\n"
+                            msg += "\n"
                     try:
                         await ctx.send(embed=discord.Embed(
                             color=int("50B4E6", 16),

@@ -7,7 +7,7 @@ import math
 from discord.ext import commands
 from threading import Thread
 
-import data_functions.Database as data_functions
+from data_functions import Database as data_functions
 
 from flask import Flask
 

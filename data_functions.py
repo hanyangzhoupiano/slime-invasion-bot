@@ -15,6 +15,7 @@ def connect_db():
 
 def setup_database():
     """Create necessary tables if they don't exist."""
+    connect_db()
     with conn.cursor() as cursor:
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS messages (

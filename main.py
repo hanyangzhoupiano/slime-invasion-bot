@@ -56,6 +56,7 @@ async def on_message(msg):
     if msg.author == bot.user:
         return
     user_id = msg.author.id
+    current_time = time.time()
     if user_id in user_last_experience_time:
         time_diff = current_time - user_last_experience_time[user_id]
         if time_diff < 5:

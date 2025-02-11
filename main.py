@@ -9,6 +9,7 @@ from discord.ext import commands
 from threading import Thread
 
 import data_functions
+import helper_functions
 
 from flask import Flask
 
@@ -202,40 +203,7 @@ async def view_stats(ctx, name: str = None):
 @bot.command(aliases=["expdrop", "expd", "ed"], help="Create an experience drop of a specified amount.")
 @commands.cooldown(1, 10, commands.BucketType.user)
 async def experience_drop(ctx, amount: int = None):
-    if amount is not None and str(amount).isnumeric():
-        global experience_drops
-        if amount <= 1000:
-            drop_index = random.random() * 1000 + 1
-            experience_drops[drop_index] = amount
-            await ctx.send(embed=discord.Embed(
-                color=int("50B4E6", 16),
-                title="Experience Drop",
-                description=f"An experience drop of {amount} has started! Type 'claim' to claim it before the time runs out!",
-            ))
-            try:
-                response = await bot.wait_for('message', check=lambda msg: msg.channel == ctx.channel, timeout=10.0)
-                if response.content.lower() == "claim":
-                    if not ctx.author.bot:
-                        if drop_index in experience_drops:
-                            del experience_drops[drop_index]
-                        await ctx.send(embed=discord.Embed(
-                            color=int("50B4E6", 16),
-                            title="Experience Drop",
-                            description=f"*{ctx.author.name}* was the first to claim the experience drop of {amount}!",
-                        ))
-                        data_functions.set_experience(ctx.author.id, data_functions.get_experience(ctx.author.id) + amount)
-                        
-            except asyncio.TimeoutError:
-                await ctx.send(embed=discord.Embed(
-                    color=int("FA3939", 16),
-                    description="Nobody claimed the experience drop in time.",
-                ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
-                return
-        else:
-            await ctx.send(embed=discord.Embed(
-                color=int("FA3939", 16),
-                description="You can only drop 1000 experience at a time.",
-            ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
+    helper_functions.experience_drop(ctx, amount)
 
 @bot.command(aliases=["s", "sy"], help="Make the bot say a specified message.")
 @commands.cooldown(2, 10, commands.BucketType.user)

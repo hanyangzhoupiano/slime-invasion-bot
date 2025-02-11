@@ -205,7 +205,7 @@ async def experience_drop(ctx, amount: int = None):
     if amount is not None amount.isnumberic():
         global experience_drops
         if amount <= 1000:
-            drop_index = random.random * 1000 + 1
+            drop_index = random.random() * 1000 + 1
             experience_drops[drop_index] = amount
             await ctx.send(embed=discord.Embed(
                 color=int("50B4E6", 16),

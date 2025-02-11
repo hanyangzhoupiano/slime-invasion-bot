@@ -68,7 +68,7 @@ async def on_message(msg):
             description=f"An experience drop of {amount} has started! Type 'claim' to claim it before the time runs out!",
         ))
         try:
-            response = await bot.wait_for('message', check=lambda msg: msg.channel == ctx.channel, timeout=10.0)
+            response = await bot.wait_for('message', check=lambda m: m.channel == msg.channel, timeout=10.0)
             if response.content.lower() == "claim":
                 if not response.author.bot:
                     await msg.channel.send(embed=discord.Embed(

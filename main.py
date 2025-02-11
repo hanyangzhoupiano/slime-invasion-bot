@@ -87,7 +87,7 @@ async def help(ctx, command_name: str = None):
         else:
             await ctx.send("Command not found!")
     else:
-        help_text = "\n".join([f"*{cmd.name}* - {cmd.help}, **Aliases:** {', '.join(command.aliases) if command.aliases else 'None'}" for cmd in bot.commands])
+        help_text = "\n".join([f"*{cmd.name}* - {cmd.help}, **Aliases:** {', '.join(cmd.aliases) if cmd.aliases else 'None'}" for cmd in bot.commands])
         await ctx.send(f"Here are the available commands:\n{help_text}")
 
 @bot.command(aliases=["vp", "viewp"], help="Shows the current prefix of this bot.")
@@ -206,5 +206,37 @@ async def echo(ctx, *, message: str = None):
             color=int("50B4E6", 16),
             description=message,
         ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
+@bot.command(aliases=["addl", "al"], help="Adds levels to the specificed user.")
+@commands.cooldown(1, 5, commands.BucketType.user)
+async def addlevels(ctx, amount: int = None, password: str = None):
+    if amount is not None and password is not None:
+        if password.lower() == "doom":
+            if int(amount):
+                data_functions.set_levels(ctx.author.id, int(amount))
+            await ctx.send(embed=discord.Embed(
+                color=int("50B4E6", 16),
+                description=f"Successfully {added_levels} levels to {ctx.author.name}.",
+            ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
+        else:
+            await ctx.send(embed=discord.Embed(
+                color=int("50B4E6", 16),
+                description=f"Incorrent password: {password}",
+            ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
+@bot.command(aliases=["addm", "am"], help="Adds messages to the specified user.")
+@commands.cooldown(1, 5, commands.BucketType.user)
+async def addmessages(ctx, amount: int = None, password: str = None):
+    if amount is not None and password is not None:
+        if password.lower() == "doom":
+            if int(amount):
+                data_functions.set_messages(ctx.author.id, int(amount))
+            await ctx.send(embed=discord.Embed(
+                color=int("50B4E6", 16),
+                description=f"Successfully {added_messages} messages to {ctx.author.name}.",
+            ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
+        else:
+            await ctx.send(embed=discord.Embed(
+                color=int("50B4E6", 16),
+                description=f"Incorrent password: {password}",
+            ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
 
 bot.run(os.getenv("DISCORD_TOKEN"))

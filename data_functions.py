@@ -12,7 +12,7 @@ async def connect_db():
     if pool is None:
         pool = await asyncpg.create_pool(DATABASE_URL, min_size=1, max_size=5)
 
-asyncio.run(connect_db)
+asyncio.run(connect_db())
 
 async def setup_database():
     """Create necessary tables if they don't exist."""

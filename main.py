@@ -67,6 +67,7 @@ async def on_message(msg):
     await bot.process_commands(msg)
 
 @bot.command(name="help", help="Shows this help message.", aliases=["commands", "cmds"])
+@commands.cooldown(1, 3, commands.BucketType.user)
 async def custom_help(ctx, command_name: str = None):
     if command_name:
         command = bot.get_command(command_name)
@@ -79,6 +80,7 @@ async def custom_help(ctx, command_name: str = None):
         await ctx.send(f"Here are the available commands:\n{help_text}")
 
 @bot.command(aliases=["vp", "viewp"], help="Shows the current prefix of this bot.")
+@commands.cooldown(2, 10, commands.BucketType.user)
 async def viewprefix(ctx):
     await ctx.send(embed=discord.Embed(
         color=int("50B4E6", 16),
@@ -86,6 +88,7 @@ async def viewprefix(ctx):
     ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
 
 @bot.command(aliases=["sp", "newp"], help="Changes the prefix of this bot.")
+@commands.cooldown(2, 10, commands.BucketType.user)
 async def setprefix(ctx, new_prefix: str = None):
     if ctx.author.guild_permissions.manage_guild and new_prefix is not None:
         if len(new_prefix) > 32:

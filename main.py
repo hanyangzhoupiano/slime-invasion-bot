@@ -80,7 +80,7 @@ async def on_message(msg):
         ).set_author(name=msg.author.name, icon_url=msg.author.avatar.url))
 
     if math.floor(random.random() * 100 + 1) < 5:
-        helper_functions.experience_drop(ctx, random.randint(50, 200))
+            asyncio.run(experience_drop(ctx, random.randint(50, 200)))
     await bot.process_commands(msg)
 
 bot.remove_command("help")
@@ -208,8 +208,8 @@ async def view_stats(ctx, name: str = None):
 @bot.command(aliases=["expdrop", "expd", "ed"], help="Create an experience drop of a specified amount.")
 @commands.cooldown(1, 10, commands.BucketType.user)
 async def experience_drop(ctx, amount: int = None):
-    helper_functions.experience_drop(ctx, amount)
-
+    asyncio.run(experience_drop(ctx, amount))
+    
 @bot.command(aliases=["s", "sy"], help="Make the bot say a specified message.")
 @commands.cooldown(2, 10, commands.BucketType.user)
 async def say(ctx, *, message: str = None):

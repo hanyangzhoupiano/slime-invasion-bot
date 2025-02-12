@@ -31,7 +31,7 @@ intents.messages = True
 default_prefixes = {"!"}
 prefixes = {}
 user_last_experience_time = {}
-logs = []
+error_logs = []
 
 bot = commands.Bot(command_prefix=lambda bot, message: data_functions.get_prefix(message.guild.id), intents=intents)
 
@@ -106,7 +106,10 @@ async def on_message(msg):
 
 @bot.event
 async def on_command_error(ctx, error):
-    logs.append(error)
+    error_logs.append(error)
+    if len(error_logs) > 20:
+        if error_logs and 0 in error_logs:
+            del error_logs[0]
 
 bot.remove_command("help")
 @bot.command(help="Shows this help message.", aliases=["commands", "cmds"])
@@ -329,9 +332,9 @@ async def set_messages(ctx, amount: int = None):
 @bot.command(aliases=["lgs", "lg"], help="Shows the error logs of this bot.")
 @commands.cooldown(1, 5, commands.BucketType.user)
 async def logs(ctx):
-    if logs:
+    if error_logs:
         logs_text = ""
-        for i, log in logs:
+        for i, log in error_logs:
             if i <= 20:
                 logs_text += log + "\n"
             else:

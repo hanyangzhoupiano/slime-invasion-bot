@@ -1,4 +1,5 @@
 import os
+import sys
 import discord
 import json
 import random
@@ -30,6 +31,7 @@ intents.messages = True
 default_prefixes = {"!"}
 prefixes = {}
 user_last_experience_time = {}
+logs = []
 
 bot = commands.Bot(command_prefix=lambda bot, message: data_functions.get_prefix(message.guild.id), intents=intents)
 
@@ -68,17 +70,14 @@ async def on_message(msg):
             description=f"An experience drop of {amount} has started! Type 'claim' to claim it before the time runs out!",
         ))
         try:
-            response = await bot.wait_for('message', check=lambda m: m.channel == msg.channel, timeout=10.0)
-            if response.content.lower() == "claim":
-                if not response.author.bot:
-                    await msg.channel.send(embed=discord.Embed(
-                        color=int("50B4E6", 16),
-                        title="Experience Drop",
-                        description=f"*{response.author.name}* was the first to claim the experience drop of {amount}!",
-                    ))
-                    data_functions.set_experience(response.author.id, data_functions.get_experience(ctx.author.id) + amount)
-                else:
-                    response = await bot.wait_for('message', check=lambda m: m.channel == msg.channel, timeout=10.0)
+            response = await bot.wait_for('message', check=lambda m: m.channel == msg.channel and response.content.lower() == "claim", timeout=10.0)
+            if not response.author.bot:
+                await msg.channel.send(embed=discord.Embed(
+                    color=int("50B4E6", 16),
+                    title="Experience Drop",
+                    description=f"*{response.author.name}* was the first to claim the experience drop of {amount}!",
+                ))
+                data_functions.set_experience(response.author.id, data_functions.get_experience(response.author.id) + amount)
         except asyncio.TimeoutError:
             await msg.channel.send(embed=discord.Embed(
                 color=int("FA3939", 16),
@@ -104,6 +103,10 @@ async def on_message(msg):
             description=f"Congratulations! The user *'{msg.author.name}'* has leveled up to **Level {data_functions.get_levels(user_id)}**!",
         ).set_author(name=msg.author.name, icon_url=msg.author.avatar.url))
     await bot.process_commands(msg)
+
+@bot.event
+async def on_command_error(ctx, error):
+    logs.append(error)
 
 bot.remove_command("help")
 @bot.command(help="Shows this help message.", aliases=["commands", "cmds"])
@@ -321,6 +324,26 @@ async def set_messages(ctx, amount: int = None):
         await ctx.send(embed=discord.Embed(
             color=int("FA3939", 16),
             description="You do not have permission to use this command.\n**Missing permissions:** *Manage Server*",
+        ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
+
+@bot.command(aliases=["lgs", "lg"], help="Shows the error logs of this bot.")
+@commands.cooldown(1, 5, commands.BucketType.user)
+async def logs(ctx):
+    if logs:
+        logs_text = ""
+        for i, log in logs:
+            if i <= 20:
+                logs_text += log + "\n"
+            else:
+                break
+        await ctx.send(embed=discord.Embed(
+            color=int("50B4E6", 16),
+            description=f"**Logs:**\n{logs_text}",
+        ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
+    else:
+        await ctx.send(embed=discord.Embed(
+            color=int("FA3939", 16),
+            description=f"No logs to show!",
         ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
 
 bot.run(os.getenv("DISCORD_TOKEN"))

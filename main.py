@@ -70,7 +70,7 @@ async def on_message(msg):
             description=f"An experience drop of {amount} has started! Type 'claim' to claim it before the time runs out!",
         ))
         try:
-            response = await bot.wait_for('message', check=lambda m: m.channel == msg.channel and response.content.lower() == "claim", timeout=10.0)
+            response = await bot.wait_for('message', check=lambda m: m.channel == msg.channel and msg.content.lower() == "claim", timeout=10.0)
             if not response.author.bot:
                 await msg.channel.send(embed=discord.Embed(
                     color=int("50B4E6", 16),
@@ -84,7 +84,6 @@ async def on_message(msg):
                 title="Experience Drop",
                 description="Nobody claimed the experience drop in time.",
             ))
-            return
     
     if user_id in user_last_experience_time:
         time_diff = current_time - user_last_experience_time[user_id]

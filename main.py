@@ -81,8 +81,9 @@ async def on_message(msg):
         except asyncio.TimeoutError:
             await msg.channel.send(embed=discord.Embed(
                 color=int("FA3939", 16),
+                title="Experience Drop",
                 description="Nobody claimed the experience drop in time.",
-            ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
+            ))
             return
     
     if user_id in user_last_experience_time:
@@ -253,11 +254,11 @@ async def experience_drop(ctx):
                 ))
                 data_functions.set_experience(response.author.id, data_functions.get_experience(ctx.author.id) + amount)
         except asyncio.TimeoutError:
-            await ctx.send(embed=discord.Embed(
+            await msg.channel.send(embed=discord.Embed(
                 color=int("FA3939", 16),
+                title="Experience Drop",
                 description="Nobody claimed the experience drop in time.",
-            ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
-            return
+            ))
     else:
         await ctx.send(embed=discord.Embed(
             color=int("FA3939", 16),

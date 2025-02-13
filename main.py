@@ -7,7 +7,6 @@ import asyncio
 import math
 import time
 from discord.ext import commands
-from discord import app_commands
 from threading import Thread
 
 import data_functions
@@ -37,8 +36,6 @@ error_logs = []
 bot = commands.Bot(command_prefix=lambda bot, message: data_functions.get_prefix(message.guild.id), intents=intents)
 
 data_functions.setup_database()
-
-tree = app_commands.CommandTree(bot)
 
 @bot.event
 async def on_ready():
@@ -136,7 +133,7 @@ async def view_prefix(ctx):
         description=f"The current prefix is '{data_functions.get_prefix(ctx.guild.id)}'.",
     ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
 
-@tree.command(name="view_prefix", description="Shows the current prefix of this bot.")
+@bot.tree.command(name="view_prefix", description="Shows the current prefix of this bot.")
 async def slash_view_prefix(interaction: discord.Interaction):
     embed = discord.Embed(
         color=int("50B4E6", 16),

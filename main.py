@@ -14,9 +14,6 @@ import data_functions
 
 from flask import Flask
 
-# Create a command tree for slash commands
-tree = app_commands.CommandTree(bot)
-
 # Create a simple web server
 app = Flask(__name__)
 @app.route('/')
@@ -40,6 +37,8 @@ error_logs = []
 bot = commands.Bot(command_prefix=lambda bot, message: data_functions.get_prefix(message.guild.id), intents=intents)
 
 data_functions.setup_database()
+
+tree = app_commands.CommandTree(bot)
 
 @bot.event
 async def on_ready():

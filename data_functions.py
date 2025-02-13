@@ -1,4 +1,4 @@
-import asyncpg
+import psycopg2
 import os
 
 DATABASE_URL = os.getenv("DATABASE_URL")
@@ -8,7 +8,7 @@ if DATABASE_URL is None:
 
 async def connect():
     try:
-        return await asyncpg.connect(DATABASE_URL)
+        return await psycopg2.connect(DATABASE_URL)
     except Exception as e:
         return None
 

@@ -5,11 +5,12 @@ DATABASE_URL = os.getenv("DATABASE_URL")
 
 if DATABASE_URL is None:
     raise ValueError("DATABASE_URL not found!")
-
-async def connect():
+def connect():
+    """Initialize the database connection."""
     try:
-        return await psycopg2.connect(DATABASE_URL)
+        return psycopg2.connect(DATABASE_URL, sslmode="require")
     except Exception as e:
+        print(f"Database connection error: {e}")
         return None
 
 def setup_database():

@@ -7,11 +7,15 @@ import asyncio
 import math
 import time
 from discord.ext import commands
+from discord import app_commands
 from threading import Thread
 
 import data_functions
 
 from flask import Flask
+
+# Create a command tree for slash commands
+tree = app_commands.CommandTree(bot)
 
 # Create a simple web server
 app = Flask(__name__)
@@ -132,6 +136,14 @@ async def view_prefix(ctx):
         color=int("50B4E6", 16),
         description=f"The current prefix is '{data_functions.get_prefix(ctx.guild.id)}'.",
     ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
+
+@tree.command(name="view_prefix", description="Shows the current prefix of this bot.")
+async def slash_view_prefix(interaction: discord.Interaction):
+    embed = discord.Embed(
+        color=int("50B4E6", 16),
+        description=f"The current prefix is '{data_functions.get_prefix(bot.get_guild(1292978415552434196))}'."
+    ).set_author(name=interaction.user.name, icon_url=interaction.user.avatar.url)
+    await interaction.response.send_message(embed=embed, ephemeral=True)
 
 @bot.command(aliases=["sp", "newp"], help="Changes the prefix of this bot.")
 @commands.cooldown(2, 10, commands.BucketType.user)

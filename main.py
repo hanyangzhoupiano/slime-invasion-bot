@@ -39,6 +39,10 @@ data_functions.setup_database()
 
 @bot.event
 async def on_ready():
+    try:
+        synced = await bot.tree.sync()
+    except:
+        pass
     if not bot.get_guild(1292978415552434196):
         await bot.close()
     else:
@@ -342,7 +346,7 @@ async def set_messages(ctx, amount: int = None):
 async def logs(ctx):
     if error_logs:
         logs_text = ""
-        for i, log in error_logs:
+        for i, log in enumerate(error_logs):
             if i <= 20:
                 logs_text += log + "\n"
             else:

@@ -1,16 +1,15 @@
-import psycopg2
+import asyncpg
 import os
 
 DATABASE_URL = os.getenv("DATABASE_URL")
 
 if DATABASE_URL is None:
     raise ValueError("DATABASE_URL not found!")
-def connect():
-    """Initialize the database connection."""
+
+async def connect():
     try:
-        return psycopg2.connect(DATABASE_URL, sslmode="require")
+        return await asyncpg.connect(DATABASE_URL)
     except Exception as e:
-        print(f"Database connection error: {e}")
         return None
 
 def setup_database():

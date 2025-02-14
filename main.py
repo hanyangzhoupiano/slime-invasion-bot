@@ -255,9 +255,9 @@ async def view_prefix(ctx):
 async def slash_view_prefix(interaction: discord.Interaction):
     embed = discord.Embed(
         color=int("50B4E6", 16),
-        description=f"The current prefix is '{data_functions.get_prefix(bot.get_guild(1292978415552434196))}'."
+        description=f"The current prefix is '{data_functions.get_prefix(1292978415552434196)}'."
     ).set_author(name=interaction.user.name, icon_url=interaction.user.avatar.url)
-    await interaction.response.send_message(embed=embed, ephemeral=True)
+    await interaction.response.send_message(embed=embed)
 
 @bot.command(aliases=["sp", "newp"], help="Changes the prefix of this bot.")
 @commands.cooldown(2, 10, commands.BucketType.user)

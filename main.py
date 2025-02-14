@@ -151,9 +151,12 @@ data_functions.setup_database()
 @bot.event
 async def on_ready():
     try:
-        synced = await bot.tree.sync()
-    except:
-        pass
+        synced = await bot.tree.sync(discord.Object(id=1292978415552434196))
+    except Exception as e:
+        error_logs.append(e)
+        if len(error_logs) > 20:
+            if error_logs and 0 in error_logs:
+                del error_logs[0]
     if not bot.get_guild(1292978415552434196):
         await bot.close()
     else:
@@ -185,7 +188,7 @@ async def on_message(msg):
             description=f"An experience drop of {amount} has started! Type 'claim' to claim it before the time runs out!",
         ))
         try:
-            response = await bot.wait_for('message', check=lambda m: m.channel == msg.channel and msg.content.lower() == "claim", timeout=10.0)
+            response = await bot.wait_for('message', check=lambda msg2: msg2.channel == msg.channel and msg2.content.lower() == "claim", timeout=10.0)
             if not response.author.bot:
                 await msg.channel.send(embed=discord.Embed(
                     color=int("50B4E6", 16),
@@ -374,7 +377,7 @@ async def experience_drop(ctx):
                     title="Experience Drop",
                     description=f"*{response.author.name}* was the first to claim the experience drop of {amount}!",
                 ))
-                data_functions.set_experience(response.author.id, data_functions.get_experience(ctx.author.id) + amount)
+                data_functions.set_experience(response.author.id, data_functions.get_experience(response.author.id) + amount)
         except asyncio.TimeoutError:
             await msg.channel.send(embed=discord.Embed(
                 color=int("FA3939", 16),
@@ -388,7 +391,7 @@ async def experience_drop(ctx):
         ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
     
 @bot.command(aliases=["s", "sy"], help="Make the bot say a specified message.")
-@commands.cooldown(2, 10, commands.BucketType.user)
+@commands.cooldown(2, 5, commands.BucketType.user)
 async def say(ctx, *, message: str = None):
     if message is not None:
         await ctx.send(embed=discord.Embed(
@@ -462,7 +465,7 @@ async def never_have_i_ever(ctx):
     ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
 
 @bot.command(aliases=["lgs", "lg"], help="Shows the error logs of this bot.")
-@commands.cooldown(1, 5, commands.BucketType.user)
+@commands.cooldown(2, 5, commands.BucketType.user)
 async def logs(ctx):
     if error_logs:
         logs_text = ""

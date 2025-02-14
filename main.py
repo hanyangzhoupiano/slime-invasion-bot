@@ -177,7 +177,7 @@ async def on_message(msg):
     if msg.author.bot:
         return
 
-    if math.floor(random.random() * 100 + 1) < 5:
+    if math.floor(random.random() * 100 + 1) <= 5:
         amount = random.randint(50, 200)
         await msg.channel.send(embed=discord.Embed(
             color=int("50B4E6", 16),

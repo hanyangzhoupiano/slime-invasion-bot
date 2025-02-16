@@ -262,9 +262,9 @@ async def slash_view_prefix(interaction: discord.Interaction):
         await interaction.followup.send(embed=embed)
     except Exception as e:
         error_logs.append(e)
-            if len(error_logs) > 20:
-                if error_logs and 0 in error_logs:
-                    del error_logs[0]
+        if len(error_logs) > 20:
+            if error_logs and 0 in error_logs:
+                del error_logs[0]
 
 @bot.command(aliases=["sp", "newp"], help="Changes the prefix of this bot.")
 @commands.cooldown(2, 10, commands.BucketType.user)
@@ -307,9 +307,9 @@ async def slash_set_prefix(interaction: discord.Interaction, new_prefix: str = N
                 ).set_author(name=interaction.member.name, icon_url=interaction.member.avatar.url))
             except Exception as e:
                 error_logs.append(e)
-                    if len(error_logs) > 20:
-                        if error_logs and 0 in error_logs:
-                            del error_logs[0]
+                if len(error_logs) > 20:
+                    if error_logs and 0 in error_logs:
+                        del error_logs[0]
     else:
         await ctx.send(embed=discord.Embed(
             color=int("FA3939", 16),

@@ -251,31 +251,72 @@ async def view_prefix(ctx):
         description=f"The current prefix is '{data_functions.get_prefix(ctx.guild.id)}'.",
     ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
 
-@bot.tree.command(name="view_prefix", description="Shows the current prefix of this bot.")
+@bot.tree.command(name="viewprefix", description="Shows the current prefix of this bot.")
 async def slash_view_prefix(interaction: discord.Interaction):
-    embed = discord.Embed(
-        color=int("50B4E6", 16),
-        description=f"The current prefix is '{data_functions.get_prefix(1292978415552434196)}'."
-    ).set_author(name=interaction.user.name, icon_url=interaction.user.avatar.url)
-    await interaction.response.send_message(embed=embed)
+    try:
+        await interaction.response.defer()
+        embed = discord.Embed(
+            color=int("50B4E6", 16),
+            description=f"The current prefix is '{data_functions.get_prefix(interaction.guild)}'."
+        ).set_author(name=interaction.member.name, icon_url=interaction.member.avatar.url)
+        await interaction.followup.send((embed=embed)
+    except Exception as e:
+        error_logs.append(e)
+            if len(error_logs) > 20:
+                if error_logs and 0 in error_logs:
+                    del error_logs[0]
 
 @bot.command(aliases=["sp", "newp"], help="Changes the prefix of this bot.")
 @commands.cooldown(2, 10, commands.BucketType.user)
 async def set_prefix(ctx, new_prefix: str = None):
-    if ctx.author.guild_permissions.manage_guild and new_prefix is not None:
-        if len(new_prefix) > 32:
+    if ctx.author.guild_permissions.manage_guild:
+        if new_prefix is not None:
+            if len(new_prefix) > 32:
+                await ctx.send(embed=discord.Embed(
+                    color=int("50B4E6", 16),
+                    description="The prefix chosen is too long. Please try again with a shorter prefix.",
+                ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
+                return
+            data_functions.set_prefix(ctx.guild.id, new_prefix)
             await ctx.send(embed=discord.Embed(
                 color=int("50B4E6", 16),
-                description="The prefix chosen is too long. Please try again with a shorter prefix.",
+                description=f"The prefix has successfully been changed to '{new_prefix}'.",
             ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
-            return
-        data_functions.set_prefix(ctx.guild.id, new_prefix)
+    else:
         await ctx.send(embed=discord.Embed(
-            color=int("50B4E6", 16),
-            description=f"The prefix has been changed to '{new_prefix}'.",
+            color=int("FA3939", 16),
+            description="You do not have permission to use this command.\n**Missing permissions:** *Manage Server*",
         ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
+
+@bot.tree.command(name="setprefix", description="Sets the current prefix of this bot.")
+async def slash_set_prefix(interaction: discord.Interaction, new_prefix: str = None):
+    if interaction.member.guild_permissions.manage_guild:
+        if new_prefix is not None:
+            try:
+                await interaction.response.defer()
+                if len(new_prefix) > 32:
+                    await interaction.followup.send(embed=discord.Embed(
+                        color=int("50B4E6", 16),
+                        description="The prefix chosen is too long. Please try again with a shorter prefix.",
+                    ).set_author(name=interaction.member.name, icon_url=interaction.member.avatar.url))
+                    return
+                data_functions.set_prefix(ctx.guild.id, new_prefix)
+                await interaction.followup.send(embed=discord.Embed(
+                    color=int("50B4E6", 16),
+                    description=f"The prefix has successfully been changed to '{new_prefix}'.",
+                ).set_author(name=interaction.member.name, icon_url=interaction.member.avatar.url))
+            except Exception as e:
+                error_logs.append(e)
+                    if len(error_logs) > 20:
+                        if error_logs and 0 in error_logs:
+                            del error_logs[0]
+    else:
+        await ctx.send(embed=discord.Embed(
+            color=int("FA3939", 16),
+            description="You do not have permission to use this command.\n**Missing permissions:** *Manage Server*",
+        ).set_author(name=interaction.member.name, icon_url=interaction.member.avatar.url))
         
-@bot.command(aliases=["vs", "msgs", "lvls", "stats"], help="Shows the statistics of a user, such as levels, experience, and messages.")
+@bot.command(aliases=["vs", "msgs", "lvls", "stats"], help="Shows the statistics of a user.")
 @commands.cooldown(2, 10, commands.BucketType.user)
 async def view_stats(ctx, name: str = None):
     if not ctx.author.bot:
@@ -354,6 +395,32 @@ async def view_stats(ctx, name: str = None):
             experience_left = (25*(level**2)-(25*level)+100) - experience
     
             await ctx.send(embed=discord.Embed(
+                color=int("50B4E6", 16),
+                title="Statistics",
+                description=f"**Level:** {level}\n**Experience:** {experience}\n**Until Next Level:** {experience_left}\n**Messages:** {messages}\n**Server Join Date:** {user.joined_at.strftime('%m/%d/%Y').lstrip('0').replace('/0', '/')}\n**Role:** {user.top_role}",
+            ).set_author(name=user.name, icon_url=user.avatar.url))
+
+@bot.tree.command(name="viewstats",, description="Shows the statistics of a user.")
+async def slash_view_stats(interaction: discord.Interaction, member: discord.Member = None):
+    if not ctx.author.bot:
+        await interaction.response.defer()
+        user = None
+        if member is None:
+            user = interaction.member
+        else:
+            user = member
+        if user is not None:
+            await interaction.followup.send(embed=discord.Embed(
+                color=int("50B4E6", 16),
+                description="**Retrieving data...**",
+            ).set_author(name=user.name, icon_url=user.avatar.url))
+    
+            messages = data_functions.get_messages(user.id)
+            level = data_functions.get_levels(user.id)
+            experience = data_functions.get_experience(user.id)
+            experience_left = (25*(level**2)-(25*level)+100) - experience
+    
+            await interaction.followup.send(embed=discord.Embed(
                 color=int("50B4E6", 16),
                 title="Statistics",
                 description=f"**Level:** {level}\n**Experience:** {experience}\n**Until Next Level:** {experience_left}\n**Messages:** {messages}\n**Server Join Date:** {user.joined_at.strftime('%m/%d/%Y').lstrip('0').replace('/0', '/')}\n**Role:** {user.top_role}",
@@ -455,8 +522,8 @@ async def set_messages(ctx, amount: int = None):
             description="You do not have permission to use this command.\n**Missing permissions:** *Manage Server*",
         ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
 
-@bot.command(aliases=["nhie", "nhe"], help="Gives a random 'Never Have I Ever' question.")
-@commands.cooldown(2, 5, commands.BucketType.user)
+@bot.command(aliases=["nhie"], help="Gives a random 'Never Have I Ever' question.")
+@commands.cooldown(2, 3, commands.BucketType.user)
 async def never_have_i_ever(ctx):
     question = random.choice(never_have_i_ever_questions)
     await ctx.send(embed=discord.Embed(
@@ -465,23 +532,29 @@ async def never_have_i_ever(ctx):
     ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
 
 @bot.command(aliases=["lgs", "lg"], help="Shows the error logs of this bot.")
-@commands.cooldown(2, 5, commands.BucketType.user)
+@commands.cooldown(2, 3, commands.BucketType.user)
 async def logs(ctx):
-    if error_logs:
-        logs_text = ""
-        for i, log in enumerate(error_logs):
-            if i <= 20:
-                logs_text += log + "\n"
-            else:
-                break
-        await ctx.send(embed=discord.Embed(
-            color=int("50B4E6", 16),
-            description=f"**Logs:**\n{logs_text}",
-        ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
+    if ctx.author.guild_permissions.manage_guild:
+        if error_logs:
+            logs_text = ""
+            for i, log in enumerate(error_logs):
+                if i <= 20:
+                    logs_text += log + "\n"
+                else:
+                    break
+            await ctx.send(embed=discord.Embed(
+                color=int("50B4E6", 16),
+                description=f"**Logs:**\n{logs_text}",
+            ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
+        else:
+            await ctx.send(embed=discord.Embed(
+                color=int("FA3939", 16),
+                description=f"No logs to show!",
+            ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
     else:
         await ctx.send(embed=discord.Embed(
             color=int("FA3939", 16),
-            description=f"No logs to show!",
+            description="You do not have permission to use this command.\n**Missing permissions:** *Manage Server*",
         ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
 
 bot.run(os.getenv("DISCORD_TOKEN"))

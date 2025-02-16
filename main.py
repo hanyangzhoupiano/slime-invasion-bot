@@ -36,8 +36,8 @@ never_have_i_ever_questions = [
     "Never have I ever broken a bone.",
     "Never have I ever skipped a class.",
     "Never have I ever stayed up all night.",
-    "Never have I ever gotten lost in school.",
-    "Never have I ever fallen asleep in class.",
+    "Never have I ever gotten lost in a mall.",
+    "Never have I ever missed an important event.",
     "Never have I ever eaten something off the floor.",
     "Never have I ever been in a talent show.",
     "Never have I ever forgotten my homework.",
@@ -56,7 +56,7 @@ never_have_i_ever_questions = [
     "Never have I ever lost my lunch money.",
     "Never have I ever been stung by a bee.",
     "Never have I ever built a fort out of blankets.",
-    "Never have I ever pretended to be sick to skip school.",
+    "Never have I ever peed in a pool.",
     "Never have I ever forgotten a friend's birthday.",
     "Never have I ever laughed at the wrong moment.",
     "Never have I ever worn mismatched socks.",
@@ -140,7 +140,7 @@ never_have_i_ever_questions = [
     "Never have I ever played a board game all the way through.",
     "Never have I ever accidentally ruined a surprise.",
     "Never have I ever lost a piece of a puzzle.",
-    "Never have I ever accidentally broken a school rule.",
+    "Never have I ever climbed a mountain.",
     "Never have I ever worn sunglasses indoors."
 ]
 
@@ -181,11 +181,13 @@ async def on_message(msg):
         return
 
     if math.floor(random.random() * 100 + 1) <= 5:
-        amount = random.randint(50, 200)
+        random_integer = random.randint(1, 100)
+        type = "Common" if random_integer < 60 else "Rare" if random_integer < 80 else "Epic" if random_integer < 90 else "Legendary" if random_integer < 95 else "Mythical" if random_integer < 97 else "Celestial" 
+        amount = random.randint(60, 150) if random_integer < 60 else random.randint(120, 250) if random_integer < 80 else random.randint(240, 380) if random_integer < 90 else random.randint(350, 520) if random_integer < 95 else random.randint(510, 800) if random_integer < 97 else random.randint(750, 1200) 
         await msg.channel.send(embed=discord.Embed(
             color=int("50B4E6", 16),
             title="Experience Drop",
-            description=f"An experience drop of {amount} has started! Type 'claim' to claim it before the time runs out!",
+            description=f"An **{type}** Experience Drop of {amount} has started! Type 'claim' to claim it before the time runs out!",
         ))
         try:
             response = await bot.wait_for('message', check=lambda msg2: msg2.channel == msg.channel and msg2.content.lower() == "claim", timeout=10.0)
@@ -193,7 +195,7 @@ async def on_message(msg):
                 await msg.channel.send(embed=discord.Embed(
                     color=int("50B4E6", 16),
                     title="Experience Drop",
-                    description=f"*{response.author.name}* was the first to claim the experience drop of {amount}!",
+                    description=f"*{response.author.name}* was the first to claim the **{type}** Experience Drop of {amount}!",
                 ))
                 data_functions.set_experience(response.author.id, data_functions.get_experience(response.author.id) + amount)
         except asyncio.TimeoutError:
@@ -427,14 +429,16 @@ async def slash_view_stats(interaction: discord.Interaction, member: discord.Mem
             ).set_author(name=user.name, icon_url=user.avatar.url))
 
 @bot.command(aliases=["expdrop", "expd", "ed"], help="Create an experience drop in a channel.")
-@commands.cooldown(1, 5, commands.BucketType.user)
+@commands.cooldown(2, 5, commands.BucketType.user)
 async def experience_drop(ctx):
     if ctx.author.guild_permissions.manage_guild:
-        amount = random.randint(50, 200)
+        random_integer = random.randint(1, 100)
+        type = "Common" if random_integer < 60 else "Rare" if random_integer < 80 else "Epic" if random_integer < 90 else "Legendary" if random_integer < 95 else "Mythical" if random_integer < 97 else "Celestial" 
+        amount = random.randint(60, 150) if random_integer < 60 else random.randint(120, 250) if random_integer < 80 else random.randint(240, 380) if random_integer < 90 else random.randint(350, 520) if random_integer < 95 else random.randint(510, 800) if random_integer < 97 else random.randint(750, 1200) 
         await ctx.send(embed=discord.Embed(
             color=int("50B4E6", 16),
             title="Experience Drop",
-            description=f"An experience drop of {amount} has started! Type 'claim' to claim it before the time runs out!",
+            description=f"An **{type}** Experience Drop of {amount} has started! Type 'claim' to claim it before the time runs out!",
         ))
         try:
             response = await bot.wait_for('message', check=lambda msg: msg.channel == ctx.channel and msg.content.lower() == "claim", timeout=10.0)
@@ -442,7 +446,7 @@ async def experience_drop(ctx):
                 await ctx.send(embed=discord.Embed(
                     color=int("50B4E6", 16),
                     title="Experience Drop",
-                    description=f"*{response.author.name}* was the first to claim the experience drop of {amount}!",
+                    description=f"*{response.author.name}* was the first to claim the **{type}** Experience Drop of {amount}!",
                 ))
                 data_functions.set_experience(response.author.id, data_functions.get_experience(response.author.id) + amount)
         except asyncio.TimeoutError:

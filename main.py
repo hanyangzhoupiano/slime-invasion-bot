@@ -259,7 +259,7 @@ async def slash_view_prefix(interaction: discord.Interaction):
             color=int("50B4E6", 16),
             description=f"The current prefix is '{data_functions.get_prefix(interaction.guild)}'."
         ).set_author(name=interaction.member.name, icon_url=interaction.member.avatar.url)
-        await interaction.followup.send((embed=embed)
+        await interaction.followup.send(embed=embed)
     except Exception as e:
         error_logs.append(e)
             if len(error_logs) > 20:

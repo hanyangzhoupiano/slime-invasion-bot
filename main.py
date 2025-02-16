@@ -34,7 +34,7 @@ user_last_experience_time = {}
 error_logs = []
 never_have_i_ever_questions = [
     "Never have I ever broken a bone.",
-    "Never have I ever skipped a class.",
+    "Never have I ever gotten a papercut from a book.",
     "Never have I ever stayed up all night.",
     "Never have I ever gotten lost in a mall.",
     "Never have I ever missed an important event.",
@@ -259,7 +259,7 @@ async def slash_view_prefix(interaction: discord.Interaction):
         await interaction.response.defer()
         embed = discord.Embed(
             color=int("50B4E6", 16),
-            description=f"The current prefix is '{data_functions.get_prefix(interaction.guild)}'."
+            description=f"The current prefix is '{data_functions.get_prefix(interaction.guild.id)}'."
         ).set_author(name=interaction.member.name, icon_url=interaction.member.avatar.url)
         await interaction.followup.send(embed=embed)
     except Exception as e:

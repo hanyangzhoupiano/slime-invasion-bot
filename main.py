@@ -400,7 +400,7 @@ async def view_stats(ctx, name: str = None):
                 description=f"**Level:** {level}\n**Experience:** {experience}\n**Until Next Level:** {experience_left}\n**Messages:** {messages}\n**Server Join Date:** {user.joined_at.strftime('%m/%d/%Y').lstrip('0').replace('/0', '/')}\n**Role:** {user.top_role}",
             ).set_author(name=user.name, icon_url=user.avatar.url))
 
-@bot.tree.command(name="viewstats",, description="Shows the statistics of a user.")
+@bot.tree.command(name="viewstats", description="Shows the statistics of a user.")
 async def slash_view_stats(interaction: discord.Interaction, member: discord.Member = None):
     if not ctx.author.bot:
         await interaction.response.defer()

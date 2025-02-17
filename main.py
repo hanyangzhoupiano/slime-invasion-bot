@@ -586,7 +586,7 @@ async def set_levels(ctx, amount: int = None, name: str = None):
             user = ctx.author 
         if str(amount).isnumeric() and user is not None:
             if amount <= 1000:
-                data_functions.set_levels(ctx.author.id, int(amount))
+                data_functions.set_levels(user.id, int(amount))
                 await ctx.send(embed=discord.Embed(
                     color=int("50B4E6", 16),
                     description=f"Successfully set {user.name}'s levels to {amount}."

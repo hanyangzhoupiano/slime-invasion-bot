@@ -485,6 +485,7 @@ async def fight(ctx):
         level_difference = creature_level - user_level
         
         reward = (random.randint(20, 50) * difficulty) + (random.randint(20, 50) * creature_level * mutation * super_mutation)
+        risk = math.ceil(random.randint(20, 50) * (difficulty / 2))
         
         if level_difference > 0:
             win_chance = math.floor(win_chance - (10 * math.log1p(level_difference)) - 5)
@@ -497,7 +498,7 @@ async def fight(ctx):
         encounter_message = (
             f"You encountered a **{mutated_text}{creature_type} (Level {creature_level})** in the wild."
             f" Choose an option below:\n1. Fight\n2. Escape\n\n"
-            f"*Your Level: {user_level}\nWin Chance: {win_chance}%\nDifficulty: {difficulty}/10*"
+            f"*Your Level: {user_level}\nWin Chance: {win_chance}%\nDifficulty: {difficulty}/10\nRisk: {risk}*"
         )
         
         await ctx.send(embed=discord.Embed(
@@ -514,12 +515,12 @@ async def fight(ctx):
                         color=int("50B4E6", 16),
                         description=f"You defeated the {mutated_text}{creature_type} and gained {reward} experience!"
                     ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
-                    
                     data_functions.set_experience(ctx.author.id, data_functions.get_experience(ctx.author.id) + reward)
                 else:
                     await ctx.send(embed=discord.Embed(
                         color=int("FA3939", 16),
-                        description=f"You lost to the {mutated_text}{creature_type}."
+                        description=f"You got defeated by the {mutated_text}{creature_type} and lost {risk} experience."
+                        data_functions.set_experience(ctx.author.id, math.max((data_functions.get_experience(ctx.author.id) - risk), 0))
                     ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
             elif "2" in response.content.lower() or "escape" in response.content.lower():
                 await ctx.send(embed=discord.Embed(

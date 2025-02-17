@@ -464,39 +464,56 @@ async def experience_drop(ctx):
 @bot.command(aliases=["fgt"], help="Fight against a creature for rewards.")
 async def fight(ctx):
     if not ctx.author.bot:
+        # Random difficulty and mutation chance
         difficulty = random.randint(1, 10)
         mutated = (random.randint(1, 10) <= 2)
-        creature_types = ["Zombie", "Goblin", "Elf", "Angel", "Demon", "Warrior", "Knight", "Slime"]
+        
+        creature_type = random.choice(["Zombie", "Goblin", "Elf", "Angel", "Demon", "Warrior", "Knight", "Slime"])
         random_integer = random.randint(1, 100)
         win_chance = 60
+        
         creature_level = random.randint(1, 5) if random_integer < 60 else random.randint(3, 10) if random_integer < 80 else random.randint(8, 18) if random_integer < 90 else random.randint(17, 36) if random_integer < 95 else random.randint(32, 65) if random_integer < 98 else random.randint(60, 120)
         creature_level *= difficulty
+        
         user_level = data_functions.get_levels(ctx.author.id)
         level_difference = creature_level - user_level
         mutation = random.randint(2, 5) if mutated else 1
+        
         reward = random.randint(20, 50) * creature_level * difficulty * mutation
         if level_difference > 0:
             win_chance = math.floor(win_chance - (10 * math.log1p(level_difference)) - 5)
         else:
             win_chance = math.floor(win_chance + (10 * math.log1p(abs(level_difference))) + 5)
+        
         win_chance = max(5, min(95, win_chance))
+        
+        mutated_text = "Mutated " if mutated else ""
+        encounter_message = (
+            f"You encountered a **{mutated_text}{creature_type} (Level {creature_level})** in the wild."
+            f" Choose an option below:\n1. Fight\n2. Escape\n\n"
+            f"*Your Level: {user_level}\nWin Chance: {win_chance}%\nDifficulty: {difficulty}/10*"
+        )
+        
         await ctx.send(embed=discord.Embed(
-                color=int("50B4E6", 16),
-                description=f"You encountered a **{'Mutated' if mutated else ''} {random.choice(creature_types)} (Level {creature_level})** in the wild. Choose an option below:\n1. Fight\n2. Escape\n\n*Your Level: {user_level}\nWin Chance: {win_chance}%\nDifficulty: {difficulty}/10*"
-            ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
-        response = await bot.wait_for('message', check=lambda msg: msg.channel == ctx.channel and msg.author == ctx.author, timeout=10.0)
+            color=int("50B4E6", 16),
+            description=encounter_message
+        ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
+        
         try:
+            response = await bot.wait_for('message', check=lambda msg: msg.channel == ctx.channel and msg.author == ctx.author, timeout=10.0)
+            
             if "1" in response.content.lower() or "fight" in response.content.lower():
                 if random.randint(1, 100) <= win_chance:
                     await ctx.send(embed=discord.Embed(
                         color=int("50B4E6", 16),
-                        description=f"You defeated the creature and gained {reward} experience!"
+                        description=f"You defeated the {mutated_text}{creature_type} and gained {reward} experience!"
                     ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
+                    
                     data_functions.set_experience(ctx.author.id, data_functions.get_experience(ctx.author.id) + reward)
                 else:
                     await ctx.send(embed=discord.Embed(
                         color=int("FA3939", 16),
-                        description="You lost to the creature."
+                        description=f"You lost to the {mutated_text}{creature_type}."
                     ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
             elif "2" in response.content.lower() or "escape" in response.content.lower():
                 await ctx.send(embed=discord.Embed(
@@ -513,7 +530,6 @@ async def fight(ctx):
                 color=int("FA3939", 16),
                 description="The command has been canceled because you took too long to reply."
             ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
-            return
 
 @bot.command(aliases=["s", "sy"], help="Make the bot say a specified message.")
 async def say(ctx, *, message: str = None):

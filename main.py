@@ -472,9 +472,9 @@ async def fight(ctx):
         level_difference = creature_level - user_level
         reward = random.randint(20, 50) * creature_level
         if level_difference > 0:
-            win_chance = win_chance - (10 * math.log1p(level_difference))
+            win_chance = math.floor(win_chance - (10 * math.log1p(level_difference)))
         else:
-            win_chance = win_chance + (10 * math.log1p(abs(level_difference)))
+            win_chance = math.floor(win_chance + (10 * math.log1p(abs(level_difference))))
         win_chance = max(5, min(100, win_chance))
         await ctx.send(embed=discord.Embed(
                 color=int("50B4E6", 16),
@@ -482,7 +482,7 @@ async def fight(ctx):
             ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
         response = await bot.wait_for('message', check=lambda msg: msg.channel == ctx.channel and msg.author == ctx.author, timeout=10.0)
         try:
-            if "1" in response.lower() or "fight" in response.lower():
+            if "1" in response.content.lower() or "fight" in response.content.lower():
                 if random.randint(1, 100) <= win_chance:
                     await ctx.send(embed=discord.Embed(
                         color=int("50B4E6", 16),
@@ -494,7 +494,7 @@ async def fight(ctx):
                         color=int("FA3939", 16),
                         description="You lost to the creature."
                     ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
-            elif "2" in response.lower() or "escape" in response.lower():
+            elif "2" in response.content.lower() or "escape" in response.content.lower():
                 await ctx.send(embed=discord.Embed(
                     color=int("50B4E6", 16),
                     description="You escaped from the creature."
@@ -523,7 +523,7 @@ async def say(ctx, *, message: str = None):
 async def set_levels(ctx, amount: int = None):
     if amount is not None and ctx.author.guild_permissions.manage_guild:
         if str(amount).isnumeric():
-            if amount <= 10000:
+            if amount <= 1000:
                 data_functions.set_levels(ctx.author.id, int(amount))
                 await ctx.send(embed=discord.Embed(
                     color=int("50B4E6", 16),
@@ -532,7 +532,7 @@ async def set_levels(ctx, amount: int = None):
             else:
                 await ctx.send(embed=discord.Embed(
                     color=int("FA3939", 16),
-                    description="You can only set your levels to a maximum of 10000."
+                    description="You can only set your levels to a maximum of 1000."
                 ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
                 return
         else:
@@ -550,7 +550,7 @@ async def set_levels(ctx, amount: int = None):
 async def set_messages(ctx, amount: int = None):
     if amount is not None and ctx.author.guild_permissions.manage_guild:
         if str(amount).isnumeric():
-            if amount <= 20000:
+            if amount <= 10000:
                 data_functions.set_messages(ctx.author.id, int(amount))
                 await ctx.send(embed=discord.Embed(
                     color=int("50B4E6", 16),
@@ -559,7 +559,7 @@ async def set_messages(ctx, amount: int = None):
             else:
                 await ctx.send(embed=discord.Embed(
                     color=int("FA3939", 16),
-                    description="You can only set your messages to a maximum of 20000."
+                    description="You can only set your messages to a maximum of 10000."
                 ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
                 return
         else:

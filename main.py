@@ -463,8 +463,6 @@ async def experience_drop(ctx):
 
 @bot.command(aliases=["fgt"], help="Fight against a creature for rewards.")
 async def fight(ctx):
-    @bot.command(aliases=["fgt"], help="Fight against a creature for rewards.")
-async def fight(ctx):
     if not ctx.author.bot:
         difficulty = random.randint(1, 10)
         creature_type = random.choice(["Zombie", "Goblin", "Elf", "Angel", "Demon", "Warrior", "Knight", "Slime"])

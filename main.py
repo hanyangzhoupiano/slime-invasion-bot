@@ -247,7 +247,7 @@ async def help(ctx, command_name: str = None):
         await ctx.send(embed=discord.Embed(
             color=int("50B4E6", 16),
             description=f"{help_text}"
-        )).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
+        ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
 
 @bot.command(aliases=["vp", "viewp"], help="Shows the current prefix of this bot.")
 @commands.cooldown(2, 10, commands.BucketType.user)

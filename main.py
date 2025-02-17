@@ -546,19 +546,19 @@ async def fight(ctx):
                 if random.randint(1, 100) <= win_chance:
                     await ctx.send(embed=discord.Embed(
                         color=int("50B4E6", 16),
-                        description=f"You defeated the{' ' + size if size else ''}{' ' + mutation if mutation else ''} **{creature_type}** and gained {reward} experience!"
+                        description=f"You defeated the*{' ' + size if size else ''}{' ' + mutation if mutation else ''}* **{creature_type}** and gained {reward} experience!"
                     ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
                     data_functions.set_experience(ctx.author.id, data_functions.get_experience(ctx.author.id) + reward)
                 else:
                     await ctx.send(embed=discord.Embed(
                         color=int("FA3939", 16),
-                        description=f"You were defeated by the{' ' + size if size else ''}{' ' + mutation if mutation else ''} **{creature_type}** and lost {risk} experience."
+                        description=f"You were defeated by the*{' ' + size if size else ''}{' ' + mutation if mutation else ''}* **{creature_type}** and lost {risk} experience."
                     ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
                     data_functions.set_experience(ctx.author.id, max((data_functions.get_experience(ctx.author.id) - risk), 0))
             elif "2" in response.content.lower() or "escape" in response.content.lower():
                 await ctx.send(embed=discord.Embed(
                     color=int("50B4E6", 16),
-                    description=f"You escaped from the{' ' + size if size else ''}{' ' + mutation if mutation else ''} **{creature_type}**."
+                    description=f"You escaped from the*{' ' + size if size else ''}{' ' + mutation if mutation else ''}* **{creature_type}**."
                 ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
             else:
                 await ctx.send(embed=discord.Embed(

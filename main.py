@@ -465,11 +465,17 @@ async def experience_drop(ctx):
 async def fight(ctx):
     if not ctx.author.bot:
         difficulty = random.randint(1, 10)
-        mutated = (random.randint(1, 10) <= 2)
-        super_mutated = (random.randint(1, 20) <= 2) and not mutated
-        kinged = (random.randint(1, 100) <= 5) and not super_mutated
-        
         creature_type = random.choice(["Zombie", "Goblin", "Elf", "Angel", "Demon", "Warrior", "Knight", "Slime"])
+        mutations = {
+            "Large": random.randint(2, 4),
+            "Huge": random.randint(5, 8),
+            "Colossal": random.randint(9, 15),
+            "Possessed": random.randint(6, 10),
+            "Phantom": random.randint(14, 22),
+            "Ancient": random.randint(12, 18),
+            "Ethereal": random.randint(16, 30),
+            "Heavenly": random.randint(25, 50)
+        }
         random_integer = random.randint(1, 100)
         win_chance = 60
         
@@ -477,18 +483,15 @@ async def fight(ctx):
         creature_level += difficulty
         
         user_level = data_functions.get_levels(ctx.author.id)
-        mutation = random.randint(2, 5) if mutated else 1
-        super_mutation = random.randint(5, 20) if super_mutated and not mutated else 1
-        king = random.randint(20, 100) if kinged and not super_mutated else 1
-
-        creature_level *= mutation
-        creature_level *= super_mutation
-        creature_level *= king
+        mutation = random.choice(list(mutations.keys())) if random.randint(1, 5) == 1 else ""
+        if mutation is not None:
+            mutation_multiplier = mutations[mutation]
+            creature_level *= mutation_multiplier
 
         level_difference = creature_level - user_level
         
-        reward = (random.randint(20, 50) * difficulty) + (random.randint(20, 50) * creature_level * mutation * super_mutation * king)
-        risk = math.ceil(random.randint(20, 50) * (difficulty / 2))
+        reward = (random.randint(20, 50) * difficulty) + (random.randint(20, 50) * creature_level)
+        risk = math.ceil(random.randint(20, 50) * difficulty) + creature_level * 2
         
         if level_difference > 0:
             win_chance = math.floor(win_chance - (10 * math.log1p(level_difference)) - 5)
@@ -497,9 +500,8 @@ async def fight(ctx):
         
         win_chance = max(5, min(95, win_chance))
         
-        mutated_text = "Mutated " if mutated else "Super Mutated " if super_mutated else "King " if kinged else ""
         encounter_message = (
-            f"You encountered a **{mutated_text}{creature_type} (Level {creature_level})** in the wild."
+            f"You encountered a *{mutation}***{creature_type} (Level {creature_level})** in the wild."
             f" Choose an option below:\n1. Fight\n2. Escape\n\n"
             f"*Your Level: {user_level}\nWin Chance: {win_chance}%\nDifficulty: {difficulty}/10\nRisk: {risk}*"
         )
@@ -516,13 +518,13 @@ async def fight(ctx):
                 if random.randint(1, 100) <= win_chance:
                     await ctx.send(embed=discord.Embed(
                         color=int("50B4E6", 16),
-                        description=f"You defeated the {mutated_text}{creature_type} and gained {reward} experience!"
+                        description=f"You defeated the *{mutation}***{creature_type}** and gained {reward} experience!"
                     ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
                     data_functions.set_experience(ctx.author.id, data_functions.get_experience(ctx.author.id) + reward)
                 else:
                     await ctx.send(embed=discord.Embed(
                         color=int("FA3939", 16),
-                        description=f"You got defeated by the {mutated_text}{creature_type} and lost {risk} experience."
+                        description=f"You got defeated by the *{mutation}***{creature_type}** and lost {risk} experience."
                     ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
                     data_functions.set_experience(ctx.author.id, math.max((data_functions.get_experience(ctx.author.id) - risk), 0))
             elif "2" in response.content.lower() or "escape" in response.content.lower():

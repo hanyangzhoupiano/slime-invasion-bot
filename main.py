@@ -480,7 +480,7 @@ async def fight(ctx):
         if level_difference > 0:
             win_chance = math.floor((win_chance * (level_difference * 0.8)) + 5)
         elif level_difference < -5:
-            win_chance = math.floor(win_chance * (1.1^math.abs(level_difference*0.8)))
+            win_chance = math.floor(win_chance * (1.1 ** math.abs(level_difference*0.8)))
         await ctx.send(embed=discord.Embed(
                 color=int("50B4E6", 16),
                 description=f"You encountered a **{random.choice(creature_types)} (Level {creature_level})** in the wild. Choose an option below:\n1. Fight\n2. Escape\n\n*Your Level: {user_level}\nWin Chance: {win_chance}*"

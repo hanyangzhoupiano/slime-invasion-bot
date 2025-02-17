@@ -470,11 +470,11 @@ async def fight(ctx):
         creature_level = random.randint(1, 5) if random_integer < 60 else random.randint(3, 8) if random_integer < 80 else random.randint(7, 12) if random_integer < 90 else random.randint(11, 24) if random_integer < 95 else random.randint(21, 46) if random_integer < 98 else random.randint(80, 200)
         user_level = data_functions.get_levels(ctx.author.id)
         level_difference = creature_level - user_level
-        amount = random.randint(20, 50) * creature_level
+        reward = random.randint(20, 50) * creature_level
         if level_difference > 0:
-            win_chance = base_win_chance - (10 * math.log1p(level_difference))
+            win_chance = win_chance - (10 * math.log1p(level_difference))
         else:
-            win_chance = base_win_chance + (10 * math.log1p(abs(level_difference)))
+            win_chance = win_chance + (10 * math.log1p(abs(level_difference)))
         win_chance = max(5, min(100, win_chance))
         await ctx.send(embed=discord.Embed(
                 color=int("50B4E6", 16),
@@ -486,9 +486,9 @@ async def fight(ctx):
                 if random.randint(1, 100) <= win_chance:
                     await ctx.send(embed=discord.Embed(
                         color=int("50B4E6", 16),
-                        description="You defeated the creature and gained {amount} experience!"
+                        description="You defeated the creature and gained {reward} experience!"
                     ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
-                    data_functions.set_experience(response.author.id, data_functions.get_experience(response.author.id) + amount)
+                    data_functions.set_experience(response.author.id, data_functions.get_experience(response.author.id) + reward)
                 else:
                     await ctx.send(embed=discord.Embed(
                         color=int("FA3939", 16),

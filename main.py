@@ -153,7 +153,9 @@ async def on_ready():
     if not bot.get_guild(1292978415552434196):
         await bot.close()
     else:
-        await bot.tree.sync(discord.Object(id=1292978415552434196))
+        guild = discord.Object(id=1292978415552434196)
+        bot.tree.clear_commands(guild=guild)
+        await bot.tree.sync(guild)
         print(f"Bot is ready and connected to guild: {bot.guilds[0].name}")
 
 @bot.event

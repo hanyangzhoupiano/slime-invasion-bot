@@ -478,12 +478,13 @@ async def fight(ctx):
         level_difference = creature_level - user_level
         amount = random.randint(20, 50) * creature_level
         if level_difference > 0:
-            win_chance = math.floor((win_chance * (level_difference * 0.8)) + 5)
-        elif level_difference < -5:
-            win_chance = math.floor(win_chance * (1.1 ** math.abs(level_difference*0.8)))
+            win_chance = base_win_chance - (10 * math.log1p(level_difference))
+        else:
+            win_chance = base_win_chance + (10 * math.log1p(abs(level_difference)))
+        win_chance = max(5, min(100, win_chance))
         await ctx.send(embed=discord.Embed(
                 color=int("50B4E6", 16),
-                description=f"You encountered a **{random.choice(creature_types)} (Level {creature_level})** in the wild. Choose an option below:\n1. Fight\n2. Escape\n\n*Your Level: {user_level}\nWin Chance: {win_chance}*"
+                description=f"You encountered a **{random.choice(creature_types)} (Level {creature_level})** in the wild. Choose an option below:\n1. Fight\n2. Escape\n\n*Your Level: {user_level}\nWin Chance: {win_chance}%*"
             ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
         response = await bot.wait_for('message', check=lambda msg: msg.channel == ctx.channel and msg.author == ctx.author, timeout=10.0)
         try:

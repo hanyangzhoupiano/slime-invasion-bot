@@ -10,6 +10,7 @@ from discord.ext import commands
 from threading import Thread
 
 import data_functions
+import resources
 
 from flask import Flask
 
@@ -32,7 +33,8 @@ default_prefixes = {"!"}
 prefixes = {}
 user_last_experience_time = {}
 error_logs = []
-never_have_i_ever_questions = 
+never_have_i_ever_questions = resources.get_never_have_i_evers()
+brain_teasers = resources.get_brain_teasers()
 
 bot = commands.Bot(command_prefix=lambda bot, message: data_functions.get_prefix(message.guild.id), intents=intents)
 
@@ -347,7 +349,7 @@ async def experience_drop(ctx):
             description="You do not have permission to use this command.\n**Missing permissions:** *Manage Server*"
         ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
 
-@bot.command(aliases=["fgt"], help="Fight against a creature for rewards.")
+@bot.command(aliases=["f"], help="Fight against a creature for rewards.")
 async def fight(ctx):
     if not ctx.author.bot:
         difficulty = random.randint(1, 10)
@@ -707,6 +709,14 @@ async def never_have_i_ever(ctx):
     await ctx.send(embed=discord.Embed(
         color=int("50B4E6", 16),
         description=question
+    ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
+
+@bot.command(aliases=["bt"], help="Gives a random brain teaser.")
+async def brain_teaser(ctx):
+    brain_teaser = random.choice(brain_teasers)
+    await ctx.send(embed=discord.Embed(
+        color=int("50B4E6", 16),
+        description=brain_teaser
     ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
 
 @bot.command(aliases=["lgs", "lg"], help="Shows the error logs of this bot.")

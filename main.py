@@ -467,6 +467,7 @@ async def fight(ctx):
         difficulty = random.randint(1, 10)
         mutated = (random.randint(1, 10) <= 2)
         super_mutated = (random.randint(1, 20) <= 2) and not mutated
+        kinged = (random.randint(1, 100) <= 5) and not super_mutated
         
         creature_type = random.choice(["Zombie", "Goblin", "Elf", "Angel", "Demon", "Warrior", "Knight", "Slime"])
         random_integer = random.randint(1, 100)
@@ -478,13 +479,15 @@ async def fight(ctx):
         user_level = data_functions.get_levels(ctx.author.id)
         mutation = random.randint(2, 5) if mutated else 1
         super_mutation = random.randint(5, 20) if super_mutated and not mutated else 1
+        king = random.randint(20, 100) if kinged and not super_mutated else 1
 
         creature_level *= mutation
         creature_level *= super_mutation
+        creature_level *= king
 
         level_difference = creature_level - user_level
         
-        reward = (random.randint(20, 50) * difficulty) + (random.randint(20, 50) * creature_level * mutation * super_mutation)
+        reward = (random.randint(20, 50) * difficulty) + (random.randint(20, 50) * creature_level * mutation * super_mutation * king)
         risk = math.ceil(random.randint(20, 50) * (difficulty / 2))
         
         if level_difference > 0:
@@ -494,7 +497,7 @@ async def fight(ctx):
         
         win_chance = max(5, min(95, win_chance))
         
-        mutated_text = "Mutated " if mutated else "Super Mutated " if super_mutated else ""
+        mutated_text = "Mutated " if mutated else "Super Mutated " if super_mutated else "King " if kinged else ""
         encounter_message = (
             f"You encountered a **{mutated_text}{creature_type} (Level {creature_level})** in the wild."
             f" Choose an option below:\n1. Fight\n2. Escape\n\n"
@@ -520,8 +523,8 @@ async def fight(ctx):
                     await ctx.send(embed=discord.Embed(
                         color=int("FA3939", 16),
                         description=f"You got defeated by the {mutated_text}{creature_type} and lost {risk} experience."
-                        data_functions.set_experience(ctx.author.id, math.max((data_functions.get_experience(ctx.author.id) - risk), 0))
                     ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
+                    data_functions.set_experience(ctx.author.id, math.max((data_functions.get_experience(ctx.author.id) - risk), 0))
             elif "2" in response.content.lower() or "escape" in response.content.lower():
                 await ctx.send(embed=discord.Embed(
                     color=int("50B4E6", 16),

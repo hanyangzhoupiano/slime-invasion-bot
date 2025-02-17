@@ -462,10 +462,12 @@ async def experience_drop(ctx):
         ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
 
 @bot.command(aliases=["fgt"], help="Fight against a creature for rewards.")
-async def fight(ctx, difficulty: str = 1):
+async def fight(ctx, difficulty: str = "1"):
     if not ctx.author.bot:
         if not difficulty.isnumeric():
             difficulty = 1
+        else:
+            difficulty = int(difficulty)
         if difficulty > 10:
             difficulty = 10
         creature_types = ["Zombie", "Goblin", "Elf", "Angel", "Demon", "Warrior", "Knight", "Slime"]
@@ -493,7 +495,7 @@ async def fight(ctx, difficulty: str = 1):
                         color=int("50B4E6", 16),
                         description=f"You defeated the creature and gained {reward} experience!"
                     ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
-                    data_functions.set_experience(response.author.id, data_functions.get_experience(response.author.id) + reward)
+                    data_functions.set_experience(ctx.author.id, data_functions.get_experience(ctx.author.id) + reward)
                 else:
                     await ctx.send(embed=discord.Embed(
                         color=int("FA3939", 16),

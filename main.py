@@ -476,12 +476,13 @@ async def fight(ctx):
         creature_level += difficulty
         
         user_level = data_functions.get_levels(ctx.author.id)
-        level_difference = creature_level - user_level
         mutation = random.randint(2, 5) if mutated else 1
         super_mutation = random.randint(5, 20) if super_mutated and not mutated else 1
 
         creature_level *= mutation
         creature_level *= super_mutation
+
+        level_difference = creature_level - user_level
         
         reward = (random.randint(20, 50) * difficulty) + (random.randint(20, 50) * creature_level * mutation * super_mutation)
         

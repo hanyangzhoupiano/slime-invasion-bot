@@ -187,7 +187,7 @@ async def on_message(msg):
         await msg.channel.send(embed=discord.Embed(
             color=int("50B4E6", 16),
             title="Experience Drop",
-            description=f"An **{type}** Experience Drop of {amount} has started! Type 'claim' to claim it before the time runs out!"
+            description=f"A **{type}** Experience Drop of {amount} has started! Type 'claim' to claim it before the time runs out!"
         ))
         try:
             response = await bot.wait_for('message', check=lambda msg2: msg2.channel == msg.channel and msg2.content.lower() == "claim", timeout=10.0)
@@ -438,7 +438,7 @@ async def experience_drop(ctx):
         await ctx.send(embed=discord.Embed(
             color=int("50B4E6", 16),
             title="Experience Drop",
-            description=f"An **{type}** Experience Drop of {amount} has started! Type 'claim' to claim it before the time runs out!"
+            description=f"A **{type}** Experience Drop of {amount} has started! Type 'claim' to claim it before the time runs out!"
         ))
         try:
             response = await bot.wait_for('message', check=lambda msg: msg.channel == ctx.channel and msg.content.lower() == "claim", timeout=10.0)
@@ -462,14 +462,10 @@ async def experience_drop(ctx):
         ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
 
 @bot.command(aliases=["fgt"], help="Fight against a creature for rewards.")
-async def fight(ctx, difficulty: str = "1"):
+async def fight(ctx):
     if not ctx.author.bot:
-        if not difficulty.isnumeric():
-            difficulty = 1
-        else:
-            difficulty = int(difficulty)
-        if difficulty > 10:
-            difficulty = 10
+        difficulty = random.randint(1, 10)
+        mutated = (random.randint(1, 10) <= 2)
         creature_types = ["Zombie", "Goblin", "Elf", "Angel", "Demon", "Warrior", "Knight", "Slime"]
         random_integer = random.randint(1, 100)
         win_chance = 60
@@ -477,15 +473,16 @@ async def fight(ctx, difficulty: str = "1"):
         creature_level *= difficulty
         user_level = data_functions.get_levels(ctx.author.id)
         level_difference = creature_level - user_level
-        reward = random.randint(20, 50) * creature_level * difficulty
+        mutation = random.randint(2, 5) if mutated else 1
+        reward = random.randint(20, 50) * creature_level * difficulty * mutation
         if level_difference > 0:
-            win_chance = math.floor(win_chance - (5 * math.log1p(level_difference)) - 10)
+            win_chance = math.floor(win_chance - (10 * math.log1p(level_difference)) - 5)
         else:
-            win_chance = math.floor(win_chance + (5 * math.log1p(abs(level_difference))) + 10)
-        win_chance = max(5, min(100, win_chance))
+            win_chance = math.floor(win_chance + (10 * math.log1p(abs(level_difference))) + 5)
+        win_chance = max(5, min(95, win_chance))
         await ctx.send(embed=discord.Embed(
                 color=int("50B4E6", 16),
-                description=f"You encountered a **{random.choice(creature_types)} (Level {creature_level})** in the wild. Choose an option below:\n1. Fight\n2. Escape\n\n*Your Level: {user_level}\nWin Chance: {win_chance}%\nDifficulty: {difficulty}/10*"
+                description=f"You encountered a **{'Mutated' if mutated else ''} {random.choice(creature_types)} (Level {creature_level})** in the wild. Choose an option below:\n1. Fight\n2. Escape\n\n*Your Level: {user_level}\nWin Chance: {win_chance}%\nDifficulty: {difficulty}/10*"
             ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
         response = await bot.wait_for('message', check=lambda msg: msg.channel == ctx.channel and msg.author == ctx.author, timeout=10.0)
         try:

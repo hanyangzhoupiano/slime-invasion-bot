@@ -466,19 +466,25 @@ async def fight(ctx):
     if not ctx.author.bot:
         difficulty = random.randint(1, 10)
         mutated = (random.randint(1, 10) <= 2)
+        super_mutated = (random.randint(1, 20) <= 2) and not mutated
         
         creature_type = random.choice(["Zombie", "Goblin", "Elf", "Angel", "Demon", "Warrior", "Knight", "Slime"])
         random_integer = random.randint(1, 100)
         win_chance = 60
         
         creature_level = random.randint(1, 5) if random_integer < 60 else random.randint(3, 10) if random_integer < 80 else random.randint(8, 18) if random_integer < 90 else random.randint(17, 36) if random_integer < 95 else random.randint(32, 65) if random_integer < 98 else random.randint(60, 120)
-        creature_level *= difficulty
+        creature_level += difficulty
         
         user_level = data_functions.get_levels(ctx.author.id)
         level_difference = creature_level - user_level
         mutation = random.randint(2, 5) if mutated else 1
+        super_mutation = random.randint(5, 20) if super_mutated and not mutated else 1
+
+        creature_level *= mutation
+        creature_level *= super_mutation
         
-        reward = random.randint(20, 50) * creature_level * difficulty * mutation
+        reward = random.randint(20, 50) * creature_level * difficulty * mutation * super_mutation
+        
         if level_difference > 0:
             win_chance = math.floor(win_chance - (10 * math.log1p(level_difference)) - 5)
         else:
@@ -486,7 +492,7 @@ async def fight(ctx):
         
         win_chance = max(5, min(95, win_chance))
         
-        mutated_text = "Mutated " if mutated else ""
+        mutated_text = "Mutated " if mutated else "Super Mutated " if super_mutated else ""
         encounter_message = (
             f"You encountered a **{mutated_text}{creature_type} (Level {creature_level})** in the wild."
             f" Choose an option below:\n1. Fight\n2. Escape\n\n"

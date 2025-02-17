@@ -233,7 +233,6 @@ async def on_command_error(ctx, error):
 
 bot.remove_command("help")
 @bot.command(help="Shows this help message.", aliases=["commands", "cmds"])
-@commands.cooldown(1, 3, commands.BucketType.user)
 async def help(ctx, command_name: str = None):
     if command_name is not None:
         command = bot.get_command(command_name)
@@ -250,7 +249,6 @@ async def help(ctx, command_name: str = None):
         ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
 
 @bot.command(aliases=["vp", "viewp"], help="Shows the current prefix of this bot.")
-@commands.cooldown(2, 10, commands.BucketType.user)
 async def view_prefix(ctx):
     await ctx.send(embed=discord.Embed(
         color=int("50B4E6", 16),
@@ -273,7 +271,6 @@ async def slash_view_prefix(interaction: discord.Interaction):
                 del error_logs[0]
 
 @bot.command(aliases=["sp", "setp"], help="Changes the prefix of this bot.")
-@commands.cooldown(2, 10, commands.BucketType.user)
 async def set_prefix(ctx, new_prefix: str = None):
     if ctx.author.guild_permissions.manage_guild:
         if new_prefix is not None:
@@ -324,7 +321,6 @@ async def slash_set_prefix(interaction: discord.Interaction, new_prefix: str = N
         ).set_author(name=interaction.member.name, icon_url=interaction.member.avatar.url))
 
 @bot.command(aliases=["vs", "msgs", "lvls", "stats"], help="Shows the statistics of a user.")
-@commands.cooldown(2, 10, commands.BucketType.user)
 async def view_stats(ctx, name: str = None):
     if not ctx.author.bot:
         user = None
@@ -434,7 +430,6 @@ async def slash_view_stats(interaction: discord.Interaction, member: discord.Mem
             ).set_author(name=user.name, icon_url=user.avatar.url))
 
 @bot.command(aliases=["expdrop", "expd", "ed"], help="Create an experience drop in a channel.")
-@commands.cooldown(2, 5, commands.BucketType.user)
 async def experience_drop(ctx):
     if ctx.author.guild_permissions.manage_guild:
         random_integer = random.randint(1, 100)
@@ -467,7 +462,6 @@ async def experience_drop(ctx):
         ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
 
 @bot.command(aliases=["fgt"], help="Fight against a creature for rewards.")
-@commands.cooldown(2, 5, commands.BucketType.user)
 async def fight(ctx):
     if not ctx.author.bot:
         creature_types = ["Zombie", "Goblin", "Elf", "Angel", "Demon", "Warrior", "Knight"]
@@ -518,7 +512,6 @@ async def fight(ctx):
             return
 
 @bot.command(aliases=["s", "sy"], help="Make the bot say a specified message.")
-@commands.cooldown(2, 5, commands.BucketType.user)
 async def say(ctx, *, message: str = None):
     if message is not None:
         await ctx.send(embed=discord.Embed(
@@ -527,7 +520,6 @@ async def say(ctx, *, message: str = None):
         ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
 
 @bot.command(aliases=["setl", "sl"], help="Sets the levels of the specificed user. (MAX: 10000)")
-@commands.cooldown(2, 10, commands.BucketType.user)
 async def set_levels(ctx, amount: int = None):
     if amount is not None and ctx.author.guild_permissions.manage_guild:
         if str(amount).isnumeric():
@@ -555,7 +547,6 @@ async def set_levels(ctx, amount: int = None):
         ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
 
 @bot.command(aliases=["setm", "sm"], help="Set the messages of the specified user. (MAX: 20000)")
-@commands.cooldown(2, 10, commands.BucketType.user)
 async def set_messages(ctx, amount: int = None):
     if amount is not None and ctx.author.guild_permissions.manage_guild:
         if str(amount).isnumeric():
@@ -583,7 +574,6 @@ async def set_messages(ctx, amount: int = None):
         ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
 
 @bot.command(aliases=["nhie"], help="Gives a random 'Never Have I Ever' question.")
-@commands.cooldown(2, 3, commands.BucketType.user)
 async def never_have_i_ever(ctx):
     question = random.choice(never_have_i_ever_questions)
     await ctx.send(embed=discord.Embed(
@@ -592,7 +582,6 @@ async def never_have_i_ever(ctx):
     ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
 
 @bot.command(aliases=["lgs", "lg"], help="Shows the error logs of this bot.")
-@commands.cooldown(2, 3, commands.BucketType.user)
 async def logs(ctx):
     if ctx.author.guild_permissions.manage_guild:
         if error_logs:

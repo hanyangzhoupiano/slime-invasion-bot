@@ -464,7 +464,6 @@ async def experience_drop(ctx):
 @bot.command(aliases=["fgt"], help="Fight against a creature for rewards.")
 async def fight(ctx):
     if not ctx.author.bot:
-        # Random difficulty and mutation chance
         difficulty = random.randint(1, 10)
         mutated = (random.randint(1, 10) <= 2)
         

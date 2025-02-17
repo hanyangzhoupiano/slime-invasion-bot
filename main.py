@@ -486,7 +486,7 @@ async def fight(ctx):
                 if random.randint(1, 100) <= win_chance:
                     await ctx.send(embed=discord.Embed(
                         color=int("50B4E6", 16),
-                        description="You defeated the creature and gained {reward} experience!"
+                        description=f"You defeated the creature and gained {reward} experience!"
                     ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
                     data_functions.set_experience(response.author.id, data_functions.get_experience(response.author.id) + reward)
                 else:
@@ -520,26 +520,88 @@ async def say(ctx, *, message: str = None):
         ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
 
 @bot.command(aliases=["setl", "sl"], help="Sets the levels of the specificed user. (MAX: 10000)")
-async def set_levels(ctx, amount: int = None):
+async def set_levels(ctx, amount: int = None, name: str = None):
     if amount is not None and ctx.author.guild_permissions.manage_guild:
-        if str(amount).isnumeric():
+        if name is not None:
+            matching_names = []
+            for member in ctx.guild.members:
+                if name.lower() in member.name.lower():
+                    matching_names.append(member.name)
+            if matching_names:
+                if len(matching_names) > 1:
+                    msg = ""
+                    for i, n in enumerate(matching_names):
+                        msg += str(i + 1) + ". " + n
+                        if i != len(matching_names) - 1:
+                            msg += "\n"
+                    try:
+                        await ctx.send(embed=discord.Embed(
+                            color=int("50B4E6", 16),
+                            description=f"Mutiple users found. Please select a user below, or type cancel:\n{msg}"
+                        ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
+    
+                        selection = None
+                        response = await bot.wait_for('message', check=lambda msg: msg.channel == ctx.channel and msg.author == ctx.author, timeout=10.0)
+    
+                        if "cancel" in response.content.lower():
+                            await ctx.send(embed=discord.Embed(
+                                color=int("FA3939", 16),
+                                description="The command has been canceled."
+                            ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
+                            return
+                        try:
+                            selection = int(response.content)
+                        except ValueError:
+                            await ctx.send(embed=discord.Embed(
+                                color=int("FA3939", 16),
+                                description="Invalid selection."
+                            ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
+                            return
+                        else:
+                            if selection is not None:
+                                if (selection - 1) >= 0 and (selection - 1) <= (len(matching_names) - 1):
+                                    matching_name = matching_names[selection - 1]
+                                    for member in ctx.guild.members:
+                                        if member.name.lower() == matching_name.lower():
+                                            user = member
+                                            break
+                                else:
+                                    await ctx.send(embed=discord.Embed(
+                                        color=int("FA3939", 16),
+                                        description="Invalid selection."
+                                    ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
+                                    return
+                    except asyncio.TimeoutError:
+                        await ctx.send(embed=discord.Embed(
+                            color=int("FA3939", 16),
+                            description="The command has been canceled because you took too long to reply."
+                        ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
+                        return
+                else:
+                    for member in ctx.guild.members:
+                        if member.name.lower() == matching_names[0].lower():
+                            user = member
+                            break
+        else:
+            user = ctx.author 
+        if str(amount).isnumeric() and user is not None:
             if amount <= 1000:
                 data_functions.set_levels(ctx.author.id, int(amount))
                 await ctx.send(embed=discord.Embed(
                     color=int("50B4E6", 16),
-                    description=f"Successfully set {ctx.author.name}'s levels to {amount}."
-                ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
+                    description=f"Successfully set {user.name}'s levels to {amount}."
+                ).set_author(name=user.name, icon_url=user.avatar.url))
             else:
                 await ctx.send(embed=discord.Embed(
                     color=int("FA3939", 16),
-                    description="You can only set your levels to a maximum of 1000."
-                ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
+                    description="You can only set levels to a maximum of 1000."
+                ).set_author(name=user.name, icon_url=user.avatar.url))
                 return
         else:
             await ctx.send(embed=discord.Embed(
                 color=int("FA3939", 16),
                 description="Invalid amount."
-            ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
+            ).set_author(name=user.name, icon_url=user.avatar.url))
     else:
         await ctx.send(embed=discord.Embed(
             color=int("FA3939", 16),

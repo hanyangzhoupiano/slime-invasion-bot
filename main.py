@@ -505,13 +505,13 @@ async def fight(ctx):
         mutation = random.choice(list(mutations.keys())) if random.randint(1, 5) == 1 else ""
         if mutation:
             mutation_multiplier = mutations[mutation]
-            win_chance -= 5 * math.abs(math.ceil((mutation_multiplier / 1.5) - 5))
+            win_chance -= 5 * abs(math.ceil((mutation_multiplier / 1.5) - 5))
             creature_level *= 2
 
         size = random.choice(list(sizes.keys())) if random.randint(1, 5) == 1 else ""
         if size:
             size_multiplier = sizes[size]
-            win_chance -= 5 * math.abs(math.ceil((size_multiplier / 1.5) - 5))
+            win_chance -= 5 * abs(math.ceil((size_multiplier / 1.5) - 5))
             creature_level *= 2
         
         reward = (random.randint(20, 50) * difficulty) + (random.randint(20, 50) * creature_level * size_multiplier * mutation_multiplier)

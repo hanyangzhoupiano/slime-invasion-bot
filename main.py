@@ -464,10 +464,10 @@ async def experience_drop(ctx):
 @bot.command(aliases=["fgt"], help="Fight against a creature for rewards.")
 async def fight(ctx):
     if not ctx.author.bot:
-        creature_types = ["Zombie", "Goblin", "Elf", "Angel", "Demon", "Warrior", "Knight"]
+        creature_types = ["Zombie", "Goblin", "Elf", "Angel", "Demon", "Warrior", "Knight", "Slime"]
         random_integer = random.randint(1, 100)
         win_chance = 60
-        creature_level = random.randint(1, 5) if random_integer < 60 else random.randint(3, 8) if random_integer < 80 else random.randint(7, 12) if random_integer < 90 else random.randint(11, 24) if random_integer < 95 else random.randint(21, 46) if random_integer < 98 else random.randint(80, 200)
+        creature_level = random.randint(1, 5) if random_integer < 60 else random.randint(3, 10) if random_integer < 80 else random.randint(8, 18) if random_integer < 90 else random.randint(17, 36) if random_integer < 95 else random.randint(32, 65) if random_integer < 98 else random.randint(60, 120)
         user_level = data_functions.get_levels(ctx.author.id)
         level_difference = creature_level - user_level
         reward = random.randint(20, 50) * creature_level

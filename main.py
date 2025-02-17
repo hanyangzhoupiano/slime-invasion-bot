@@ -483,7 +483,7 @@ async def fight(ctx):
         creature_level *= mutation
         creature_level *= super_mutation
         
-        reward = random.randint(20, 50) * creature_level * difficulty * mutation * super_mutation
+        reward = (random.randint(20, 50) * difficulty) + (random.randint(20, 50) * creature_level * mutation * super_mutation)
         
         if level_difference > 0:
             win_chance = math.floor(win_chance - (10 * math.log1p(level_difference)) - 5)

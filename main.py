@@ -36,8 +36,7 @@ error_logs = []
 never_have_i_ever_questions = resources.get_never_have_i_evers()
 brain_teasers = resources.get_brain_teasers()
 
-openai.api_key=os.getenv("OPENAI_KEY")
-client = openai.OpenAI()
+client = openai.OpenAI(api_key=os.getenv("OPENAI_KEY"))
 
 bot = commands.Bot(command_prefix=lambda bot, message: data_functions.get_prefix(message.guild.id), intents=intents)
 

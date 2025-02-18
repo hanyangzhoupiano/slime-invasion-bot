@@ -36,7 +36,8 @@ error_logs = []
 never_have_i_ever_questions = resources.get_never_have_i_evers()
 brain_teasers = resources.get_brain_teasers()
 
-client = openai.AsyncOpenAI(api_key=os.getenv("OPENAI_KEY"))
+openai.api_key=os.getenv("OPENAI_KEY")
+client = openai.OpenAI()
 
 bot = commands.Bot(command_prefix=lambda bot, message: data_functions.get_prefix(message.guild.id), intents=intents)
 
@@ -724,7 +725,7 @@ async def chat(ctx, prompt: str = None):
     if prompt is not None:
         try:
             global client
-            response = await client.chat.completions.create(model="gpt-4o", messages=[{"role": "user", "content": prompt}])
+            response = client.completions.create(model="gpt-4o", messages=[{"role": "user", "content": prompt}])
             reply = response.choices[0].text
             await ctx.send(embed=discord.Embed(
                 color=int("50B4E6", 16),
@@ -741,7 +742,7 @@ async def slash_chat(interaction: discord.Interaction, prompt: str):
     await interaction.response.defer()
     try:
         global client
-        response = await client.chat.completions.create(model="gpt-4o", messages=[{"role": "user", "content": prompt}])
+        response = client.chat.completions.create(model="gpt-4o", messages=[{"role": "user", "content": prompt}])
         reply = response.choices[0].text
         await interaction.followup.send(embed=discord.Embed(
             color=int("50B4E6", 16),

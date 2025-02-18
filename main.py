@@ -42,11 +42,13 @@ bot = commands.Bot(command_prefix=lambda bot, message: data_functions.get_prefix
 
 data_functions.setup_database()
 
+sync_text = f"Commands synced: [Loading...]"
+
 @bot.event
 async def on_ready():
-    guild = discord.Object(id=1292978415552434196)
-    bot.tree.clear_commands(guild=guild)
-    await bot.tree.sync(guild=guild)
+    bot.tree.clear_commands()
+    synced = await bot.tree.sync()
+    sync_text = f"Commands synced: {len(synced)}"
     print(f"Bot is ready and connected to guild: {bot.guilds[0].name}")
 
 @bot.event
@@ -753,26 +755,14 @@ async def slash_chat(interaction: discord.Interaction, prompt: str):
             description=f"Error while communicating:\n{e}"
         ).set_author(name=interaction.user.name, icon_url=interaction.user.avatar.url))
 
-@bot.command(aliases=["lgs", "lg"], help="Shows the error logs of this bot.")
-async def logs(ctx):
-    global error_logs
+@bot.command(aliases=["sync", "sc"], help="Shows the current state of command syncing.")
+async def sync_check(ctx):
+    global sync_text
     if ctx.author.guild_permissions.manage_guild:
-        if error_logs:
-            logs_text = ""
-            for i, log in enumerate(error_logs):
-                if i <= 20:
-                    logs_text += log + "\n"
-                else:
-                    break
-            await ctx.send(embed=discord.Embed(
-                color=int("50B4E6", 16),
-                description=f"**Logs:**\n{logs_text}"
-            ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
-        else:
-            await ctx.send(embed=discord.Embed(
-                color=int("FA3939", 16),
-                description=f"No logs to show!"
-            ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
+        await ctx.send(embed=discord.Embed(
+            color=int("50B4E6", 16),
+            description=sync_text
+        ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
     else:
         await ctx.send(embed=discord.Embed(
             color=int("FA3939", 16),

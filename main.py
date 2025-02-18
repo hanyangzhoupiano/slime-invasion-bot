@@ -14,7 +14,6 @@ import resources
 
 from flask import Flask
 
-# Create a simple web server
 app = Flask(__name__)
 @app.route('/')
 
@@ -42,13 +41,10 @@ data_functions.setup_database()
 
 @bot.event
 async def on_ready():
-    if not bot.get_guild(1292978415552434196):
-        await bot.close()
-    else:
-        guild = discord.Object(id=1292978415552434196)
-        bot.tree.clear_commands(guild=guild)
-        await bot.tree.sync(guild=guild)
-        print(f"Bot is ready and connected to guild: {bot.guilds[0].name}")
+    guild = discord.Object(id=1292978415552434196)
+    bot.tree.clear_commands(guild=guild)
+    await bot.tree.sync(guild=guild)
+    print(f"Bot is ready and connected to guild: {bot.guilds[0].name}")
 
 @bot.event
 async def on_disconnect():
@@ -719,8 +715,48 @@ async def brain_teaser(ctx):
         description=brain_teaser
     ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
 
+@bot.command(aliases=["ch"], help="Give a prompt to ChatGPT.")
+@commands.cooldown(1, 5, commands.BucketType.user)
+async def chat(ctx, prompt: str = None):
+    if prompt is not None:
+        try:
+            response = openai.ChatCompletion.create(
+                model="gpt-4o",
+                messages=[{"role": "user", "content": prompt}]
+            )
+            reply = response["choices"][0]["message"]["content"]
+            await ctx.send(embed=discord.Embed(
+                color=int("50B4E6", 16),
+                description=reply
+            ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
+        except Exception as e:
+            await ctx.send(embed=discord.Embed(
+                color=int("FA3939", 16),
+                description="Error while communicating:\n{e}"
+            ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
+
+@bot.tree.command(name="chat", description="Give a prompt to ChatGPT.")
+async def slash_chat(interaction: discord.Interaction, prompt: str):
+    await interaction.response.defer()
+    try:
+        response = openai.ChatCompletion.create(
+            model="gpt-4o",
+            messages=[{"role": "user", "content": prompt}]
+        )
+        reply = response["choices"][0]["message"]["content"]
+        await interaction.followup.send(embed=discord.Embed(
+            color=int("50B4E6", 16),
+            description=reply
+        ).set_author(name=interaction.user.name, icon_url=interaction.user.avatar.url))
+    except Exception as e:
+        await interaction.followup.send(embed=discord.Embed(
+            color=int("FA3939", 16),
+            description="Error while communicating:\n{e}"
+        ).set_author(name=interaction.user.name, icon_url=interaction.user.avatar.url))
+
 @bot.command(aliases=["lgs", "lg"], help="Shows the error logs of this bot.")
 async def logs(ctx):
+    global error_logs
     if ctx.author.guild_permissions.manage_guild:
         if error_logs:
             logs_text = ""

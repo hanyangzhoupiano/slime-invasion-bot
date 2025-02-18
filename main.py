@@ -46,8 +46,8 @@ sync_text = f"Commands synced: [Loading...]"
 
 @bot.event
 async def on_ready():
-    bot.tree.clear_commands()
-    synced = await bot.tree.sync()
+    bot.tree.clear_commands(guild=bot.guilds[0])
+    synced = await bot.tree.sync(guild=bot.guilds[0])
     sync_text = f"Commands synced: {len(synced)}"
     print(f"Bot is ready and connected to guild: {bot.guilds[0].name}")
 

@@ -724,7 +724,7 @@ async def chat(ctx, prompt: str = None):
     if prompt is not None:
         try:
             global client
-            response = client.completions.create(model="gpt-4o", messages=[{"role": "user", "content": prompt}])
+            response = client.completions.create(model="gpt-4o", prompt=prompt)
             reply = response.choices[0].text
             await ctx.send(embed=discord.Embed(
                 color=int("50B4E6", 16),
@@ -741,7 +741,7 @@ async def slash_chat(interaction: discord.Interaction, prompt: str):
     await interaction.response.defer()
     try:
         global client
-        response = client.chat.completions.create(model="gpt-4o", messages=[{"role": "user", "content": prompt}])
+        response = client.completions.create(model="gpt-4o", prompt=prompt)
         reply = response.choices[0].text
         await interaction.followup.send(embed=discord.Embed(
             color=int("50B4E6", 16),

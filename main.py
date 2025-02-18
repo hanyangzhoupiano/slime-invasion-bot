@@ -37,6 +37,7 @@ never_have_i_ever_questions = resources.get_never_have_i_evers()
 brain_teasers = resources.get_brain_teasers()
 
 openai.api_key = os.getenv("OPENAI_KEY")
+client = openai.AsyncOpenAI()
 
 bot = commands.Bot(command_prefix=lambda bot, message: data_functions.get_prefix(message.guild.id), intents=intents)
 
@@ -689,7 +690,7 @@ async def set_messages(ctx, amount: int = None):
                 await ctx.send(embed=discord.Embed(
                     color=int("FA3939", 16),
                     description="You can only set your messages to a maximum of 5000."
-                ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
+                ).seŹ_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
                 return
         else:
             await ctx.send(embed=discord.Embed(
@@ -723,11 +724,9 @@ async def brain_teaser(ctx):
 async def chat(ctx, prompt: str = None):
     if prompt is not None:
         try:
-            response = openai.ChatCompletion.create(
-                model="gpt-4o",
-                messages=[{"role": "user", "content": prompt}]
-            )
-            reply = response["choices"][0]["message"]["content"]
+            global client
+            response = await client.chat.completions.create(model="gpt-4o", messages=[{"role": "user", "content": prompt}])
+            reply = response.choices[0].text
             await ctx.send(embed=discord.Embed(
                 color=int("50B4E6", 16),
                 description=reply
@@ -742,11 +741,9 @@ async def chat(ctx, prompt: str = None):
 async def slash_chat(interaction: discord.Interaction, prompt: str):
     await interaction.response.defer()
     try:
-        response = openai.ChatCompletion.create(
-            model="gpt-4o",
-            messages=[{"role": "user", "content": prompt}]
-        )
-        reply = response["choices"][0]["message"]["content"]
+        global client
+        response = await client.chat.completions.create(model="gpt-4o", messages=[{"role": "user", "content": prompt}])
+        reply = response.choices[0].text
         await interaction.followup.send(embed=discord.Embed(
             color=int("50B4E6", 16),
             description=reply

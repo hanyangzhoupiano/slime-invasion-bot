@@ -732,7 +732,7 @@ async def chat(ctx, prompt: str = None):
         except Exception as e:
             await ctx.send(embed=discord.Embed(
                 color=int("FA3939", 16),
-                description="Error while communicating:\n{e}"
+                description=f"Error while communicating:\n{e}"
             ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
 
 @bot.tree.command(name="chat", description="Give a prompt to ChatGPT.")
@@ -751,7 +751,7 @@ async def slash_chat(interaction: discord.Interaction, prompt: str):
     except Exception as e:
         await interaction.followup.send(embed=discord.Embed(
             color=int("FA3939", 16),
-            description="Error while communicating:\n{e}"
+            description=f"Error while communicating:\n{e}"
         ).set_author(name=interaction.user.name, icon_url=interaction.user.avatar.url))
 
 @bot.command(aliases=["lgs", "lg"], help="Shows the error logs of this bot.")

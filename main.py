@@ -736,6 +736,44 @@ async def brain_teaser(ctx):
             description=f"⏳ Time's up! The answer to the brain teaser is: **{answer}**"
         ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
 
+@bot.command(aliases=["quiz", "triv"], help="Gives a random trivia question.")
+async def trivia(ctx):
+    index = random.randint(0, len(trivia_questions) - 1)
+    question = list(trivia_questions.keys())[index]
+    answer = list(trivia_questions.values())[index]
+
+    choices = random.sample(list(trivia_questions.values()), 3)
+    choices.append(answer)
+    random.shuffle(choices)
+
+    letter_choices = ["A", "B", "C", "D"]
+    choice_map = {letter: choices[i] for i, letter in enumerate(letter_choices)}
+    correct_choice = next(k for k, v in choice_map.items() if v == answer)
+
+    embed = discord.Embed(
+        color=int("50B4E6", 16),
+        description=f"**{question}**\n\n" + "\n".join([f"{k}: {v}" for k, v in choice_map.items()])
+    )
+    embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url)
+    embed.set_footer(text="Reply with A, B, C, or D!")
+
+    await ctx.send(embed=embed)
+
+    try:
+        msg = await bot.wait_for("message", check=lambda m: m.author == ctx.author and m.content.upper() in letter_choices, timeout=15.0)
+        if msg.content.upper() == correct_choice:
+            await ctx.send(embed=discord.Embed(
+                color=int("50B4E6", 16),
+                description=f"✅ Correct, {ctx.author.mention}! The answer was **{correct_choice}: {answer}**."
+            ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
+        else:
+            await ctx.send(embed=discord.Embed(
+                color=int("FA3939", 16),
+                description=f"❌ Incorrect, {ctx.author.mention}. The correct answer was **{correct_choice}: {answer}**."
+            ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
+    except asyncio.TimeoutError:
+        await ctx.send(f"⏳ Time's up, {ctx.author.mention}! The correct answer was **{correct_choice}: {answer}**.")
+
 @bot.command(aliases=["ch"], help="Give a prompt to ChatGPT.")
 @commands.cooldown(1, 5, commands.BucketType.user)
 async def chat(ctx, prompt: str = None):

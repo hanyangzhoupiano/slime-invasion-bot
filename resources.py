@@ -311,7 +311,7 @@ def get_brain_teaser_answers():
         "A sponge"
     ]
 
-def get_quiz_questions():
+def get_trivia_categories():
     return {
         "Math": {
             "A company’s revenue is given by R(x) = 500x - 2x². Find the value of x that maximizes the revenue.": "125",

@@ -741,59 +741,68 @@ async def trivia(ctx):
         description="✅ Choose a category:\n" + "\n".join(f"- {category}" for category in trivia_categories.keys())
     )
     
-    embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url)
-    
+    embed.set_author(name=ctx.author.name, icon_url=ctx.author.display_avatar.url)
     await ctx.send(embed=embed)
-    
-    trivia_questions = None
+
     try:
-        category = await bot.wait_for("message", check=lambda m: m.author == ctx.author and m.content.lower() in [item.lower() for item in list(trivia_categories.keys())], timeout=15.0)
+        msg = await bot.wait_for(
+            "message",
+            check=lambda m: m.author == ctx.author and m.content.lower() in [c.lower() for c in trivia_categories.keys()],
+            timeout=15.0
+        )
+        category = next(c for c in trivia_categories.keys() if c.lower() == msg.content.lower())
         trivia_questions = trivia_categories[category]
     except asyncio.TimeoutError:
         await ctx.send(embed=discord.Embed(
             color=int("FA3939", 16),
-            description=f"⏳ The command has been canceled because you took too long to reply."
-        ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
-    if trivia_questions is None:
+            description="⏳ You took too long to reply. Command canceled."
+        ).set_author(name=ctx.author.name, icon_url=ctx.author.display_avatar.url))
         return
-    index = random.randint(0, len(trivia_questions) - 1)
-    question = list(trivia_questions.keys())[index]
-    answer = list(trivia_questions.values())[index]
 
-    choices = random.sample(list(trivia_questions.values()), 4)
-    choices.append(answer)
+    question, answer = random.choice(list(trivia_questions.items()))
+
+    choices = list(set(trivia_questions.values()))  # Ensure unique choices
+    if len(choices) > 4:
+        choices = random.sample(choices, 4)  # Pick 4 random wrong answers
+    if answer not in choices:
+        choices.append(answer)  # Ensure correct answer is included
     random.shuffle(choices)
 
     letter_choices = ["A", "B", "C", "D", "E"]
-    choice_map = {letter: choices[i] for i, letter in enumerate(letter_choices)}
+    choice_map = {letter: choices[i] for i in range(len(choices))}
     correct_choice = next(k for k, v in choice_map.items() if v == answer)
 
     embed = discord.Embed(
         color=int("50B4E6", 16),
-        description=f"💬 *Category: {category}*\n**{question}**\n\n" + "\n".join([f"{k} - {v}" for k, v in choice_map.items()])
+        description=f"💬 **Category: {category}**\n\n**{question}**\n\n" +
+                    "\n".join([f"{k} - {v}" for k, v in choice_map.items()])
     )
-    embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url)
+    embed.set_author(name=ctx.author.name, icon_url=ctx.author.display_avatar.url)
     embed.set_footer(text="Reply with A, B, C, D, or E!")
 
     await ctx.send(embed=embed)
 
     try:
-        msg = await bot.wait_for("message", check=lambda m: m.author == ctx.author and m.content.upper() in letter_choices, timeout=15.0)
+        msg = await bot.wait_for(
+            "message",
+            check=lambda m: m.author == ctx.author and m.content.upper() in letter_choices[:len(choices)],
+            timeout=15.0
+        )
         if msg.content.upper() == correct_choice:
             await ctx.send(embed=discord.Embed(
                 color=int("50B4E6", 16),
                 description=f"✅ Correct, {ctx.author.mention}! The answer was **{correct_choice}: {answer}**."
-            ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
+            ).set_author(name=ctx.author.name, icon_url=ctx.author.display_avatar.url))
         else:
             await ctx.send(embed=discord.Embed(
                 color=int("FA3939", 16),
                 description=f"❌ Incorrect, {ctx.author.mention}. The correct answer was **{correct_choice}: {answer}**."
-            ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
+            ).set_author(name=ctx.author.name, icon_url=ctx.author.display_avatar.url))
     except asyncio.TimeoutError:
         await ctx.send(embed=discord.Embed(
             color=int("FA3939", 16),
             description=f"⏳ Time's up, {ctx.author.mention}! The correct answer was **{correct_choice}: {answer}**."
-        ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
+        ).set_author(name=ctx.author.name, icon_url=ctx.author.display_avatar.url))
 
 @bot.command(aliases=["sync", "sc"], help="Shows the current state of command syncing.")
 async def sync_check(ctx):

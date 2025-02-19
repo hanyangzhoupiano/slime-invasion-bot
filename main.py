@@ -6,7 +6,6 @@ import random
 import asyncio
 import math
 import time
-import openai
 from discord.ext import commands
 from threading import Thread
 
@@ -38,13 +37,11 @@ brain_teasers = resources.get_brain_teasers()
 brain_teaser_answers = resources.get_brain_teaser_answers()
 trivia_questions = resources.get_quiz_questions()
 
-client = openai.OpenAI(api_key=os.getenv("OPENAI_KEY"))
-
 bot = commands.Bot(command_prefix=lambda bot, message: data_functions.get_prefix(message.guild.id), intents=intents)
 
 data_functions.setup_database()
 
-sync_text = f"Commands synced: [Loading...]"
+sync_text = f"Commands synced: None"
 
 @bot.event
 async def on_ready():
@@ -78,7 +75,7 @@ async def on_message(msg):
         await msg.channel.send(embed=discord.Embed(
             color=int("50B4E6", 16),
             title="Experience Drop",
-            description=f"A **{type}** Experience Drop of {amount} has started! Type 'claim' to claim it before the time runs out!"
+            description=f"🧪 A **{type}** Experience Drop of {amount} has started! Type 'claim' to claim it before the time runs out!"
         ))
         try:
             response = await bot.wait_for('message', check=lambda msg2: msg2.channel == msg.channel and msg2.content.lower() == "claim", timeout=10.0)
@@ -86,14 +83,14 @@ async def on_message(msg):
                 await msg.channel.send(embed=discord.Embed(
                     color=int("50B4E6", 16),
                     title="Experience Drop",
-                    description=f"*{response.author.name}* was the first to claim the **{type}** Experience Drop of {amount}!"
+                    description=f"✅ *{response.author.name}* was the first to claim the **{type}** Experience Drop of {amount}!"
                 ))
                 data_functions.set_experience(response.author.id, data_functions.get_experience(response.author.id) + amount)
         except asyncio.TimeoutError:
             await msg.channel.send(embed=discord.Embed(
                 color=int("FA3939", 16),
                 title="Experience Drop",
-                description="Nobody claimed the experience drop in time."
+                description="⏳ Nobody claimed the experience drop in time."
             ))
     
     if user_id in user_last_experience_time:
@@ -111,7 +108,7 @@ async def on_message(msg):
         data_functions.set_experience(user_id, 0)
         await msg.channel.send(embed=discord.Embed(
             color=int("50B4E6", 16),
-            description=f"Congratulations! The user *'{msg.author.name}'* has leveled up to **Level {data_functions.get_levels(user_id)}**!"
+            description=f"⬆️ Congratulations! The user *'{msg.author.name}'* has leveled up to **Level {data_functions.get_levels(user_id)}**!"
         ).set_author(name=msg.author.name, icon_url=msg.author.avatar.url))
     await bot.process_commands(msg)
 
@@ -130,20 +127,20 @@ async def help(ctx, command_name: str = None):
         if command:
             await ctx.send(embed=discord.Embed(
                 color=int("50B4E6", 16),
-                description=f"**{command.name}** - {command.help}\n**Aliases:** {', '.join(command.aliases) if command.aliases else 'None'}"
+                description=f"✅ **{command.name}** - {command.help}\n**Aliases:** {', '.join(command.aliases) if command.aliases else 'None'}"
             ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
     else:
         help_text = "- " + "\n- ".join([f"**{cmd.name}** - {cmd.help}\n**Aliases:** {', '.join(cmd.aliases) if cmd.aliases else 'None'}" for cmd in bot.commands])
         await ctx.send(embed=discord.Embed(
             color=int("50B4E6", 16),
-            description=f"{help_text}"
+            description=f"✅ {help_text}"
         ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
 
 @bot.command(aliases=["vp", "viewp"], help="Shows the current prefix of this bot.")
 async def view_prefix(ctx):
     await ctx.send(embed=discord.Embed(
         color=int("50B4E6", 16),
-        description=f"The current prefix is '{data_functions.get_prefix(ctx.guild.id)}'."
+        description=f"✅ The current prefix is '{data_functions.get_prefix(ctx.guild.id)}'."
     ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
 
 @bot.tree.command(name="viewprefix", description="Shows the current prefix of this bot.")
@@ -152,7 +149,7 @@ async def slash_view_prefix(interaction: discord.Interaction):
         await interaction.response.defer()
         embed = discord.Embed(
             color=int("50B4E6", 16),
-            description=f"The current prefix is '{data_functions.get_prefix(interaction.guild.id)}'."
+            description=f"✅ The current prefix is '{data_functions.get_prefix(interaction.guild.id)}'."
         ).set_author(name=interaction.member.name, icon_url=interaction.member.avatar.url)
         await interaction.followup.send(embed=embed)
     except Exception as e:
@@ -168,18 +165,18 @@ async def set_prefix(ctx, new_prefix: str = None):
             if len(new_prefix) > 32:
                 await ctx.send(embed=discord.Embed(
                     color=int("50B4E6", 16),
-                    description="The prefix chosen is too long. Please try again with a shorter prefix."
+                    description="❌ The prefix chosen is too long. Please try again with a shorter prefix."
                 ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
                 return
             data_functions.set_prefix(ctx.guild.id, new_prefix)
             await ctx.send(embed=discord.Embed(
                 color=int("50B4E6", 16),
-                description=f"The prefix has successfully been changed to '{new_prefix}'."
+                description=f"✅ The prefix has successfully been changed to '{new_prefix}'."
             ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
     else:
         await ctx.send(embed=discord.Embed(
             color=int("FA3939", 16),
-            description="You do not have permission to use this command.\n**Missing permissions:** *Manage Server*"
+            description="❌ You do not have permission to use this command.\n**Missing permissions:** *Manage Server*"
         ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
 
 @bot.tree.command(name="setprefix", description="Sets the current prefix of this bot.")
@@ -191,13 +188,13 @@ async def slash_set_prefix(interaction: discord.Interaction, new_prefix: str = N
                 if len(new_prefix) > 32:
                     await interaction.followup.send(embed=discord.Embed(
                         color=int("50B4E6", 16),
-                        description="The prefix chosen is too long. Please try again with a shorter prefix."
+                        description="❌ The prefix chosen is too long. Please try again with a shorter prefix."
                     ).set_author(name=interaction.member.name, icon_url=interaction.member.avatar.url))
                     return
                 data_functions.set_prefix(ctx.guild.id, new_prefix)
                 await interaction.followup.send(embed=discord.Embed(
                     color=int("50B4E6", 16),
-                    description=f"The prefix has successfully been changed to '{new_prefix}'."
+                    description=f"✅ The prefix has successfully been changed to '{new_prefix}'."
                 ).set_author(name=interaction.member.name, icon_url=interaction.member.avatar.url))
             except Exception as e:
                 error_logs.append(e)
@@ -208,7 +205,7 @@ async def slash_set_prefix(interaction: discord.Interaction, new_prefix: str = N
         await interaction.response.defer()
         await interaction.followup.send(embed=discord.Embed(
             color=int("FA3939", 16),
-            description="You do not have permission to use this command.\n**Missing permissions:** *Manage Server*"
+            description="❌ You do not have permission to use this command.\n**Missing permissions:** *Manage Server*"
         ).set_author(name=interaction.member.name, icon_url=interaction.member.avatar.url))
 
 @bot.command(aliases=["vs", "msgs", "lvls", "stats"], help="Shows the statistics of a user.")
@@ -232,7 +229,7 @@ async def view_stats(ctx, name: str = None):
                     try:
                         await ctx.send(embed=discord.Embed(
                             color=int("50B4E6", 16),
-                            description=f"Mutiple users found. Please select a user below, or type cancel:\n{msg}"
+                            description=f"✅ Mutiple users found. Please select a user below, or type cancel:\n{msg}"
                         ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
     
                         selection = None
@@ -241,7 +238,7 @@ async def view_stats(ctx, name: str = None):
                         if "cancel" in response.content.lower():
                             await ctx.send(embed=discord.Embed(
                                 color=int("FA3939", 16),
-                                description="The command has been canceled."
+                                description="❌ The command has been canceled."
                             ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
                             return
                         try:
@@ -249,7 +246,7 @@ async def view_stats(ctx, name: str = None):
                         except ValueError:
                             await ctx.send(embed=discord.Embed(
                                 color=int("FA3939", 16),
-                                description="Invalid selection."
+                                description="❌ Invalid selection."
                             ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
                             return
                         else:
@@ -263,13 +260,13 @@ async def view_stats(ctx, name: str = None):
                                 else:
                                     await ctx.send(embed=discord.Embed(
                                         color=int("FA3939", 16),
-                                        description="Invalid selection."
+                                        description="❌ Invalid selection."
                                     ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
                                     return
                     except asyncio.TimeoutError:
                         await ctx.send(embed=discord.Embed(
                             color=int("FA3939", 16),
-                            description="The command has been canceled because you took too long to reply."
+                            description="⏳ The command has been canceled because you took too long to reply."
                         ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
                         return
                 else:
@@ -280,7 +277,7 @@ async def view_stats(ctx, name: str = None):
         if user is not None:
             await ctx.send(embed=discord.Embed(
                 color=int("50B4E6", 16),
-                description=f"**Retrieving data for {user.name}...**"
+                description=f"✅ **Retrieving data for {user.name}...**"
             ).set_author(name=user.name, icon_url=user.avatar.url))
     
             messages = data_functions.get_messages(user.id)
@@ -291,7 +288,7 @@ async def view_stats(ctx, name: str = None):
             await ctx.send(embed=discord.Embed(
                 color=int("50B4E6", 16),
                 title="Statistics",
-                description=f"**Level:** {level}\n**Experience:** {experience}\n**Until Next Level:** {experience_left}\n**Messages:** {messages}\n**Server Join Date:** {user.joined_at.strftime('%m/%d/%Y').lstrip('0').replace('/0', '/')}\n**Role:** {user.top_role}"
+                description=f"✅ **Level:** {level}\n**Experience:** {experience}\n**Until Next Level:** {experience_left}\n**Messages:** {messages}\n**Server Join Date:** {user.joined_at.strftime('%m/%d/%Y').lstrip('0').replace('/0', '/')}\n**Role:** {user.top_role}"
             ).set_author(name=user.name, icon_url=user.avatar.url))
 
 @bot.tree.command(name="viewstats", description="Shows the statistics of a user.")
@@ -306,7 +303,7 @@ async def slash_view_stats(interaction: discord.Interaction, member: discord.Mem
         if user is not None:
             await interaction.followup.send(embed=discord.Embed(
                 color=int("50B4E6", 16),
-                description=f"**Retrieving data for '{user.name}'...**"
+                description=f"✅ **Retrieving data for '{user.name}'...**"
             ).set_author(name=user.name, icon_url=user.avatar.url))
     
             messages = data_functions.get_messages(user.id)
@@ -317,7 +314,7 @@ async def slash_view_stats(interaction: discord.Interaction, member: discord.Mem
             await interaction.followup.send(embed=discord.Embed(
                 color=int("50B4E6", 16),
                 title="Statistics",
-                description=f"**Level:** {level}\n**Experience:** {experience}\n**Until Next Level:** {experience_left}\n**Messages:** {messages}\n**Server Join Date:** {user.joined_at.strftime('%m/%d/%Y').lstrip('0').replace('/0', '/')}\n**Role:** {user.top_role}"
+                description=f"✅ **Level:** {level}\n**Experience:** {experience}\n**Until Next Level:** {experience_left}\n**Messages:** {messages}\n**Server Join Date:** {user.joined_at.strftime('%m/%d/%Y').lstrip('0').replace('/0', '/')}\n**Role:** {user.top_role}"
             ).set_author(name=user.name, icon_url=user.avatar.url))
 
 @bot.command(aliases=["expdrop", "expd", "ed"], help="Create an experience drop in a channel.")
@@ -329,7 +326,7 @@ async def experience_drop(ctx):
         await ctx.send(embed=discord.Embed(
             color=int("50B4E6", 16),
             title="Experience Drop",
-            description=f"A **{type}** Experience Drop of {amount} has started! Type 'claim' to claim it before the time runs out!"
+            description=f"🧪 A **{type}** Experience Drop of {amount} has started! Type 'claim' to claim it before the time runs out!"
         ))
         try:
             response = await bot.wait_for('message', check=lambda msg: msg.channel == ctx.channel and msg.content.lower() == "claim", timeout=15.0)
@@ -337,19 +334,19 @@ async def experience_drop(ctx):
                 await ctx.send(embed=discord.Embed(
                     color=int("50B4E6", 16),
                     title="Experience Drop",
-                    description=f"*{response.author.name}* was the first to claim the **{type}** Experience Drop of {amount}!"
+                    description=f"✅ *{response.author.name}* was the first to claim the **{type}** Experience Drop of {amount}!"
                 ))
                 data_functions.set_experience(response.author.id, data_functions.get_experience(response.author.id) + amount)
         except asyncio.TimeoutError:
             await msg.channel.send(embed=discord.Embed(
                 color=int("FA3939", 16),
                 title="Experience Drop",
-                description="Nobody claimed the experience drop in time."
+                description="⏳ Nobody claimed the experience drop in time."
             ))
     else:
         await ctx.send(embed=discord.Embed(
             color=int("FA3939", 16),
-            description="You do not have permission to use this command.\n**Missing permissions:** *Manage Server*"
+            description="❌ You do not have permission to use this command.\n**Missing permissions:** *Manage Server*"
         ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
 
 @bot.command(aliases=["f"], help="Fight against a creature for rewards.")
@@ -420,8 +417,8 @@ async def fight(ctx):
         win_chance = max(5, min(95, win_chance))
         
         encounter_message = (
-            f"You encountered a**{' ' + size if size else ''}{' ' + mutation if mutation else ''} {creature_type} (Level {creature_level})** in the wild."
-            f" Choose an option below:\n1. Fight\n2. Escape\n\n"
+            f"⚔️ You encountered a**{' ' + size if size else ''}{' ' + mutation if mutation else ''} {creature_type} (Level {creature_level})** in the wild."
+            f"\n1. Fight\n2. Escape\n\n"
             f"*Your Level: {user_level}\nWin Chance: {win_chance}%\nDifficulty: {difficulty}/10\nRisk: {risk}*"
         )
         
@@ -437,30 +434,30 @@ async def fight(ctx):
                 if random.randint(1, 100) <= win_chance:
                     await ctx.send(embed=discord.Embed(
                         color=int("50B4E6", 16),
-                        description=f"You defeated the**{' ' + size if size else ''}{' ' + mutation if mutation else ''} {creature_type}** and gained {reward} experience!"
+                        description=f"✅ You defeated the**{' ' + size if size else ''}{' ' + mutation if mutation else ''} {creature_type}** and gained {reward} experience!"
                     ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
                     data_functions.set_experience(ctx.author.id, data_functions.get_experience(ctx.author.id) + reward)
                 else:
                     await ctx.send(embed=discord.Embed(
                         color=int("FA3939", 16),
-                        description=f"You were defeated by the**{' ' + size if size else ''}{' ' + mutation if mutation else ''} {creature_type}** and lost {risk} experience."
+                        description=f"❌ You were defeated by the**{' ' + size if size else ''}{' ' + mutation if mutation else ''} {creature_type}** and lost {risk} experience."
                     ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
                     data_functions.set_experience(ctx.author.id, max((data_functions.get_experience(ctx.author.id) - risk), 0))
             elif "2" in response.content.lower() or "escape" in response.content.lower():
                 await ctx.send(embed=discord.Embed(
                     color=int("50B4E6", 16),
-                    description=f"You escaped from the**{' ' + size if size else ''} {' ' + mutation if mutation else ''} {creature_type}**."
+                    description=f"✅ You escaped from the**{' ' + size if size else ''} {' ' + mutation if mutation else ''} {creature_type}**."
                 ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
             else:
                 await ctx.send(embed=discord.Embed(
                     color=int("FA3939", 16),
-                    description="Invalid selection."
+                    description="❌ Invalid selection."
                 ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
         
         except asyncio.TimeoutError:
             await ctx.send(embed=discord.Embed(
                 color=int("FA3939", 16),
-                description="The command has been canceled because you took too long to reply."
+                description="⏳ The command has been canceled because you took too long to reply."
             ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
 
 async def fight(interaction: discord.Interaction):
@@ -533,7 +530,7 @@ async def fight(interaction: discord.Interaction):
         
         encounter_message = (
             f"⚔️ You encountered a**{' ' + size if size else ''}{' ' + mutation if mutation else ''} {creature_type} (Level {creature_level})** in the wild."
-            f" Choose an option below:\n1. Fight\n2. Escape\n\n"
+            f"\n1. Fight\n2. Escape\n\n"
             f"*Your Level: {user_level}\nWin Chance: {win_chance}%\nDifficulty: {difficulty}/10\nRisk: {risk}*"
         )
         
@@ -587,7 +584,7 @@ async def say(ctx, *, message: str = None):
     if message is not None:
         await ctx.send(embed=discord.Embed(
             color=int("50B4E6", 16),
-            description=message
+            description="✅ " + message
         ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
 
 @bot.command(aliases=["setl", "sl"], help="Sets the levels of the specificed user (up to 200).")
@@ -687,23 +684,23 @@ async def set_messages(ctx, amount: int = None):
                 data_functions.set_messages(ctx.author.id, int(amount))
                 await ctx.send(embed=discord.Embed(
                     color=int("50B4E6", 16),
-                    description=f"Successfully set {ctx.author.name}'s messages to {amount}."
+                    description=f"✅ Successfully set {ctx.author.name}'s messages to {amount}."
                 ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
             else:
                 await ctx.send(embed=discord.Embed(
                     color=int("FA3939", 16),
-                    description="You can only set your messages to a maximum of 5000."
+                    description="❌ You can only set your messages to a maximum of 5000."
                 ).seŹ_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
                 return
         else:
             await ctx.send(embed=discord.Embed(
                 color=int("FA3939", 16),
-                description="Invalid amount."
+                description="❌ Invalid amount."
             ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
     else:
         await ctx.send(embed=discord.Embed(
             color=int("FA3939", 16),
-            description="You do not have permission to use this command.\n**Missing permissions:** *Manage Server*"
+            description="❌ You do not have permission to use this command.\n**Missing permissions:** *Manage Server*"
         ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
 
 @bot.command(aliases=["nhie"], help="Gives a random 'Never Have I Ever' question.")
@@ -711,7 +708,7 @@ async def never_have_i_ever(ctx):
     question = random.choice(never_have_i_ever_questions)
     await ctx.send(embed=discord.Embed(
         color=int("50B4E6", 16),
-        description=question
+        description="✅ " + question
     ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
 
 @bot.command(aliases=["bt"], help="Gives a random brain teaser.")
@@ -722,7 +719,7 @@ async def brain_teaser(ctx):
 
     await ctx.send(embed=discord.Embed(
         color=int("50B4E6", 16),
-        description=question
+        description="✅ " + question
     ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
 
     try:
@@ -743,17 +740,17 @@ async def trivia(ctx):
     question = list(trivia_questions.keys())[index]
     answer = list(trivia_questions.values())[index]
 
-    choices = random.sample(list(trivia_questions.values()), 3)
+    choices = random.sample(list(trivia_questions.values()), 4)
     choices.append(answer)
     random.shuffle(choices)
 
-    letter_choices = ["A", "B", "C", "D"]
+    letter_choices = ["A", "B", "C", "D", "E"]
     choice_map = {letter: choices[i] for i, letter in enumerate(letter_choices)}
     correct_choice = next(k for k, v in choice_map.items() if v == answer)
 
     embed = discord.Embed(
         color=int("50B4E6", 16),
-        description=f"**{question}**\n\n" + "\n".join([f"{k}: {v}" for k, v in choice_map.items()])
+        description=f"✅ **{question}**\n\n" + "\n".join([f"{k} - {v}" for k, v in choice_map.items()])
     )
     embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url)
     embed.set_footer(text="Reply with A, B, C, or D!")
@@ -773,42 +770,10 @@ async def trivia(ctx):
                 description=f"❌ Incorrect, {ctx.author.mention}. The correct answer was **{correct_choice}: {answer}**."
             ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
     except asyncio.TimeoutError:
-        await ctx.send(f"⏳ Time's up, {ctx.author.mention}! The correct answer was **{correct_choice}: {answer}**.")
-
-@bot.command(aliases=["ch"], help="Give a prompt to ChatGPT.")
-@commands.cooldown(1, 5, commands.BucketType.user)
-async def chat(ctx, prompt: str = None):
-    if prompt is not None:
-        try:
-            global client
-            response = client.completions.create(model="gpt-4o", prompt=prompt)
-            reply = response.choices[0].text
-            await ctx.send(embed=discord.Embed(
-                color=int("50B4E6", 16),
-                description=reply
-            ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
-        except Exception as e:
-            await ctx.send(embed=discord.Embed(
-                color=int("FA3939", 16),
-                description=f"Error while communicating:\n{e}"
-            ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
-
-@bot.tree.command(name="chat", description="Give a prompt to ChatGPT.")
-async def slash_chat(interaction: discord.Interaction, prompt: str):
-    await interaction.response.defer()
-    try:
-        global client
-        response = client.completions.create(model="gpt-4o", prompt=prompt)
-        reply = response.choices[0].text
-        await interaction.followup.send(embed=discord.Embed(
-            color=int("50B4E6", 16),
-            description=reply
-        ).set_author(name=interaction.user.name, icon_url=interaction.user.avatar.url))
-    except Exception as e:
-        await interaction.followup.send(embed=discord.Embed(
+        await ctx.send(embed=discord.Embed(
             color=int("FA3939", 16),
-            description=f"Error while communicating:\n{e}"
-        ).set_author(name=interaction.user.name, icon_url=interaction.user.avatar.url))
+            description=f"⏳ Time's up, {ctx.author.mention}! The correct answer was **{correct_choice}: {answer}**."
+        ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
 
 @bot.command(aliases=["sync", "sc"], help="Shows the current state of command syncing.")
 async def sync_check(ctx):
@@ -816,12 +781,12 @@ async def sync_check(ctx):
     if ctx.author.guild_permissions.manage_guild:
         await ctx.send(embed=discord.Embed(
             color=int("50B4E6", 16),
-            description=sync_text
+            description="✅ " + sync_text
         ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
     else:
         await ctx.send(embed=discord.Embed(
             color=int("FA3939", 16),
-            description="You do not have permission to use this command.\n**Missing permissions:** *Manage Server*"
+            description="❌ You do not have permission to use this command.\n**Missing permissions:** *Manage Server*"
         ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
 
 bot.run(os.getenv("DISCORD_TOKEN"))

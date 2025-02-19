@@ -736,10 +736,15 @@ async def brain_teaser(ctx):
 
 @bot.command(aliases=["quiz", "triv"], help="Gives a random trivia question.")
 async def trivia(ctx):
-    await ctx.send(embed=discord.Embed(
+    embed = discord.Embed(
         color=int("50B4E6", 16),
-        description=f"✅ Choose a category:\n- {'\n- '.join(list(trivia_categories.keys()))}"
-    ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
+        description="✅ Choose a category:\n" + "\n".join(f"- {category}" for category in trivia_categories.keys())
+    )
+    
+    embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url)
+    
+    await ctx.send(embed=embed)
+    
     trivia_questions = None
     try:
         category = await bot.wait_for("message", check=lambda m: m.author == ctx.author and m.content.upper() in list(trivia_categories.keys()), timeout=15.0)

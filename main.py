@@ -738,7 +738,7 @@ async def brain_teaser(ctx):
 async def trivia(ctx):
     await ctx.send(embed=discord.Embed(
         color=int("50B4E6", 16),
-        description=f"✅ Choose a category:\n- {"\n- ".join(list(trivia_categories.keys()))}"
+        description=f"✅ Choose a category:\n- {'\n- '.join(list(trivia_categories.keys()))}"
     ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
     trivia_questions = None
     try:

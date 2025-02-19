@@ -36,6 +36,7 @@ error_logs = []
 never_have_i_ever_questions = resources.get_never_have_i_evers()
 brain_teasers = resources.get_brain_teasers()
 brain_teaser_answers = resources.get_brain_teaser_answers()
+trivia_questions = resources.get_quiz_questions()
 
 client = openai.OpenAI(api_key=os.getenv("OPENAI_KEY"))
 

@@ -35,7 +35,7 @@ error_logs = []
 never_have_i_ever_questions = resources.get_never_have_i_evers()
 brain_teasers = resources.get_brain_teasers()
 brain_teaser_answers = resources.get_brain_teaser_answers()
-trivia_questions = resources.get_quiz_questions()
+trivia_categories = resources.get_trivia_categories()
 
 bot = commands.Bot(command_prefix=lambda bot, message: data_functions.get_prefix(message.guild.id), intents=intents)
 
@@ -736,6 +736,21 @@ async def brain_teaser(ctx):
 
 @bot.command(aliases=["quiz", "triv"], help="Gives a random trivia question.")
 async def trivia(ctx):
+    await ctx.send(embed=discord.Embed(
+        color=int("50B4E6", 16),
+        description=f"✅ Choose a category:\n- {"\n- ".join(list(trivia_categories.keys()))}"
+    ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
+    trivia_questions = None
+    try:
+        category = await bot.wait_for("message", check=lambda m: m.author == ctx.author and m.content.upper() in list(trivia_categories.keys()), timeout=15.0)
+        trivia_questions = trivia_categories[category]
+    except asyncio.TimeoutError:
+        await ctx.send(embed=discord.Embed(
+            color=int("FA3939", 16),
+            description=f"⏳ The command has been canceled because you took too long to reply."
+        ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
+    if trivia_questions is None:
+        return
     index = random.randint(0, len(trivia_questions) - 1)
     question = list(trivia_questions.keys())[index]
     answer = list(trivia_questions.values())[index]
@@ -750,10 +765,10 @@ async def trivia(ctx):
 
     embed = discord.Embed(
         color=int("50B4E6", 16),
-        description=f"✅ **{question}**\n\n" + "\n".join([f"{k} - {v}" for k, v in choice_map.items()])
+        description=f"💬 *Category: {category}*\n**{question}**\n\n" + "\n".join([f"{k} - {v}" for k, v in choice_map.items()])
     )
     embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url)
-    embed.set_footer(text="Reply with A, B, C, or D!")
+    embed.set_footer(text="Reply with A, B, C, D, or E!")
 
     await ctx.send(embed=embed)
 

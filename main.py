@@ -747,7 +747,7 @@ async def trivia(ctx):
     
     trivia_questions = None
     try:
-        category = await bot.wait_for("message", check=lambda m: m.author == ctx.author and m.content.upper() in list(trivia_categories.keys()), timeout=15.0)
+        category = await bot.wait_for("message", check=lambda m: m.author == ctx.author and m.content.lower() in [item.lower() for item in list(trivia_categories.keys())], timeout=15.0)
         trivia_questions = trivia_categories[category]
     except asyncio.TimeoutError:
         await ctx.send(embed=discord.Embed(

@@ -740,14 +740,13 @@ async def trivia(ctx):
         color=int("50B4E6", 16),
         description="✅ Choose a category:\n" + "\n".join(f"- {category}" for category in trivia_categories.keys())
     )
-    
     embed.set_author(name=ctx.author.name, icon_url=ctx.author.display_avatar.url)
     await ctx.send(embed=embed)
 
     try:
         msg = await bot.wait_for(
             "message",
-            check=lambda m: m.author == ctx.author and m.content.lower() in [c.lower() for c in trivia_categories.keys()],
+            check=lambda m: m.author == ctx.author and m.content.lower() in {c.lower() for c in trivia_categories.keys()},
             timeout=15.0
         )
         category = next(c for c in trivia_categories.keys() if c.lower() == msg.content.lower())
@@ -755,21 +754,21 @@ async def trivia(ctx):
     except asyncio.TimeoutError:
         await ctx.send(embed=discord.Embed(
             color=int("FA3939", 16),
-            description="⏳ You took too long to reply. Command canceled."
+            description="⏳ The command was canceled because you took too long to reply."
         ).set_author(name=ctx.author.name, icon_url=ctx.author.display_avatar.url))
         return
 
     question, answer = random.choice(list(trivia_questions.items()))
 
-    choices = list(set(trivia_questions.values()))  # Ensure unique choices
+    choices = list(set(trivia_questions.values()))
     if len(choices) > 4:
-        choices = random.sample(choices, 4)  # Pick 4 random wrong answers
+        choices = random.sample(choices, 4)
     if answer not in choices:
-        choices.append(answer)  # Ensure correct answer is included
+        choices.append(answer)
     random.shuffle(choices)
 
     letter_choices = ["A", "B", "C", "D", "E"]
-    choice_map = {letter: choices[i] for i in range(len(choices))}
+    choice_map = {letter: choice for letter, choice in zip(letter_choices, choices)}
     correct_choice = next(k for k, v in choice_map.items() if v == answer)
 
     embed = discord.Embed(
@@ -778,14 +777,13 @@ async def trivia(ctx):
                     "\n".join([f"{k} - {v}" for k, v in choice_map.items()])
     )
     embed.set_author(name=ctx.author.name, icon_url=ctx.author.display_avatar.url)
-    embed.set_footer(text="Reply with A, B, C, D, or E!")
 
     await ctx.send(embed=embed)
 
     try:
         msg = await bot.wait_for(
             "message",
-            check=lambda m: m.author == ctx.author and m.content.upper() in letter_choices[:len(choices)],
+            check=lambda m: m.author == ctx.author and m.content.upper() in choice_map.keys(),
             timeout=15.0
         )
         if msg.content.upper() == correct_choice:

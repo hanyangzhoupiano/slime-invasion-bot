@@ -35,6 +35,7 @@ user_last_experience_time = {}
 error_logs = []
 never_have_i_ever_questions = resources.get_never_have_i_evers()
 brain_teasers = resources.get_brain_teasers()
+brain_teaser_answers = resources.get_brain_teaser_answers()
 
 client = openai.OpenAI(api_key=os.getenv("OPENAI_KEY"))
 
@@ -530,7 +531,7 @@ async def fight(interaction: discord.Interaction):
         win_chance = max(5, min(95, win_chance))
         
         encounter_message = (
-            f"You encountered a**{' ' + size if size else ''}{' ' + mutation if mutation else ''} {creature_type} (Level {creature_level})** in the wild."
+            f"⚔️ You encountered a**{' ' + size if size else ''}{' ' + mutation if mutation else ''} {creature_type} (Level {creature_level})** in the wild."
             f" Choose an option below:\n1. Fight\n2. Escape\n\n"
             f"*Your Level: {user_level}\nWin Chance: {win_chance}%\nDifficulty: {difficulty}/10\nRisk: {risk}*"
         )
@@ -552,31 +553,31 @@ async def fight(interaction: discord.Interaction):
                 if random.randint(1, 100) <= win_chance:
                     embed = discord.Embed(
                         color=int("50B4E6", 16),
-                        description=f"You defeated the**{' ' + size if size else ''}{' ' + mutation if mutation else ''} {creature_type}** and gained {reward} experience!"
+                        description=f"✅ You defeated the**{' ' + size if size else ''}{' ' + mutation if mutation else ''} {creature_type}** and gained {reward} experience!"
                     ).set_author(name=interaction.user.name, icon_url=interaction.user.display_avatar.url)
                     data_functions.set_experience(interaction.user.id, data_functions.get_experience(interaction.user.id) + reward)
                 else:
                     embed = discord.Embed(
                         color=int("FA3939", 16),
-                        description=f"You were defeated by the**{' ' + size if size else ''}{' ' + mutation if mutation else ''} {creature_type}** and lost {risk} experience."
+                        description=f"❌ You were defeated by the**{' ' + size if size else ''}{' ' + mutation if mutation else ''} {creature_type}** and lost {risk} experience."
                     ).set_author(name=interaction.user.name, icon_url=interaction.user.display_avatar.url)
                     data_functions.set_experience(interaction.user.id, max((data_functions.get_experience(interaction.user.id) - risk), 0))
             elif "2" in response.content.lower() or "escape" in response.content.lower():
                 embed = discord.Embed(
                     color=int("50B4E6", 16),
-                    description=f"You escaped from the**{' ' + size if size else ''} {' ' + mutation if mutation else ''} {creature_type}**."
+                    description=f"✅ You escaped from the**{' ' + size if size else ''} {' ' + mutation if mutation else ''} {creature_type}**."
                 ).set_author(name=interaction.user.name, icon_url=interaction.user.display_avatar.url)
             else:
                 embed = discord.Embed(
                     color=int("FA3939", 16),
-                    description="Invalid selection."
+                    description="❌ Invalid selection."
                 ).set_author(name=interaction.user.name, icon_url=interaction.user.display_avatar.url)
             await interaction.followup.send(embed=embed)
         
         except asyncio.TimeoutError:
             embed = discord.Embed(
                 color=int("FA3939", 16),
-                description="The command has been canceled because you took too long to reply."
+                description="⏳ The command has been canceled because you took too long to reply."
             ).set_author(name=interaction.user.name, icon_url=interaction.user.display_avatar.url)
             await interaction.followup.send(embed=embed)
 
@@ -606,7 +607,7 @@ async def set_levels(ctx, amount: int = None, name: str = None):
                     try:
                         await ctx.send(embed=discord.Embed(
                             color=int("50B4E6", 16),
-                            description=f"Mutiple users found. Please select a user below, or type cancel:\n{msg}"
+                            description=f"✅ Mutiple users found. Please select a user below, or type cancel:\n{msg}"
                         ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
     
                         selection = None
@@ -615,7 +616,7 @@ async def set_levels(ctx, amount: int = None, name: str = None):
                         if "cancel" in response.content.lower():
                             await ctx.send(embed=discord.Embed(
                                 color=int("FA3939", 16),
-                                description="The command has been canceled."
+                                description="❌ The command has been canceled."
                             ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
                             return
                         try:
@@ -623,7 +624,7 @@ async def set_levels(ctx, amount: int = None, name: str = None):
                         except ValueError:
                             await ctx.send(embed=discord.Embed(
                                 color=int("FA3939", 16),
-                                description="Invalid selection."
+                                description="❌ Invalid selection."
                             ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
                             return
                         else:
@@ -637,13 +638,13 @@ async def set_levels(ctx, amount: int = None, name: str = None):
                                 else:
                                     await ctx.send(embed=discord.Embed(
                                         color=int("FA3939", 16),
-                                        description="Invalid selection."
+                                        description="❌ Invalid selection."
                                     ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
                                     return
                     except asyncio.TimeoutError:
                         await ctx.send(embed=discord.Embed(
                             color=int("FA3939", 16),
-                            description="The command has been canceled because you took too long to reply."
+                            description="⏳ The command has been canceled because you took too long to reply."
                         ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
                         return
                 else:
@@ -658,23 +659,23 @@ async def set_levels(ctx, amount: int = None, name: str = None):
                 data_functions.set_levels(user.id, int(amount))
                 await ctx.send(embed=discord.Embed(
                     color=int("50B4E6", 16),
-                    description=f"Successfully set {user.name}'s levels to {amount}."
+                    description=f"✅ Successfully set {user.name}'s levels to {amount}."
                 ).set_author(name=user.name, icon_url=user.avatar.url))
             else:
                 await ctx.send(embed=discord.Embed(
                     color=int("FA3939", 16),
-                    description="You can only set levels to a maximum of 200."
+                    description="❌ You can only set levels to a maximum of 200."
                 ).set_author(name=user.name, icon_url=user.avatar.url))
                 return
         else:
             await ctx.send(embed=discord.Embed(
                 color=int("FA3939", 16),
-                description="Invalid amount."
+                description="❌ Invalid amount."
             ).set_author(name=user.name, icon_url=user.avatar.url))
     else:
         await ctx.send(embed=discord.Embed(
             color=int("FA3939", 16),
-            description="You do not have permission to use this command.\n**Missing permissions:** *Manage Server*"
+            description="❌ You do not have permission to use this command.\n**Missing permissions:** *Manage Server*"
         ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
 
 @bot.command(aliases=["setm", "sm"], help="Set the messages of the specified user (up to 5000).")
@@ -714,11 +715,26 @@ async def never_have_i_ever(ctx):
 
 @bot.command(aliases=["bt"], help="Gives a random brain teaser.")
 async def brain_teaser(ctx):
-    brain_teaser = random.choice(brain_teasers)
+    index = random.randint(0, len(brain_teasers) - 1)
+    question = brain_teasers[index]
+    answer = brain_teaser_answers[index]
+
     await ctx.send(embed=discord.Embed(
         color=int("50B4E6", 16),
-        description=brain_teaser
+        description=question
     ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
+
+    try:
+        response = await bot.wait_for("message", check=lambda msg: msg.author == ctx.author and msg.channel == ctx.channel, timeout=15.0)
+        await ctx.send(embed=discord.Embed(
+            color=int("FA3939", 16),
+            description=f"✅ The answer to the brain teaser is: **{answer}**"
+        ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
+    except asyncio.TimeoutError:
+        await ctx.send(embed=discord.Embed(
+            color=int("FA3939", 16),
+            description=f"⏳ Time's up! The answer to the brain teaser is: **{answer}**"
+        ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
 
 @bot.command(aliases=["ch"], help="Give a prompt to ChatGPT.")
 @commands.cooldown(1, 5, commands.BucketType.user)

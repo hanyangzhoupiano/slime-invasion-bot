@@ -727,7 +727,7 @@ async def brain_teaser(ctx):
     try:
         response = await bot.wait_for("message", check=lambda msg: msg.author == ctx.author and msg.channel == ctx.channel, timeout=15.0)
         await ctx.send(embed=discord.Embed(
-            color=int("FA3939", 16),
+            color=int("50B4E6", 16),
             description=f"✅ The answer to the brain teaser is: **{answer}**"
         ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
     except asyncio.TimeoutError:

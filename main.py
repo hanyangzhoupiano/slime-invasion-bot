@@ -138,6 +138,25 @@ async def help(ctx, command_name: str = None):
 
 @bot.command(aliases=["lb"], help="Shows the server leaderboard.")
 async def leaderboard(ctx):
+    user_levels = data_functions.get_all_user_levels()
+
+    if not user_levels:
+        await ctx.send("❌ Nobody is on the leaderboard!")
+        return
+
+    user_data = {await bot.fetch_user(user_id): level for user_id, level in user_levels.items()}
+
+    sorted_users = sorted(user_data.items(), key=lambda x: (-x[1], x[0].name.lower()))
+
+    embed = discord.Embed(
+        title="🏆 Leaderboard",
+        color=int("50B4E6", 16),
+        description=""
+    )..set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url)
+
+    for index, (user, level) in enumerate(sorted_users[:10], start=1):
+        embed.description += f"**{index}. {user.name}** — Level {level}\n"
+    await ctx.send(embed=embed)
 
 @bot.command(aliases=["vp", "viewp"], help="Shows the current prefix of this bot.")
 async def view_prefix(ctx):

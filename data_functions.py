@@ -5,6 +5,7 @@ DATABASE_URL = os.getenv("DATABASE_URL")
 
 if DATABASE_URL is None:
     raise ValueError("DATABASE_URL not found!")
+
 def connect():
     """Initialize the database connection."""
     try:
@@ -128,6 +129,22 @@ def set_levels(user_id, level):
     except Exception as e:
         print(f"Error in set_messages: {e}")
         conn.rollback()
+
+def get_all_user_levels():
+    """Retrieve levels for all users."""
+    try:
+        conn = connect()
+        if conn:
+            with conn.cursor() as cursor:
+                cursor.execute("SELECT user_id, level FROM experience")
+                rows = cursor.fetchall()
+                return {row[0]: row[1] for row in rows}
+    except Exception as e:
+        print(f"Error in get_all_user_levels: {e}")
+        conn.rollback()
+    finally:
+        if conn:
+            conn.close()
 
 def get_prefix(guild_id):
     """Retrieve the prefix for a specific guild."""

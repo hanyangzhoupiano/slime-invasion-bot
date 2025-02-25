@@ -414,7 +414,7 @@ async def fight(ctx, name: str = None):
             win_chance = 60
             
             if level_difference > 0:
-                win_chance = math.floor(win_chance - (5 * math.log1p(level_difference)) - level_difference)
+                win_chance = math.floor(win_chance - (5 * math.log1p(abs(level_difference))) - level_difference)
             else:
                 win_chance = math.floor(win_chance + (5 * math.log1p(abs(level_difference))) + level_difference)
             

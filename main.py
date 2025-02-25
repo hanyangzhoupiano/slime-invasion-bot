@@ -528,7 +528,7 @@ async def fight(ctx, name: str = None):
                 win_chance = 60
                 
                 if level_difference > 0:
-                    win_chance = math.floor(win_chance - (5 * math.log1p(level_difference)) - level_difference)
+                    win_chance = math.floor(win_chance - (5 * math.log1p(abs(level_difference))) - level_difference)
                 else:
                     win_chance = math.floor(win_chance + (5 * math.log1p(abs(level_difference))) + level_difference)
                 
@@ -555,7 +555,7 @@ async def fight(ctx, name: str = None):
                         if random.randint(1, 100) <= win_chance:
                             await ctx.send(embed=discord.Embed(
                                 color=int("50B4E6", 16),
-                                description=f"✅ You defeated **{user.id}** and gained {reward} experience!"
+                                description=f"✅ You defeated **{user.name}** and gained {reward} experience!"
                             ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
                             data_functions.set_experience(ctx.author.id, data_functions.get_experience(ctx.author.id) + reward)
                         else:

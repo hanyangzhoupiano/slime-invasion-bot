@@ -152,7 +152,7 @@ async def leaderboard(ctx):
         title="🏆 Leaderboard",
         color=int("50B4E6", 16),
         description=""
-    )..set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url)
+    ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url)
 
     for index, (user, level) in enumerate(sorted_users[:10], start=1):
         embed.description += f"**{index}. {user.name}** — Level {level}\n"
@@ -612,7 +612,9 @@ async def say(ctx, *, message: str = None):
 
 @bot.command(aliases=["setl", "sl"], help="Sets the levels of the specificed user (up to 200).")
 async def set_levels(ctx, amount: int = None, name: str = None):
-    if amount is not None and ctx.author.guild_permissions.manage_guild:
+    if ctx.author.guild_permissions.manage_guild:
+        if amount is None:
+            return
         if ctx.author.id != 1089171899294167122:
             await ctx.send(embed=discord.Embed(
                 color=int("50B4E6", 16),

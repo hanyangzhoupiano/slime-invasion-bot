@@ -528,9 +528,9 @@ async def fight(ctx, name: str = None):
                 win_chance = 60
                 
                 if level_difference > 0:
-                    win_chance = math.floor(win_chance - (5 * math.log1p(level_difference)) - 5)
+                    win_chance = math.floor(win_chance - (5 * math.log1p(level_difference)) - level_difference)
                 else:
-                    win_chance = math.floor(win_chance + (5 * math.log1p(abs(level_difference))) + 5)
+                    win_chance = math.floor(win_chance + (5 * math.log1p(abs(level_difference))) + level_difference)
                 
                 reward = random.randint(20, 50) * user_level
                 risk = random.randint(5, 20) * math.ceil(user_level / 2)
@@ -538,9 +538,9 @@ async def fight(ctx, name: str = None):
                 win_chance = max(5, min(95, win_chance))
 
                 encounter_message = (
-                    f"⚔️ Are you sure you want to fight **{user.id}**?"
+                    f"⚔️ Are you sure you want to fight **{user.name}**?"
                     f"\n1. Yes\n2. No\n\n"
-                    f"*Your Level: {user_level}\n{user.id}'s Level: {victim_level}\nWin Chance: {win_chance}%\nRisk: {risk}*"
+                    f"*Your Level: {user_level}\n{user.name}'s Level: {victim_level}\nWin Chance: {win_chance}%\nRisk: {risk}*"
                 )
                 
                 await ctx.send(embed=discord.Embed(

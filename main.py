@@ -37,6 +37,8 @@ brain_teasers = resources.get_brain_teasers()
 brain_teaser_answers = resources.get_brain_teaser_answers()
 trivia_categories = resources.get_trivia_categories()
 
+disabled_commands = []
+
 bot = commands.Bot(command_prefix=lambda bot, message: data_functions.get_prefix(message.guild.id), intents=intents)
 
 data_functions.setup_database()
@@ -123,21 +125,79 @@ bot.remove_command("help")
 @bot.command(help="Shows this help message.", aliases=["commands", "cmds"])
 async def help(ctx, command_name: str = None):
     if command_name is not None:
-        command = bot.get_command(command_name)
+        global disabled_commands
+        command = bot.get_command(command_name.lower())
         if command:
             await ctx.send(embed=discord.Embed(
                 color=int("50B4E6", 16),
-                description=f"**{command.name}** - {command.help}\n**Aliases:** {', '.join(command.aliases) if command.aliases else 'None'}"
+                description=f"**{command.name}** {'(Disabled) ' if command.name in disabled_commands else ''}- {command.help}\n**Aliases:** {', '.join(command.aliases) if command.aliases else 'None'}"
             ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
     else:
-        help_text = "- " + "\n- ".join([f"**{cmd.name}** - {cmd.help}\n**Aliases:** {', '.join(cmd.aliases) if cmd.aliases else 'None'}" for cmd in bot.commands])
+        help_text = "- " + "\n- ".join([f"**{cmd.name}** {'(Disabled) ' if command.name in disabled_commands else ''}- {cmd.help}\n**Aliases:** {', '.join(cmd.aliases) if cmd.aliases else 'None'}" for cmd in bot.commands])
         await ctx.send(embed=discord.Embed(
             color=int("50B4E6", 16),
             description=f"{help_text}"
         ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
 
+@bot.command(aliases=["dis"], help="Disable a specific command.")
+async def disable(ctx, cmd_name):
+    if ctx.author.id != 1089171899294167122:
+        await ctx.send(embed=discord.Embed(
+            color=int("FA3939", 16),
+            description=f"❌ Please ask **hanyangzhou** to disable commands."
+        ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
+        return
+    global disabled_commands
+    command = bot.get_command(cmd_name.lower())
+    if command:
+        await ctx.send(embed=discord.Embed(
+            color=int("50B4E6", 16),
+            description=f"✅ Succesfully disabled the command '{command.name}'."
+        ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
+        disabled_commands.append(command.name)
+    else:
+        await ctx.send(embed=discord.Embed(
+            color=int("FA3939", 16),
+            description=f"❌ Invalid command."
+        ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
+
+@bot.command(aliases=["en"], help="Enable a specific command.")
+async def enable(ctx, cmd_name):
+    if ctx.author.id != 1089171899294167122:
+        await ctx.send(embed=discord.Embed(
+            color=int("FA3939", 16),
+            description=f"❌ Please ask **hanyangzhou** to enable commands."
+        ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
+        return
+    global disabled_commands
+    command = bot.get_command(cmd_name.lower())
+    if command:
+        if command.name in disabled_commands:
+            await ctx.send(embed=discord.Embed(
+                color=int("50B4E6", 16),
+                description=f"✅ Succesfully enabled the command '{command.name}'."
+            ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
+            disabled_commands.remove(command.name)
+        else:
+            await ctx.send(embed=discord.Embed(
+                color=int("FA3939", 16),
+                description=f"❌ The command '{command.name}' is not currently disabled."
+            ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
+    else:
+        await ctx.send(embed=discord.Embed(
+            color=int("FA3939", 16),
+            description=f"❌ Invalid command."
+        ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
+
 @bot.command(aliases=["lb"], help="Shows the server leaderboard.")
 async def leaderboard(ctx):
+    global disabled_commands
+    if "leaderboard" in disabled_commands:
+        await ctx.send(embed=discord.Embed(
+            color=int("FA3939", 16),
+            description=f"❌ This command is currently disabled. Please ask **hanyangzhou** to enable it."
+        ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
+        return
     user_levels = data_functions.get_all_user_levels()
 
     if not user_levels:
@@ -155,11 +215,18 @@ async def leaderboard(ctx):
     ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url)
 
     for index, (user, level) in enumerate(sorted_users[:10], start=1):
-        embed.description += f"**{index}. {user.name}** — Level {level}\n"
+        embed.description += f"**{index}. {user.name}** - Level {level}\n"
     await ctx.send(embed=embed)
 
 @bot.command(aliases=["vp", "viewp"], help="Shows the current prefix of this bot.")
 async def view_prefix(ctx):
+    global disabled_commands
+    if "view_prefix" in disabled_commands:
+        await ctx.send(embed=discord.Embed(
+            color=int("FA3939", 16),
+            description=f"❌ This command is currently disabled. Please ask **hanyangzhou** to enable it."
+        ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
+        return
     await ctx.send(embed=discord.Embed(
         color=int("50B4E6", 16),
         description=f"The current prefix is '{data_functions.get_prefix(ctx.guild.id)}'."
@@ -183,6 +250,13 @@ async def slash_view_prefix(interaction: discord.Interaction):
 @bot.command(aliases=["sp", "setp"], help="Changes the prefix of this bot.")
 async def set_prefix(ctx, new_prefix: str = None):
     if ctx.author.guild_permissions.manage_guild:
+        global disabled_commands
+        if "set_prefix" in disabled_commands:
+            await ctx.send(embed=discord.Embed(
+                color=int("FA3939", 16),
+                description=f"❌ This command is currently disabled. Please ask **hanyangzhou** to enable it."
+            ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
+            return
         if new_prefix is not None:
             if len(new_prefix) > 32:
                 await ctx.send(embed=discord.Embed(
@@ -201,38 +275,16 @@ async def set_prefix(ctx, new_prefix: str = None):
             description="❌ You do not have permission to use this command.\n**Missing permissions:** *Manage Server*"
         ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
 
-@bot.tree.command(name="setprefix", description="Sets the current prefix of this bot.")
-async def slash_set_prefix(interaction: discord.Interaction, new_prefix: str = None):
-    if interaction.member.guild_permissions.manage_guild:
-        if new_prefix is not None:
-            try:
-                await interaction.response.defer()
-                if len(new_prefix) > 32:
-                    await interaction.followup.send(embed=discord.Embed(
-                        color=int("50B4E6", 16),
-                        description="❌ The prefix chosen is too long. Please try again with a shorter prefix."
-                    ).set_author(name=interaction.member.name, icon_url=interaction.member.avatar.url))
-                    return
-                data_functions.set_prefix(ctx.guild.id, new_prefix)
-                await interaction.followup.send(embed=discord.Embed(
-                    color=int("50B4E6", 16),
-                    description=f"✅ The prefix has successfully been changed to '{new_prefix}'."
-                ).set_author(name=interaction.member.name, icon_url=interaction.member.avatar.url))
-            except Exception as e:
-                error_logs.append(e)
-                if len(error_logs) > 20:
-                    if error_logs and 0 in error_logs:
-                        del error_logs[0]
-    else:
-        await interaction.response.defer()
-        await interaction.followup.send(embed=discord.Embed(
-            color=int("FA3939", 16),
-            description="❌ You do not have permission to use this command.\n**Missing permissions:** *Manage Server*"
-        ).set_author(name=interaction.member.name, icon_url=interaction.member.avatar.url))
-
 @bot.command(aliases=["vs", "msgs", "lvls", "stats"], help="Shows the statistics of a user.")
 async def view_stats(ctx, name: str = None):
     if not ctx.author.bot:
+        global disabled_commands
+        if "view_stats" in disabled_commands:
+            await ctx.send(embed=discord.Embed(
+                color=int("FA3939", 16),
+                description=f"❌ This command is currently disabled. Please ask **hanyangzhou** to enable it."
+            ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
+            return
         user = None
         if name is None:
             user = ctx.author
@@ -313,35 +365,16 @@ async def view_stats(ctx, name: str = None):
                 description=f"**Level:** {level}\n**Experience:** {experience}\n**Until Next Level:** {experience_left}\n**Messages:** {messages}\n**Server Join Date:** {user.joined_at.strftime('%m/%d/%Y').lstrip('0').replace('/0', '/')}\n**Role:** {user.top_role}"
             ).set_author(name=user.name, icon_url=user.avatar.url))
 
-@bot.tree.command(name="viewstats", description="Shows the statistics of a user.")
-async def slash_view_stats(interaction: discord.Interaction, member: discord.Member = None):
-    if not ctx.author.bot:
-        await interaction.response.defer()
-        user = None
-        if member is None:
-            user = interaction.member
-        else:
-            user = member
-        if user is not None:
-            await interaction.followup.send(embed=discord.Embed(
-                color=int("50B4E6", 16),
-                description=f"**Attempting to retrieve data for '{user.name}'...**"
-            ).set_author(name=user.name, icon_url=user.avatar.url))
-    
-            messages = data_functions.get_messages(user.id)
-            level = data_functions.get_levels(user.id)
-            experience = data_functions.get_experience(user.id)
-            experience_left = (25*(level**2)-(25*level)+100) - experience
-    
-            await interaction.followup.send(embed=discord.Embed(
-                color=int("50B4E6", 16),
-                title="Statistics",
-                description=f"**Level:** {level}\n**Experience:** {experience}\n**Until Next Level:** {experience_left}\n**Messages:** {messages}\n**Server Join Date:** {user.joined_at.strftime('%m/%d/%Y').lstrip('0').replace('/0', '/')}\n**Role:** {user.top_role}"
-            ).set_author(name=user.name, icon_url=user.avatar.url))
-
 @bot.command(aliases=["expdrop", "expd", "ed"], help="Create an experience drop in a channel.")
 async def experience_drop(ctx):
     if ctx.author.guild_permissions.manage_guild:
+        global disabled_commands
+        if "experience_drop" in disabled_commands:
+            await ctx.send(embed=discord.Embed(
+                color=int("FA3939", 16),
+                description=f"❌ This command is currently disabled. Please ask **hanyangzhou** to enable it."
+            ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
+            return
         random_integer = random.randint(1, 100)
         type = "Common" if random_integer < 60 else "Rare" if random_integer < 80 else "Epic" if random_integer < 90 else "Legendary" if random_integer < 95 else "Mythical" if random_integer < 98 else "Celestial" 
         amount = random.randint(160, 240) if random_integer < 60 else random.randint(240, 320) if random_integer < 80 else random.randint(320, 650) if random_integer < 90 else random.randint(650, 920) if random_integer < 95 else random.randint(920, 1200) if random_integer < 98 else random.randint(1200, 1500) 
@@ -374,6 +407,13 @@ async def experience_drop(ctx):
 @bot.command(aliases=["f"], help="Fight against a creature for rewards.")
 async def fight(ctx, name: str = None):
     if not ctx.author.bot:
+        global disabled_commands
+        if "fight" in disabled_commands:
+            await ctx.send(embed=discord.Embed(
+                color=int("FA3939", 16),
+                description=f"❌ This command is currently disabled. Please ask **hanyangzhou** to enable it."
+            ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
+            return
         if name is None:
             difficulty = random.randint(1, 10)
             creature_type = random.choice(["Zombie", "Goblin", "Elf", "Angel", "Demon", "Warrior", "Knight", "Slime"])
@@ -524,6 +564,12 @@ async def fight(ctx, name: str = None):
                                     for member in ctx.guild.members:
                                         if member.name.lower() == matching_name.lower():
                                             user = member
+                                            if member.id == ctx.author.id:
+                                                await ctx.send(embed=discord.Embed(
+                                                    color=int("FA3939", 16),
+                                                    description="❌ You cannot fight yourself."
+                                                ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
+                                                return
                                             break
                                 else:
                                     await ctx.send(embed=discord.Embed(
@@ -583,7 +629,7 @@ async def fight(ctx, name: str = None):
                         else:
                             await ctx.send(embed=discord.Embed(
                                 color=int("FA3939", 16),
-                                description=f"❌ You were defeated by **{user.id}** and lost {risk} experience."
+                                description=f"❌ You were defeated by **{user.name}** and lost {risk} experience."
                             ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
                             data_functions.set_experience(ctx.author.id, max((data_functions.get_experience(ctx.author.id) - risk), 0))
                     elif "2" in response.content.lower() or "no" in response.content.lower():
@@ -604,6 +650,13 @@ async def fight(ctx, name: str = None):
 
 @bot.command(aliases=["s", "sy"], help="Make the bot say a specified message.")
 async def say(ctx, *, message: str = None):
+    global disabled_commands
+    if "fight" in disabled_commands:
+        await ctx.send(embed=discord.Embed(
+            color=int("FA3939", 16),
+            description=f"❌ This command is currently disabled. Please ask **hanyangzhou** to enable it."
+        ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
+        return
     if message is not None:
         await ctx.send(embed=discord.Embed(
             color=int("50B4E6", 16),
@@ -613,13 +666,14 @@ async def say(ctx, *, message: str = None):
 @bot.command(aliases=["setl", "sl"], help="Sets the levels of the specificed user (up to 200).")
 async def set_levels(ctx, amount: int = None, name: str = None):
     if ctx.author.guild_permissions.manage_guild:
-        if amount is None:
-            return
-        if ctx.author.id != 1089171899294167122:
+        global disabled_commands
+        if "set_levels" in disabled_commands:
             await ctx.send(embed=discord.Embed(
-                color=int("50B4E6", 16),
-                description=f"Level modification has been disabled. Please ask **hanyangzhou** to enable it."
+                color=int("FA3939", 16),
+                description=f"❌ This command is currently disabled. Please ask **hanyangzhou** to enable it."
             ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
+            return
+        if amount is None:
             return
         if name is not None:
             matching_names = []
@@ -709,8 +763,21 @@ async def set_levels(ctx, amount: int = None, name: str = None):
 
 @bot.command(aliases=["setm", "sm"], help="Set the messages of the specified user (up to 5000).")
 async def set_messages(ctx, amount: int = None):
-    if amount is not None and ctx.author.guild_permissions.manage_guild:
-        if str(amount).isnumeric():
+    if ctx.author.guild_permissions.manage_guild:
+        global disabled_commands
+        if "set_messages" in disabled_commands:
+            await ctx.send(embed=discord.Embed(
+                color=int("FA3939", 16),
+                description=f"❌ This command is currently disabled. Please ask **hanyangzhou** to enable it."
+            ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
+            return
+        if amount is not None:
+            await ctx.send(embed=discord.Embed(
+                color=int("FA3939", 16),
+                description="❌ Invalid amount."
+            ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
+            if not str(amount).isnumeric():
+                return
             if amount <= 5000:
                 data_functions.set_messages(ctx.author.id, int(amount))
                 await ctx.send(embed=discord.Embed(
@@ -736,6 +803,13 @@ async def set_messages(ctx, amount: int = None):
 
 @bot.command(aliases=["nhie"], help="Gives a random 'Never Have I Ever' question.")
 async def never_have_i_ever(ctx):
+    global disabled_commands
+    if "never_have_i_ever" in disabled_commands:
+        await ctx.send(embed=discord.Embed(
+            color=int("FA3939", 16),
+            description=f"❌ This command is currently disabled. Please ask **hanyangzhou** to enable it."
+        ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
+        return
     question = random.choice(never_have_i_ever_questions)
     await ctx.send(embed=discord.Embed(
         color=int("50B4E6", 16),
@@ -744,6 +818,13 @@ async def never_have_i_ever(ctx):
 
 @bot.command(aliases=["bt"], help="Gives a random brain teaser.")
 async def brain_teaser(ctx):
+    global disabled_commands
+    if "brain_teaser" in disabled_commands:
+        await ctx.send(embed=discord.Embed(
+            color=int("FA3939", 16),
+            description=f"❌ This command is currently disabled. Please ask **hanyangzhou** to enable it."
+        ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
+        return
     index = random.randint(0, len(brain_teasers) - 1)
     question = brain_teasers[index]
     answer = brain_teaser_answers[index]
@@ -767,6 +848,13 @@ async def brain_teaser(ctx):
 
 @bot.command(aliases=["quiz", "triv"], help="Gives a random trivia question.")
 async def trivia(ctx):
+    global disabled_commands
+    if "trivia" in disabled_commands:
+        await ctx.send(embed=discord.Embed(
+            color=int("FA3939", 16),
+            description=f"❌ This command is currently disabled. Please ask **hanyangzhou** to enable it."
+        ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
+        return
     embed = discord.Embed(
         color=int("50B4E6", 16),
         description="Choose a category:\n" + "\n".join(f"- {category}" for category in trivia_categories.keys())
@@ -835,6 +923,13 @@ async def trivia(ctx):
 
 @bot.command(aliases=["sync", "sc"], help="Shows the current state of command syncing.")
 async def sync_check(ctx):
+    global disabled_commands
+    if "sync_check" in disabled_commands:
+        await ctx.send(embed=discord.Embed(
+            color=int("FA3939", 16),
+            description=f"❌ This command is currently disabled. Please ask **hanyangzhou** to enable it."
+        ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
+        return
     global sync_text
     if ctx.author.guild_permissions.manage_guild:
         await ctx.send(embed=discord.Embed(

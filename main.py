@@ -136,6 +136,9 @@ async def help(ctx, command_name: str = None):
             description=f"{help_text}"
         ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
 
+@bot.command(aliases=["lb"], help="Shows the server leaderboard.")
+async def leaderboard(ctx):
+
 @bot.command(aliases=["vp", "viewp"], help="Shows the current prefix of this bot.")
 async def view_prefix(ctx):
     await ctx.send(embed=discord.Embed(

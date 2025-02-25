@@ -132,12 +132,17 @@ async def help(ctx, command_name: str = None):
                 color=int("50B4E6", 16),
                 description=f"**{command.name}** {'(Disabled) ' if command.name in disabled_commands else ''}- {command.help}\n**Aliases:** {', '.join(command.aliases) if command.aliases else 'None'}"
             ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
+        else:
+            await ctx.send(embed=discord.Embed(
+                color=int("FA3939", 16),
+                description="❌ Invalid command."
+            ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
     else:
-        help_text = "- " + "\n- ".join([f"**{cmd.name}** {'(Disabled) ' if command.name in disabled_commands else ''}- {cmd.help}\n**Aliases:** {', '.join(cmd.aliases) if cmd.aliases else 'None'}" for cmd in bot.commands])
+        help_text = "- " + "\n- ".join([f"**{cmd.name}** {'(Disabled) ' if cmd.name in disabled_commands else ''}- {cmd.help}\n**Aliases:** {', '.join(cmd.aliases) if cmd.aliases else 'None'}" for cmd in bot.commands])
         await ctx.send(embed=discord.Embed(
             color=int("50B4E6", 16),
             description=f"{help_text}"
-        ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
+        ).set_author(name=ctx.author.name, 
 
 @bot.command(aliases=["dis"], help="Disable a specific command.")
 async def disable(ctx, cmd_name):

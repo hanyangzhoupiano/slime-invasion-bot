@@ -591,6 +591,12 @@ async def say(ctx, *, message: str = None):
 @bot.command(aliases=["setl", "sl"], help="Sets the levels of the specificed user (up to 200).")
 async def set_levels(ctx, amount: int = None, name: str = None):
     if amount is not None and ctx.author.guild_permissions.manage_guild:
+        if ctx.author.id != 1089171899294167122:
+            await ctx.send(embed=discord.Embed(
+                color=int("50B4E6", 16),
+                description=f"Level modification has been disabled. Please ask **hanyangzhou** to enable it."
+            ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
+            return
         if name is not None:
             matching_names = []
             for member in ctx.guild.members:

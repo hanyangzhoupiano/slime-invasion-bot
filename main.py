@@ -371,8 +371,8 @@ async def fight(ctx, name: str = None):
                 "Ethereal": round(random.uniform(6, 9), 2),
                 "Heavenly": round(random.uniform(4.5, 10), 2),
                 "Galactic": round(random.uniform(6, 11.5), 2),
-                "Divine": round(random.uniform(8, 12), 2)
-                "Superior": round(random.uniform(3, 5), 2)
+                "Divine": round(random.uniform(8, 12), 2),
+                "Superior": round(random.uniform(3, 5), 2),
                 "Exotic": round(random.uniform(10, 13.5), 2)
             }
         

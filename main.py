@@ -142,7 +142,7 @@ async def help(ctx, command_name: str = None):
         await ctx.send(embed=discord.Embed(
             color=int("50B4E6", 16),
             description=f"{help_text}"
-        ).set_author(name=ctx.author.name, 
+        ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
 
 @bot.command(aliases=["dis"], help="Disable a specific command.")
 async def disable(ctx, cmd_name):

@@ -455,13 +455,6 @@ async def fight(ctx, name: str = None):
             creature_level *= difficulty
             
             user_level = data_functions.get_levels(ctx.author.id)
-            level_difference = creature_level - user_level
-            win_chance = 60
-            
-            if level_difference > 0:
-                win_chance = math.floor(win_chance - (5 * math.log1p(abs(level_difference))) - level_difference)
-            else:
-                win_chance = math.floor(win_chance + (5 * math.log1p(abs(level_difference))) + level_difference)
             
             mutation_multiplier = 1
             size_multiplier = 1
@@ -481,6 +474,14 @@ async def fight(ctx, name: str = None):
             reward = (random.randint(20, 50) * difficulty) + (random.randint(20, 50) * creature_level)
             risk = math.ceil(random.randint(20, 50) * difficulty) + creature_level * 2
             
+            level_difference = creature_level - user_level
+            win_chance = 60
+            
+            if level_difference > 0:
+                win_chance = math.floor(win_chance - (5 * math.log1p(abs(level_difference))) - math.ceil(level_difference/2))
+            else:
+                win_chance = math.floor(win_chance + (5 * math.log1p(abs(level_difference))) + math.ceil(level_difference/2))
+
             win_chance = max(5, min(95, win_chance))
             
             encounter_message = (
@@ -597,13 +598,13 @@ async def fight(ctx, name: str = None):
                 user_level = data_functions.get_levels(ctx.author.id)
                 victim_level = data_functions.get_levels(user.id)
 
-                level_difference = user_level - victim_level
+                level_difference = victim_level - user_level
                 win_chance = 60
                 
                 if level_difference > 0:
-                    win_chance = math.floor(win_chance - (5 * math.log1p(abs(level_difference))) - level_difference)
+                    win_chance = math.floor(win_chance - (5 * math.log1p(abs(level_difference))) - math.ceil(level_difference/2))
                 else:
-                    win_chance = math.floor(win_chance + (5 * math.log1p(abs(level_difference))) + level_difference)
+                    win_chance = math.floor(win_chance + (5 * math.log1p(abs(level_difference))) + math.ceil(level_difference/2))
                 
                 reward = random.randint(20, 50) * user_level
                 risk = random.randint(5, 20) * math.ceil(user_level / 2)

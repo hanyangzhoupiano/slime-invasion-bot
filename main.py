@@ -54,7 +54,7 @@ async def on_ready():
 
 @bot.event
 async def on_disconnect():
-    print("Bot disconnected! Attempting to reconnect in 5 seconds...")
+    print("Bot disconnectednot Attempting to reconnect in 5 seconds...")
     await asyncio.sleep(5)
 
 @bot.event
@@ -294,7 +294,7 @@ async def view_stats(ctx, name: str = None):
         else:
             matching_names = []
             for member in ctx.guild.members:
-                if name.lower() in member.name.lower() and !member.bot:
+                if name.lower() in member.name.lower() and not member.bot:
                     matching_names.append(member.name)
             if matching_names:
                 if len(matching_names) > 1:
@@ -531,7 +531,7 @@ async def fight(ctx, name: str = None):
             user = None
             matching_names = []
             for member in ctx.guild.members:
-                if name.lower() in member.name.lower() and !member.bot:
+                if name.lower() in member.name.lower() and not member.bot:
                     matching_names.append(member.name)
             if matching_names:
                 if len(matching_names) > 1:
@@ -688,7 +688,7 @@ async def set_levels(ctx, amount: int = None, name: str = None):
         if name is not None:
             matching_names = []
             for member in ctx.guild.members:
-                if name.lower() in member.name.lower() and !member.bot:
+                if name.lower() in member.name.lower() and not member.bot:
                     matching_names.append(member.name)
             if matching_names:
                 if len(matching_names) > 1:

@@ -63,12 +63,11 @@ async def on_resumed():
 
 @bot.event
 async def on_message(msg):
-    if msg.author == bot.user:
+    if msg.author == bot.user or msg.author.bot:
         return
+    
     user_id = msg.author.id
     current_time = time.time()
-    if msg.author.bot:
-        return
 
     if math.floor(random.random() * 100 + 1) <= 5:
         random_integer = random.randint(1, 100)
@@ -124,6 +123,8 @@ async def on_command_error(ctx, error):
 bot.remove_command("help")
 @bot.command(help="Shows this help message.", aliases=["commands", "cmds"])
 async def help(ctx, command_name: str = None):
+    if ctx.author.bot:
+        return
     if command_name is not None:
         global disabled_commands
         command = bot.get_command(command_name.lower())
@@ -146,6 +147,8 @@ async def help(ctx, command_name: str = None):
 
 @bot.command(aliases=["dis"], help="Disable a specific command.")
 async def disable(ctx, cmd_name):
+    if ctx.author.bot:
+        return
     if ctx.author.id != 1089171899294167122:
         await ctx.send(embed=discord.Embed(
             color=int("FA3939", 16),
@@ -168,6 +171,8 @@ async def disable(ctx, cmd_name):
 
 @bot.command(aliases=["en"], help="Enable a specific command.")
 async def enable(ctx, cmd_name):
+    if ctx.author.bot:
+        return
     if ctx.author.id != 1089171899294167122:
         await ctx.send(embed=discord.Embed(
             color=int("FA3939", 16),
@@ -196,6 +201,8 @@ async def enable(ctx, cmd_name):
 
 @bot.command(aliases=["lb"], help="Shows the server leaderboard.")
 async def leaderboard(ctx):
+    if ctx.author.bot:
+        return
     global disabled_commands
     if "leaderboard" in disabled_commands:
         await ctx.send(embed=discord.Embed(
@@ -225,6 +232,8 @@ async def leaderboard(ctx):
 
 @bot.command(aliases=["vp", "viewp"], help="Shows the current prefix of this bot.")
 async def view_prefix(ctx):
+    if ctx.author.bot:
+        return
     global disabled_commands
     if "view_prefix" in disabled_commands:
         await ctx.send(embed=discord.Embed(
@@ -237,23 +246,10 @@ async def view_prefix(ctx):
         description=f"The current prefix is '{data_functions.get_prefix(ctx.guild.id)}'."
     ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
 
-@bot.tree.command(name="viewprefix", description="Shows the current prefix of this bot.")
-async def slash_view_prefix(interaction: discord.Interaction):
-    try:
-        await interaction.response.defer()
-        embed = discord.Embed(
-            color=int("50B4E6", 16),
-            description=f"The current prefix is '{data_functions.get_prefix(interaction.guild.id)}'."
-        ).set_author(name=interaction.member.name, icon_url=interaction.member.avatar.url)
-        await interaction.followup.send(embed=embed)
-    except Exception as e:
-        error_logs.append(e)
-        if len(error_logs) > 20:
-            if error_logs and 0 in error_logs:
-                del error_logs[0]
-
 @bot.command(aliases=["sp", "setp"], help="Changes the prefix of this bot.")
 async def set_prefix(ctx, new_prefix: str = None):
+    if ctx.author.bot:
+        return
     if ctx.author.guild_permissions.manage_guild:
         global disabled_commands
         if "set_prefix" in disabled_commands:
@@ -282,6 +278,8 @@ async def set_prefix(ctx, new_prefix: str = None):
 
 @bot.command(aliases=["vs", "msgs", "lvls", "stats"], help="Shows the statistics of a user.")
 async def view_stats(ctx, name: str = None):
+    if ctx.author.bot:
+        return
     if not ctx.author.bot:
         global disabled_commands
         if "view_stats" in disabled_commands:
@@ -296,7 +294,7 @@ async def view_stats(ctx, name: str = None):
         else:
             matching_names = []
             for member in ctx.guild.members:
-                if name.lower() in member.name.lower():
+                if name.lower() in member.name.lower() and !member.bot:
                     matching_names.append(member.name)
             if matching_names:
                 if len(matching_names) > 1:
@@ -372,6 +370,8 @@ async def view_stats(ctx, name: str = None):
 
 @bot.command(aliases=["expdrop", "expd", "ed"], help="Create an experience drop in a channel.")
 async def experience_drop(ctx):
+    if ctx.author.bot:
+        return
     if ctx.author.guild_permissions.manage_guild:
         global disabled_commands
         if "experience_drop" in disabled_commands:
@@ -531,7 +531,7 @@ async def fight(ctx, name: str = None):
             user = None
             matching_names = []
             for member in ctx.guild.members:
-                if name.lower() in member.name.lower():
+                if name.lower() in member.name.lower() and !member.bot:
                     matching_names.append(member.name)
             if matching_names:
                 if len(matching_names) > 1:
@@ -656,6 +656,8 @@ async def fight(ctx, name: str = None):
 
 @bot.command(aliases=["s", "sy"], help="Make the bot say a specified message.")
 async def say(ctx, *, message: str = None):
+    if ctx.author.bot:
+        return
     global disabled_commands
     if "fight" in disabled_commands:
         await ctx.send(embed=discord.Embed(
@@ -671,6 +673,8 @@ async def say(ctx, *, message: str = None):
 
 @bot.command(aliases=["setl", "sl"], help="Sets the levels of the specificed user (up to 200).")
 async def set_levels(ctx, amount: int = None, name: str = None):
+    if ctx.author.bot:
+        return
     if ctx.author.guild_permissions.manage_guild:
         global disabled_commands
         if "set_levels" in disabled_commands:
@@ -684,7 +688,7 @@ async def set_levels(ctx, amount: int = None, name: str = None):
         if name is not None:
             matching_names = []
             for member in ctx.guild.members:
-                if name.lower() in member.name.lower():
+                if name.lower() in member.name.lower() and !member.bot:
                     matching_names.append(member.name)
             if matching_names:
                 if len(matching_names) > 1:
@@ -769,6 +773,8 @@ async def set_levels(ctx, amount: int = None, name: str = None):
 
 @bot.command(aliases=["setm", "sm"], help="Set the messages of the specified user (up to 5000).")
 async def set_messages(ctx, amount: int = None):
+    if ctx.author.bot:
+        return
     if ctx.author.guild_permissions.manage_guild:
         global disabled_commands
         if "set_messages" in disabled_commands:
@@ -809,6 +815,8 @@ async def set_messages(ctx, amount: int = None):
 
 @bot.command(aliases=["nhie"], help="Gives a random 'Never Have I Ever' question.")
 async def never_have_i_ever(ctx):
+    if ctx.author.bot:
+        return
     global disabled_commands
     if "never_have_i_ever" in disabled_commands:
         await ctx.send(embed=discord.Embed(
@@ -824,6 +832,8 @@ async def never_have_i_ever(ctx):
 
 @bot.command(aliases=["bt"], help="Gives a random brain teaser.")
 async def brain_teaser(ctx):
+    if ctx.author.bot:
+        return
     global disabled_commands
     if "brain_teaser" in disabled_commands:
         await ctx.send(embed=discord.Embed(
@@ -854,6 +864,8 @@ async def brain_teaser(ctx):
 
 @bot.command(aliases=["quiz", "triv"], help="Gives a random trivia question.")
 async def trivia(ctx):
+    if ctx.author.bot:
+        return
     global disabled_commands
     if "trivia" in disabled_commands:
         await ctx.send(embed=discord.Embed(
@@ -929,6 +941,8 @@ async def trivia(ctx):
 
 @bot.command(aliases=["sync", "sc"], help="Shows the current state of command syncing.")
 async def sync_check(ctx):
+    if ctx.author.bot:
+        return
     global disabled_commands
     if "sync_check" in disabled_commands:
         await ctx.send(embed=discord.Embed(

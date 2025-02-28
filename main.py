@@ -5,8 +5,8 @@ import json
 import random
 import asyncio
 import math 
-import discord
-from discord import ui
+from discord.ext import commands
+
 from threading import Thread
 
 import data_functions
@@ -39,7 +39,7 @@ trivia_categories = resources.get_trivia_categories()
 
 disabled_commands = []
 
-bot = discord.ext.commands.Bot(command_prefix=lambda bot, message: data_functions.get_prefix(message.guild.id), intents=intents)
+bot = commands.Bot(command_prefix=lambda bot, message: data_functions.get_prefix(message.guild.id), intents=intents)
 
 data_functions.setup_database()
 

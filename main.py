@@ -4,9 +4,9 @@ import discord
 import json
 import random
 import asyncio
-import math
-import time
-from discord.ext import commands
+import math 
+import discord
+from discord import ui, ext.commands
 from threading import Thread
 
 import data_functions
@@ -47,14 +47,15 @@ sync_text = f"Commands synced: None"
 
 @bot.event
 async def on_ready():
-    bot.tree.clear_commands(guild=bot.guilds[0])
-    synced = await bot.tree.sync(guild=bot.guilds[0])
+    guild = discord.Object(id=1292978415552434196)
+    bot.tree.clear_commands(guild=guild)
+    synced = await bot.tree.sync(guild=guild)
     sync_text = f"Commands synced: {len(synced)}"
     print(f"Bot is ready and connected to guild: {bot.guilds[0].name}")
 
 @bot.event
 async def on_disconnect():
-    print("Bot disconnectednot Attempting to reconnect in 5 seconds...")
+    print("Bot disconnected. Attempting to reconnect in 5 seconds...")
     await asyncio.sleep(5)
 
 @bot.event
@@ -144,6 +145,10 @@ async def help(ctx, command_name: str = None):
             color=int("50B4E6", 16),
             description=f"{help_text}"
         ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
+
+@bot.tree.command(name="say", description="Repeat the inputted message.", guild=discord.Object(id=1292978415552434196))
+async def say(interaction: discord.Interaction, message: str):
+    await interaction.response.send_message(message)
 
 @bot.command(aliases=["dis"], help="Disable a specific command.")
 async def disable(ctx, cmd_name):
@@ -410,7 +415,7 @@ async def experience_drop(ctx):
         ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
 
 @bot.command(aliases=["f"], help="Fight against a creature for rewards.")
-async def fight(ctx, name: str = None):
+async def fight(ctx):
     if not ctx.author.bot:
         global disabled_commands
         if "fight" in disabled_commands:
@@ -419,240 +424,152 @@ async def fight(ctx, name: str = None):
                 description=f"❌ This command is currently disabled. Please ask **hanyangzhou** to enable it."
             ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
             return
-        if name is None:
-            difficulty = random.randint(1, 10)
-            creature_type = random.choice(["Zombie", "Goblin", "Elf", "Angel", "Demon", "Warrior", "Knight", "Slime"])
-            
-            sizes = {
-                "Big": round(random.uniform(1.5, 2.5), 2),
-                "Large": round(random.uniform(2.5, 4), 2),
-                "Huge": round(random.uniform(4, 5.5), 2),
-                "Giant": round(random.uniform(5.5, 8), 2),
-                "Colossal": round(random.uniform(8, 11.5), 2)
-            }
-            
-            mutations = {
-                "Possessed": round(random.uniform(2, 3.5), 2),
-                "Phantom": round(random.uniform(4, 6.5), 2),
-                "Ancient": round(random.uniform(5, 8), 2),
-                "Ethereal": round(random.uniform(6, 9), 2),
-                "Heavenly": round(random.uniform(4.5, 10), 2),
-                "Galactic": round(random.uniform(6, 11.5), 2),
-                "Divine": round(random.uniform(8, 12), 2),
-                "Superior": round(random.uniform(3, 5), 2),
-                "Exotic": round(random.uniform(10, 13.5), 2)
-            }
+        random_integer = random.randint(1, 100)
+        difficulty = random.randint(1, 10)
+        creature_type = random.choice(["Zombie", "Goblin", "Elf", "Angel", "Demon", "Warrior", "Knight", "Slime"])
         
-            random_integer = random.randint(1, 100)
-            creature_level = (
-                random.randint(1, 5) if random_integer < 50 else
-                random.randint(5, 14) if random_integer < 70 else
-                random.randint(14, 25) if random_integer < 85 else
-                random.randint(25, 36) if random_integer < 95 else
-                random.randint(36, 65) if random_integer < 98 else
-                random.randint(60, 120)
-            )
-            creature_level *= difficulty
-            
-            user_level = data_functions.get_levels(ctx.author.id)
-            
-            mutation_multiplier = 1
-            size_multiplier = 1
-            
-            mutation = random.choice(list(mutations.keys())) if random.randint(1, 5) == 1 else ""
-            if mutation:
-                mutation_multiplier = mutations[mutation]
-                win_chance -= math.ceil(2 * abs(mutation_multiplier))
-                creature_level = math.ceil(creature_level * 1.5)
-            
-            size = random.choice(list(sizes.keys())) if random.randint(1, 5) == 1 else ""
-            if size:
-                size_multiplier = sizes[size]
-                win_chance -= math.ceil(2 * abs(size_multiplier))
-                creature_level = math.ceil(creature_level * 1.5)
-            
-            reward = (random.randint(20, 50) * difficulty) + (random.randint(20, 50) * creature_level)
-            risk = math.ceil(random.randint(20, 50) * difficulty) + creature_level * 2
-            
-            level_difference = creature_level - user_level
-            win_chance = 60
-            
-            if level_difference > 0:
-                win_chance = math.floor(win_chance - (5 * math.log1p(abs(level_difference))) - math.ceil(level_difference/2))
-            else:
-                win_chance = math.floor(win_chance + (5 * math.log1p(abs(level_difference))) + math.ceil(level_difference/2))
-
-            win_chance = max(5, min(95, win_chance))
-            
-            encounter_message = (
-                f"⚔️ You encountered a**{' ' + size if size else ''}{' ' + mutation if mutation else ''} {creature_type} (Level {creature_level})** in the wild."
-                f"\n1. Fight\n2. Escape\n\n"
-                f"*Your Level: {user_level}\nWin Chance: {win_chance}%\nDifficulty: {difficulty}/10\nRisk: {risk}*"
-            )
-            
-            await ctx.send(embed=discord.Embed(
-                color=int("50B4E6", 16),
-                description=encounter_message
-            ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
-            
-            try:
-                response = await bot.wait_for('message', check=lambda msg: msg.channel == ctx.channel and msg.author == ctx.author, timeout=15.0)
-                
-                if "1" in response.content.lower() or "fight" in response.content.lower():
-                    if random.randint(1, 100) <= win_chance:
-                        await ctx.send(embed=discord.Embed(
-                            color=int("50B4E6", 16),
-                            description=f"✅ You defeated the**{' ' + size if size else ''}{' ' + mutation if mutation else ''} {creature_type}** and gained {reward} experience!"
-                        ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
-                        data_functions.set_experience(ctx.author.id, data_functions.get_experience(ctx.author.id) + reward)
-                    else:
-                        await ctx.send(embed=discord.Embed(
-                            color=int("FA3939", 16),
-                            description=f"❌ You were defeated by the**{' ' + size if size else ''}{' ' + mutation if mutation else ''} {creature_type}** and lost {risk} experience."
-                        ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
-                        data_functions.set_experience(ctx.author.id, max((data_functions.get_experience(ctx.author.id) - risk), 0))
-                elif "2" in response.content.lower() or "escape" in response.content.lower():
-                    await ctx.send(embed=discord.Embed(
-                        color=int("50B4E6", 16),
-                        description=f"✅ You escaped from the**{' ' + size if size else ''} {' ' + mutation if mutation else ''} {creature_type}**."
-                    ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
-                else:
-                    await ctx.send(embed=discord.Embed(
-                        color=int("FA3939", 16),
-                        description="❌ Invalid selection."
-                    ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
-            
-            except asyncio.TimeoutError:
-                await ctx.send(embed=discord.Embed(
-                    color=int("FA3939", 16),
-                    description="⏳ The command has been canceled because you took too long to reply."
-                ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
-        else:
-            user = None
-            matching_names = []
-            for member in ctx.guild.members:
-                if name.lower() in member.name.lower() and not member.bot:
-                    matching_names.append(member.name)
-            if matching_names:
-                if len(matching_names) > 1:
-                    msg = ""
-                    for i, n in enumerate(matching_names):
-                        msg += str(i + 1) + ". " + n
-                        if i != len(matching_names) - 1:
-                            msg += "\n"
-                    try:
-                        await ctx.send(embed=discord.Embed(
-                            color=int("50B4E6", 16),
-                            description=f"Mutiple users found. Please select a user below, or type cancel:\n{msg}"
-                        ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
-    
-                        selection = None
-                        response = await bot.wait_for('message', check=lambda msg: msg.channel == ctx.channel and msg.author == ctx.author, timeout=10.0)
-    
-                        if "cancel" in response.content.lower():
-                            await ctx.send(embed=discord.Embed(
-                                color=int("FA3939", 16),
-                                description="❌ The command has been canceled."
-                            ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
-                            return
-                        try:
-                            selection = int(response.content)
-                        except ValueError:
-                            await ctx.send(embed=discord.Embed(
-                                color=int("FA3939", 16),
-                                description="❌ Invalid selection."
-                            ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
-                            return
-                        else:
-                            if selection is not None:
-                                if (selection - 1) >= 0 and (selection - 1) <= (len(matching_names) - 1):
-                                    matching_name = matching_names[selection - 1]
-                                    for member in ctx.guild.members:
-                                        if member.name.lower() == matching_name.lower():
-                                            user = member
-                                            if member.id == ctx.author.id:
-                                                await ctx.send(embed=discord.Embed(
-                                                    color=int("FA3939", 16),
-                                                    description="❌ You cannot fight yourself."
-                                                ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
-                                                return
-                                            break
-                                else:
-                                    await ctx.send(embed=discord.Embed(
-                                        color=int("FA3939", 16),
-                                        description="❌ Invalid selection."
-                                    ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
-                                    return
-                    except asyncio.TimeoutError:
-                        await ctx.send(embed=discord.Embed(
-                            color=int("FA3939", 16),
-                            description="⏳ The command has been canceled because you took too long to reply."
-                        ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
-                        return
-                else:
-                    for member in ctx.guild.members:
-                        if member.name.lower() == matching_names[0].lower():
-                            user = member
-                            break
-
-                user_level = data_functions.get_levels(ctx.author.id)
-                victim_level = data_functions.get_levels(user.id)
-
-                level_difference = victim_level - user_level
-                win_chance = 60
-                
-                if level_difference > 0:
-                    win_chance = math.floor(win_chance - (5 * math.log1p(abs(level_difference))) - math.ceil(level_difference/2))
-                else:
-                    win_chance = math.floor(win_chance + (5 * math.log1p(abs(level_difference))) + math.ceil(level_difference/2))
-                
-                reward = random.randint(20, 50) * user_level
-                risk = random.randint(5, 20) * math.ceil(user_level / 2)
-                
-                win_chance = max(5, min(95, win_chance))
-
-                encounter_message = (
-                    f"⚔️ Are you sure you want to fight **{user.name}**?"
-                    f"\n1. Yes\n2. No\n\n"
-                    f"*Your Level: {user_level}\n{user.name}'s Level: {victim_level}\nWin Chance: {win_chance}%\nRisk: {risk}*"
-                )
-                
-                await ctx.send(embed=discord.Embed(
-                    color=int("50B4E6", 16),
-                    description=encounter_message
-                ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
-
-                try:
-                    response = await bot.wait_for('message', check=lambda msg: msg.channel == ctx.channel and msg.author == ctx.author, timeout=15.0)
+        sizes = {
+            "Big": round(random.uniform(1.5, 2.5), 2),
+            "Large": round(random.uniform(2.5, 4), 2),
+            "Huge": round(random.uniform(4, 5.5), 2),
+            "Giant": round(random.uniform(5.5, 8), 2),
+            "Colossal": round(random.uniform(8, 11.5), 2)
+        }
+        
+        mutations = {
+            "Possessed": round(random.uniform(2, 3.5), 2),
+            "Phantom": round(random.uniform(4, 6.5), 2),
+            "Ancient": round(random.uniform(5, 8), 2),
+            "Ethereal": round(random.uniform(6, 9), 2),
+            "Heavenly": round(random.uniform(4.5, 10), 2),
+            "Galactic": round(random.uniform(6, 11.5), 2),
+            "Divine": round(random.uniform(8, 12), 2),
+            "Superior": round(random.uniform(3, 5), 2),
+            "Exotic": round(random.uniform(10, 13.5), 2)
+        }
+        
+        creature_level = (
+            random.randint(1, 5) if random_integer < 50 else
+            random.randint(5, 14) if random_integer < 70 else
+            random.randint(14, 25) if random_integer < 85 else
+            random.randint(25, 36) if random_integer < 95 else
+            random.randint(36, 65) if random_integer < 98 else
+            random.randint(60, 120)
+        )
                     
-                    if "1" in response.content.lower() or "yes" in response.content.lower():
-                        if random.randint(1, 100) <= win_chance:
-                            await ctx.send(embed=discord.Embed(
-                                color=int("50B4E6", 16),
-                                description=f"✅ You defeated **{user.name}** and gained {reward} experience!"
-                            ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
-                            data_functions.set_experience(ctx.author.id, data_functions.get_experience(ctx.author.id) + reward)
-                        else:
-                            await ctx.send(embed=discord.Embed(
-                                color=int("FA3939", 16),
-                                description=f"❌ You were defeated by **{user.name}** and lost {risk} experience."
-                            ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
-                            data_functions.set_experience(ctx.author.id, max((data_functions.get_experience(ctx.author.id) - risk), 0))
-                    elif "2" in response.content.lower() or "no" in response.content.lower():
-                        await ctx.send(embed=discord.Embed(
-                            color=int("50B4E6", 16),
-                            description=f"✅ You escaped from **{user.id}**."
-                        ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
-                    else:
-                        await ctx.send(embed=discord.Embed(
-                            color=int("FA3939", 16),
-                            description="❌ Invalid selection."
-                        ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
-                except asyncio.TimeoutError:
-                    await ctx.send(embed=discord.Embed(
+        user_level = data_functions.get_levels(ctx.author.id)
+        
+        mutation_multiplier = 1
+        size_multiplier = 1
+        
+        mutation = random.choice(list(mutations.keys())) if random.randint(1, 5) == 1 else ""
+        if mutation:
+            mutation_multiplier = mutations[mutation]
+            win_chance -= math.ceil(2 * abs(mutation_multiplier))
+            creature_level = math.ceil(creature_level * 1.5)
+        
+        size = random.choice(list(sizes.keys())) if random.randint(1, 5) == 1 else ""
+        if size:
+            size_multiplier = sizes[size]
+            win_chance -= math.ceil(2 * abs(size_multiplier))
+            creature_level = math.ceil(creature_level * 1.5)
+        
+        reward = (random.randint(20, 50) * creature_level * (size_multiplier + mutation_multiplier))
+        risk = random.randint(50, 200)
+        
+        level_difference = creature_level - user_level
+        critical_chance = 35
+        enemy_health = 100 + abs(5 * (creature_level - 1) * (size_multiplier + mutation_multiplier))
+        user_health = 100 + abs(5 * (user_level - 1))
+        
+        if level_difference > 0:
+            critical_chance = math.floor(critical_chance - (5 * math.log1p(abs(level_difference))) - level_difference)
+        else:
+            critical_chance = math.floor(critical_chance + (5 * math.log1p(abs(level_difference))) + level_difference)
+
+        critical_chance = max(5, min(95, critical_chance))
+        
+        encounter_message = (
+            f"⚔️ You encountered a**{' ' + size if size else ''}{' ' + mutation if mutation else ''} {creature_type} (Level {creature_level})** in the wild."
+            f"\nYour Health: {user_health}\nCreature Health: {enemy_health}\Critical Chance: {critical_chance}%\nDifficulty: {difficulty}/10\nRisk: {risk}"
+        )
+        
+        await ctx.send(embed=discord.Embed(
+            color=int("50B4E6", 16),
+            description=encounter_message
+        ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
+
+        view = discord.ui.View()
+
+        turn = 'user'
+
+        async def attack_callback(interaction: discord.Interaction):
+            global turn
+        
+            if interaction.user != ctx.author:
+                await interaction.response.send_message(embed=discord.Embed(
+                    color=int("FA3939", 16),
+                    description="This is not your battle!"
+                ).set_author(name=interaction.member.name, icon_url=interaction.member.avatar.url), ephemeral=True, view=None)
+                return
+        
+            if turn == 'user':
+                critical_hit = (random.randint(1, 100) <= attack_chance)
+                damage = (random.randint(20, 35) * user_level) if critical_hit else (random.randint(5, 10) * user_level)
+                enemy_health -= damage
+                await interaction.response.edit_message(embed=discord.Embed(
+                    color=int("50B4E6", 16),
+                    description=f"💥 You dealt **{damage} {'critical ' if critical_hit else ''}damage** to the{' ' + size if size else ''}{' ' + mutation if mutation else ''} {creature_type}.\nHealth: {user_health}\nEnemy Health: {enemy_health}"
+                ).set_author(name=interaction.member.name, icon_url=interaction.member.avatar.url))
+                
+                if enemy_health <= 0:
+                    await interaction.response.edit_message(embed=discord.Embed(
+                        color=int("50B4E6", 16),
+                        description=f"✅ You defeated the creature by dealing **{damage} {'critical ' if critical_hit else ''}damage** to the{' ' + size if size else ''}{' ' + mutation if mutation else ''} {creature_type} and gained {reward} experience."
+                    ).set_author(name=interaction.member.name, icon_url=interaction.member.avatar.url), view=None)
+                    data_functions.set_experience(ctx.author.id, data_functions.get_experience(ctx.author.id) + reward)
+                    return
+                turn = 'enemy'
+            elif turn == 'enemy':
+                enemy_damage = (random.randint(15, 20) * creature_level * (size_multiplier + mutation_multiplier))
+                user_health -= enemy_damage
+                await interaction.response.edit_message(embed=discord.Embed(
+                    color=int("50B4E6", 16),
+                    description=f"⚔️ The {creature_type} dealt **{enemy_damage} damage** to you.\nYour Health: {user_health}\nEnemy Health: {enemy_health}"
+                ).set_author(name=interaction.member.name, icon_url=interaction.member.avatar.url))
+                
+                if user_health <= 0:
+                    await interaction.response.edit_message(embed=discord.Embed(
                         color=int("FA3939", 16),
-                        description="⏳ The command has been canceled because you took too long to reply."
-                    ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
+                        description=f"❌ You got defeated by the {' ' + size if size else ''}{' ' + mutation if mutation else ''} {creature_type} and lost {risk} experience."
+                    ).set_author(name=interaction.member.name, icon_url=interaction.member.avatar.url), view=None)
+                    data_functions.set_experience(ctx.author.id, max((data_functions.get_experience(ctx.author.id) - risk), 0))
+                    return
+                turn = 'user'
+        
+        async def escape_callback(interaction: discord.Interaction):
+            if interaction.user != ctx.author:
+                await interaction.response.send_message(embed=discord.Embed(
+                    color=int("FA3939", 16),
+                    description="This is not your battle!"
+                ).set_author(name=interaction.member.name, icon_url=interaction.member.avatar.url), ephemeral=True, view=None)
+                return
+    
+            await interaction.response.edit_message(embed=discord.Embed(
+                color=int("50B4E6", 16),
+                description=f"You have successfully escaped the battle!"
+            ).set_author(name=interaction.member.name, icon_url=interaction.member.avatar.url), view=None)
+            return
+    
+        attack_button = discord.ui.Button(label="Attack", style=discord.ButtonStyle.primary)
+        attack_button.callback = attack_callback
+        view.add_item(attack_button)
+
+        escape_button = discord.ui.Button(label="Escape", style=discord.ButtonStyle.secondary)
+        escape_button.callback = escape_callback
+        view.add_item(escape_button)
+
+        await ctx.send(embed=embed, view=view)
 
 @bot.command(aliases=["s", "sy"], help="Make the bot say a specified message.")
 async def say(ctx, *, message: str = None):

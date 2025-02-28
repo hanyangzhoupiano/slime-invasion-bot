@@ -478,7 +478,7 @@ async def fight(ctx):
         reward = (random.randint(20, 50) * creature_level * (size_multiplier + mutation_multiplier))
         risk = random.randint(50, 200)
         
-        level_difference = creature_level - user_level
+        level_difference = user_level - creature_level
         critical_chance = 35
         enemy_health = 100 + abs(5 * (creature_level - 1) * (size_multiplier + mutation_multiplier))
         user_health = 100 + abs(5 * (user_level - 1))
@@ -498,12 +498,6 @@ async def fight(ctx):
         view = discord.ui.View()
 
         turn = 'user'
-        
-        def get_turn():
-            return turn
-
-        def set_turn(val):
-            turn = val
 
         async def attack_callback(interaction: discord.Interaction):
             if interaction.user != ctx.author:
@@ -513,7 +507,10 @@ async def fight(ctx):
                 ).set_author(name=interaction.user.name, icon_url=interaction.user.avatar.url), ephemeral=True, view=None)
                 return
 
-            turn = get_turn()
+            global turn
+            global critical_chance
+            global enemy_health
+            global user_health
         
             if turn == 'user':
                 critical_hit = (random.randint(1, 100) <= critical_chance)
@@ -532,7 +529,6 @@ async def fight(ctx):
                     data_functions.set_experience(ctx.author.id, data_functions.get_experience(ctx.author.id) + reward)
                     return
 
-                set_turn('enemy')
             elif turn == 'enemy':
                 enemy_damage = (random.randint(15, 20) * creature_level * (size_multiplier + mutation_multiplier))
                 user_health -= enemy_damage
@@ -548,9 +544,7 @@ async def fight(ctx):
                     ).set_author(name=interaction.user.name, icon_url=interaction.user.avatar.url), view=None)
                     data_functions.set_experience(ctx.author.id, max((data_functions.get_experience(ctx.author.id) - risk), 0))
                     return
-                
-                set_turn('user')
-        
+                        
         async def escape_callback(interaction: discord.Interaction):
             if interaction.user != ctx.author:
                 await interaction.response.send_message(embed=discord.Embed(

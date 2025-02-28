@@ -497,7 +497,7 @@ async def fight(ctx):
 
         view = discord.ui.View()
 
-        turn = 'user'
+        turn = {'current': 'user'}
 
         async def attack_callback(interaction: discord.Interaction):
             if interaction.user != ctx.author:
@@ -507,8 +507,8 @@ async def fight(ctx):
                 ).set_author(name=interaction.user.name, icon_url=interaction.user.avatar.url), ephemeral=True, view=None)
                 return
         
-            if turn == 'user':
-                critical_hit = (random.randint(1, 100) <= attack_chance)
+            if turn['current'] == 'user':
+                critical_hit = (random.randint(1, 100) <= critical_chance)
                 damage = (random.randint(20, 35) * user_level) if critical_hit else (random.randint(5, 10) * user_level)
                 enemy_health -= damage
                 await interaction.response.edit_message(embed=discord.Embed(
@@ -523,8 +523,8 @@ async def fight(ctx):
                     ).set_author(name=interaction.user.name, icon_url=interaction.user.avatar.url), view=None)
                     data_functions.set_experience(ctx.author.id, data_functions.get_experience(ctx.author.id) + reward)
                     return
-                turn = 'enemy'
-            elif turn == 'enemy':
+                turn['current'] = 'enemy'
+            elif turn['current'] == 'enemy':
                 enemy_damage = (random.randint(15, 20) * creature_level * (size_multiplier + mutation_multiplier))
                 user_health -= enemy_damage
                 await interaction.response.edit_message(embed=discord.Embed(
@@ -539,7 +539,7 @@ async def fight(ctx):
                     ).set_author(name=interaction.user.name, icon_url=interaction.user.avatar.url), view=None)
                     data_functions.set_experience(ctx.author.id, max((data_functions.get_experience(ctx.author.id) - risk), 0))
                     return
-                turn = 'user'
+                turn['current'] = 'user'
         
         async def escape_callback(interaction: discord.Interaction):
             if interaction.user != ctx.author:

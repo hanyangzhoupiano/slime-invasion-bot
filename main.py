@@ -4,7 +4,8 @@ import discord
 import json
 import random
 import asyncio
-import math 
+import math
+import time
 from discord.ext import commands
 
 from threading import Thread

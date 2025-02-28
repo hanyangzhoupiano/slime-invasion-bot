@@ -492,13 +492,8 @@ async def fight(ctx):
         
         encounter_message = (
             f"⚔️ You encountered a**{' ' + size if size else ''}{' ' + mutation if mutation else ''} {creature_type} (Level {creature_level})** in the wild."
-            f"\nYour Health: {user_health}\nCreature Health: {enemy_health}\Critical Chance: {critical_chance}%\nDifficulty: {difficulty}/10\nRisk: {risk}"
+            f"\nYour Health: {user_health}\nCreature Health: {enemy_health}\nCritical Chance: {critical_chance}%\nDifficulty: {difficulty}/10\nRisk: {risk}"
         )
-        
-        await ctx.send(embed=discord.Embed(
-            color=int("50B4E6", 16),
-            description=encounter_message
-        ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
 
         view = discord.ui.View()
 
@@ -570,7 +565,10 @@ async def fight(ctx):
         escape_button.callback = escape_callback
         view.add_item(escape_button)
 
-        await ctx.send(embed=embed, view=view)
+        await ctx.send(embed=discord.Embed(
+            color=int("50B4E6", 16),
+            description=encounter_message
+        ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url), view=view)
 
 @bot.command(aliases=["s", "sy"], help="Make the bot say a specified message.")
 async def say(ctx, *, message: str = None):

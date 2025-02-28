@@ -500,8 +500,6 @@ async def fight(ctx):
         turn = 'user'
 
         async def attack_callback(interaction: discord.Interaction):
-            global turn
-        
             if interaction.user != ctx.author:
                 await interaction.response.send_message(embed=discord.Embed(
                     color=int("FA3939", 16),

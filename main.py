@@ -506,7 +506,7 @@ async def fight(ctx):
                 await interaction.response.send_message(embed=discord.Embed(
                     color=int("FA3939", 16),
                     description="This is not your battle!"
-                ).set_author(name=interaction.member.name, icon_url=interaction.member.avatar.url), ephemeral=True, view=None)
+                ).set_author(name=interaction.user.name, icon_url=interaction.user.avatar.url), ephemeral=True, view=None)
                 return
         
             if turn == 'user':
@@ -516,13 +516,13 @@ async def fight(ctx):
                 await interaction.response.edit_message(embed=discord.Embed(
                     color=int("50B4E6", 16),
                     description=f"💥 You dealt **{damage} {'critical ' if critical_hit else ''}damage** to the{' ' + size if size else ''}{' ' + mutation if mutation else ''} {creature_type}.\nHealth: {user_health}\nEnemy Health: {enemy_health}"
-                ).set_author(name=interaction.member.name, icon_url=interaction.member.avatar.url))
+                ).set_author(name=interaction.user.name, icon_url=interaction.user.avatar.url))
                 
                 if enemy_health <= 0:
                     await interaction.response.edit_message(embed=discord.Embed(
                         color=int("50B4E6", 16),
                         description=f"✅ You defeated the creature by dealing **{damage} {'critical ' if critical_hit else ''}damage** to the{' ' + size if size else ''}{' ' + mutation if mutation else ''} {creature_type} and gained {reward} experience."
-                    ).set_author(name=interaction.member.name, icon_url=interaction.member.avatar.url), view=None)
+                    ).set_author(name=interaction.user.name, icon_url=interaction.user.avatar.url), view=None)
                     data_functions.set_experience(ctx.author.id, data_functions.get_experience(ctx.author.id) + reward)
                     return
                 turn = 'enemy'
@@ -532,13 +532,13 @@ async def fight(ctx):
                 await interaction.response.edit_message(embed=discord.Embed(
                     color=int("50B4E6", 16),
                     description=f"⚔️ The {creature_type} dealt **{enemy_damage} damage** to you.\nYour Health: {user_health}\nEnemy Health: {enemy_health}"
-                ).set_author(name=interaction.member.name, icon_url=interaction.member.avatar.url))
+                ).set_author(name=interaction.user.name, icon_url=interaction.user.avatar.url))
                 
                 if user_health <= 0:
                     await interaction.response.edit_message(embed=discord.Embed(
                         color=int("FA3939", 16),
                         description=f"❌ You got defeated by the {' ' + size if size else ''}{' ' + mutation if mutation else ''} {creature_type} and lost {risk} experience."
-                    ).set_author(name=interaction.member.name, icon_url=interaction.member.avatar.url), view=None)
+                    ).set_author(name=interaction.user.name, icon_url=interaction.user.avatar.url), view=None)
                     data_functions.set_experience(ctx.author.id, max((data_functions.get_experience(ctx.author.id) - risk), 0))
                     return
                 turn = 'user'
@@ -548,13 +548,13 @@ async def fight(ctx):
                 await interaction.response.send_message(embed=discord.Embed(
                     color=int("FA3939", 16),
                     description="This is not your battle!"
-                ).set_author(name=interaction.member.name, icon_url=interaction.member.avatar.url), ephemeral=True, view=None)
+                ).set_author(name=interaction.user.name, icon_url=interaction.user.avatar.url), ephemeral=True, view=None)
                 return
     
             await interaction.response.edit_message(embed=discord.Embed(
                 color=int("50B4E6", 16),
                 description=f"You have successfully escaped the battle!"
-            ).set_author(name=interaction.member.name, icon_url=interaction.member.avatar.url), view=None)
+            ).set_author(name=interaction.user.name, icon_url=interaction.user.avatar.url), view=None)
             return
     
         attack_button = discord.ui.Button(label="Attack", style=discord.ButtonStyle.primary)

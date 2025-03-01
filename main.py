@@ -556,7 +556,7 @@ async def fight(ctx):
         
                 battle_state["user_health"] = max(0, battle_state["user_health"] - enemy_damage)
         
-                await interaction.followup.edit_message(embed=discord.Embed(
+                await interaction.followup.edit_message(interaction.message.id, embed=discord.Embed(
                     color=int("50B4E6", 16),
                     description=f"⚔️ The {creature} dealt **{enemy_damage} damage** to you."
                                 f"\n\nYour Health: {battle_state['user_health']}\nEnemy Health: {battle_state['enemy_health']}"
@@ -583,7 +583,7 @@ async def fight(ctx):
                 ).set_author(name=interaction.user.name, icon_url=interaction.user.avatar.url), ephemeral=True, view=None)
                 return
     
-            await interaction.response.edit_message(embed=discord.Embed(
+            await interaction.response.edit_message(interaction.response.id, embed=discord.Embed(
                 color=int("50B4E6", 16),
                 description=f"You have successfully escaped the battle!"
             ).set_author(name=interaction.user.name, icon_url=interaction.user.avatar.url), view=None)

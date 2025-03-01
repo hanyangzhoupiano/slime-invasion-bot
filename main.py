@@ -505,7 +505,7 @@ async def fight(ctx):
             "user_health": user_health,
             "enemy_health": enemy_health,
             "critical_chance": critical_chance,
-            "creature": f"{' ' + size if size else ''}{' ' + mutation if mutation else ''} {creature_type}"
+            "creature": f"{' ' + size if size else ''}{' ' + mutation if mutation else ''} {creature_type}",
         }
 
         async def attack_callback(interaction: discord.Interaction):
@@ -518,23 +518,22 @@ async def fight(ctx):
 
             battle_state = battle_states[ctx.author.id]
             
-            turn = battle_state["turn"]
             user_health = battle_state["user_health"]
             enemy_health = battle_state["enemy_health"]
+            
             critical_chance = battle_state["critical_chance"]
             creature = battle_state["creature"]
         
-            if turn == 'user':
+            if battle_state["turn"] == 'user':
                 critical_hit = (random.randint(1, 100) <= critical_chance)
                 damage = (random.randint(20, 35) * user_level) if critical_hit else (random.randint(5, 10) * user_level)
                 battle_state["enemy_health"] -= damage
-                enemy_health = battle_state["enemy_health"]
                 await interaction.response.edit_message(embed=discord.Embed(
                     color=int("50B4E6", 16),
-                    description=f"💥 You dealt **{damage} {'critical ' if critical_hit else ''}damage** to the{creature}.\nHealth: {user_health}\nEnemy Health: {enemy_health}"
+                    description=f"💥 You dealt **{damage} {'critical ' if critical_hit else ''}damage** to the{creature}.\n\nHealth: {battle_state["user_health"]}\nEnemy Health: {battle_state["enemy_health"]}"
                 ).set_author(name=interaction.user.name, icon_url=interaction.user.avatar.url))
                 
-                if enemy_health <= 0:
+                if battle_state["enemy_health"] <= 0:
                     await interaction.response.edit_message(embed=discord.Embed(
                         color=int("50B4E6", 16),
                         description=f"✅ You defeated the{creature} by dealing **{damage} {'critical ' if critical_hit else ''}damage** and gained {reward} experience."
@@ -543,14 +542,12 @@ async def fight(ctx):
                     return
                 
                 battle_state["turn"] = "enemy"
-
-            elif turn == 'enemy':
+            elif battle_state["turn"] == 'enemy':
                 enemy_damage = (random.randint(15, 20) * creature_level * (size_multiplier + mutation_multiplier))
                 battle_state["user_health"] -= enemy_damage
-                user_health -= battle_state["user_health"]
                 await interaction.response.edit_message(embed=discord.Embed(
                     color=int("50B4E6", 16),
-                    description=f"⚔️ The{creature} dealt **{enemy_damage} damage** to you.\nYour Health: {user_health}\nEnemy Health: {enemy_health}"
+                    description=f"⚔️ The{creature} dealt **{enemy_damage} damage** to you.\n\nYour Health: {battle_state["user_health"]}\nEnemy Health: {battle_state["enemy_health"]}"
                 ).set_author(name=interaction.user.name, icon_url=interaction.user.avatar.url))
                 
                 if user_health <= 0:

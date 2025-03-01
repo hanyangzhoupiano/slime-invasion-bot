@@ -530,7 +530,7 @@ async def fight(ctx):
                 battle_state["enemy_health"] -= damage
                 await interaction.response.edit_message(embed=discord.Embed(
                     color=int("50B4E6", 16),
-                    description=f"💥 You dealt **{damage} {'critical ' if critical_hit else ''}damage** to the{creature}.\n\nHealth: {battle_state["user_health"]}\nEnemy Health: {battle_state["enemy_health"]}"
+                    description=f"💥 You dealt **{damage} {'critical ' if critical_hit else ''}damage** to the{creature}.\n\nHealth: {battle_state['user_health']}\nEnemy Health: {battle_state['enemy_health']}"
                 ).set_author(name=interaction.user.name, icon_url=interaction.user.avatar.url))
                 
                 if battle_state["enemy_health"] <= 0:
@@ -547,7 +547,7 @@ async def fight(ctx):
                 battle_state["user_health"] -= enemy_damage
                 await interaction.response.edit_message(embed=discord.Embed(
                     color=int("50B4E6", 16),
-                    description=f"⚔️ The{creature} dealt **{enemy_damage} damage** to you.\n\nYour Health: {battle_state["user_health"]}\nEnemy Health: {battle_state["enemy_health"]}"
+                    description=f"⚔️ The{creature} dealt **{enemy_damage} damage** to you.\n\nYour Health: {battle_state['user_health']}\nEnemy Health: {battle_state['enemy_health']}"
                 ).set_author(name=interaction.user.name, icon_url=interaction.user.avatar.url))
                 
                 if user_health <= 0:

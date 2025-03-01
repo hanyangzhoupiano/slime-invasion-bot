@@ -427,6 +427,7 @@ async def fight(ctx):
                 description=f"❌ This command is currently disabled. Please ask **hanyangzhou** to enable it."
             ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
             return
+        
         random_integer = random.randint(1, 100)
         difficulty = random.randint(1, 10)
         creature_type = random.choice(["Zombie", "Goblin", "Elf", "Angel", "Demon", "Warrior", "Knight", "Slime"])
@@ -508,7 +509,7 @@ async def fight(ctx):
         }
 
         async def attack_callback(interaction: discord.Interaction):
-            if interaction.user != ctx.author or user_id not in battle_state:
+            if interaction.user != ctx.author or ctx.author.id not in battle_states:
                 await interaction.response.send_message(embed=discord.Embed(
                     color=int("FA3939", 16),
                     description="This is not your battle!"

@@ -527,7 +527,8 @@ async def fight(ctx):
             if turn == 'user':
                 critical_hit = (random.randint(1, 100) <= critical_chance)
                 damage = (random.randint(20, 35) * user_level) if critical_hit else (random.randint(5, 10) * user_level)
-                enemy_health -= damage
+                battle_state["enemy_health"] -= damage
+                enemy_health = battle_state["enemy_health"]
                 await interaction.response.edit_message(embed=discord.Embed(
                     color=int("50B4E6", 16),
                     description=f"💥 You dealt **{damage} {'critical ' if critical_hit else ''}damage** to the{creature}.\nHealth: {user_health}\nEnemy Health: {enemy_health}"
@@ -540,10 +541,13 @@ async def fight(ctx):
                     ).set_author(name=interaction.user.name, icon_url=interaction.user.avatar.url), view=None)
                     data_functions.set_experience(ctx.author.id, data_functions.get_experience(ctx.author.id) + reward)
                     return
+                
+                battle_state["turn"] = "enemy"
 
             elif turn == 'enemy':
                 enemy_damage = (random.randint(15, 20) * creature_level * (size_multiplier + mutation_multiplier))
-                user_health -= enemy_damage
+                battle_state["user_health"] -= enemy_damage
+                user_health -= battle_state["user_health"]
                 await interaction.response.edit_message(embed=discord.Embed(
                     color=int("50B4E6", 16),
                     description=f"⚔️ The{creature} dealt **{enemy_damage} damage** to you.\nYour Health: {user_health}\nEnemy Health: {enemy_health}"
@@ -556,6 +560,8 @@ async def fight(ctx):
                     ).set_author(name=interaction.user.name, icon_url=interaction.user.avatar.url), view=None)
                     data_functions.set_experience(ctx.author.id, max((data_functions.get_experience(ctx.author.id) - risk), 0))
                     return
+                    
+                battle_state["turn"] = "enemy"
                         
         async def escape_callback(interaction: discord.Interaction):
             if interaction.user != ctx.author:

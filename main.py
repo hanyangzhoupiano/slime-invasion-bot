@@ -466,13 +466,13 @@ async def fight(ctx):
         mutation_multiplier = 1
         size_multiplier = 1
         
-        mutation = random.choice(list(mutations.keys())) if random.randint(1, 5) == 1 else ""
+        mutation = random.choice(list(mutations.keys())) if random.randint(1, 3) == 1 else ""
         if mutation:
             mutation_multiplier = mutations[mutation]
             win_chance -= math.ceil(2 * abs(mutation_multiplier))
             creature_level = math.ceil(creature_level * 1.5)
         
-        size = random.choice(list(sizes.keys())) if random.randint(1, 5) == 1 else ""
+        size = random.choice(list(sizes.keys())) if random.randint(1, 3) == 1 else ""
         if size:
             size_multiplier = sizes[size]
             win_chance -= math.ceil(2 * abs(size_multiplier))
@@ -515,7 +515,7 @@ async def fight(ctx):
                     description="This is not your battle!"
                 ).set_author(name=interaction.user.name, icon_url=interaction.user.avatar.url), ephemeral=True, view=None)
                 return
-
+        
             battle_state = battle_states[ctx.author.id]
             
             user_health = battle_state["user_health"]
@@ -524,41 +524,52 @@ async def fight(ctx):
             critical_chance = battle_state["critical_chance"]
             creature = battle_state["creature"]
         
+            # --- USER ATTACK ---
             if battle_state["turn"] == 'user':
                 critical_hit = (random.randint(1, 100) <= critical_chance)
                 damage = (random.randint(20, 35) * user_level) if critical_hit else (random.randint(5, 10) * user_level)
-                battle_state["enemy_health"] -= damage
+                
+                battle_state["enemy_health"] = max(0, battle_state["enemy_health"] - damage)
+        
                 await interaction.response.edit_message(embed=discord.Embed(
                     color=int("50B4E6", 16),
-                    description=f"💥 You dealt **{damage} {'critical ' if critical_hit else ''}damage** to the{creature}.\n\nHealth: {battle_state['user_health']}\nEnemy Health: {battle_state['enemy_health']}"
+                    description=f"💥 You dealt **{damage} {'critical ' if critical_hit else ''}damage** to the {creature}."
+                                f"\n\nHealth: {battle_state['user_health']}\nEnemy Health: {battle_state['enemy_health']}"
                 ).set_author(name=interaction.user.name, icon_url=interaction.user.avatar.url))
-                
+        
                 if battle_state["enemy_health"] <= 0:
-                    await interaction.response.edit_message(embed=discord.Embed(
+                    await interaction.followup.edit_message(interaction.message.id, embed=discord.Embed(
                         color=int("50B4E6", 16),
-                        description=f"✅ You defeated the{creature} by dealing **{damage} {'critical ' if critical_hit else ''}damage** and gained {reward} experience."
+                        description=f"✅ You defeated the {creature} and gained {reward} experience."
                     ).set_author(name=interaction.user.name, icon_url=interaction.user.avatar.url), view=None)
                     data_functions.set_experience(ctx.author.id, data_functions.get_experience(ctx.author.id) + reward)
+                    del battle_states[ctx.author.id]
                     return
                 
                 battle_state["turn"] = "enemy"
-            elif battle_state["turn"] == 'enemy':
+        
+            # --- ENEMY ATTACK ---
+            if battle_state["turn"] == 'enemy':
                 enemy_damage = (random.randint(15, 20) * creature_level * (size_multiplier + mutation_multiplier))
-                battle_state["user_health"] -= enemy_damage
-                await interaction.response.edit_message(embed=discord.Embed(
+        
+                battle_state["user_health"] = max(0, battle_state["user_health"] - enemy_damage)
+        
+                await interaction.followup.send(embed=discord.Embed(
                     color=int("50B4E6", 16),
-                    description=f"⚔️ The{creature} dealt **{enemy_damage} damage** to you.\n\nYour Health: {battle_state['user_health']}\nEnemy Health: {battle_state['enemy_health']}"
+                    description=f"⚔️ The {creature} dealt **{enemy_damage} damage** to you."
+                                f"\n\nYour Health: {battle_state['user_health']}\nEnemy Health: {battle_state['enemy_health']}"
                 ).set_author(name=interaction.user.name, icon_url=interaction.user.avatar.url))
-                
-                if user_health <= 0:
-                    await interaction.response.edit_message(embed=discord.Embed(
+        
+                if battle_state["user_health"] <= 0:
+                    await interaction.followup.edit_message(interaction.message.id, embed=discord.Embed(
                         color=int("FA3939", 16),
-                        description=f"❌ You got defeated by the{creature} and lost {risk} experience."
+                        description=f"❌ You got defeated by the {creature} and lost {risk} experience."
                     ).set_author(name=interaction.user.name, icon_url=interaction.user.avatar.url), view=None)
                     data_functions.set_experience(ctx.author.id, max((data_functions.get_experience(ctx.author.id) - risk), 0))
+                    del battle_states[ctx.author.id]  # Remove battle state after defeat
                     return
-                    
-                battle_state["turn"] = "enemy"
+        
+                battle_state["turn"] = "user"
                         
         async def escape_callback(interaction: discord.Interaction):
             if interaction.user != ctx.author:

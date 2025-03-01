@@ -481,7 +481,7 @@ async def fight(ctx):
         reward = (random.randint(20, 50) * creature_level * (size_multiplier + mutation_multiplier))
         risk = random.randint(50, 200)
         
-        level_difference = user_level - creature_level
+        level_difference = creature_level - user_level
         user_health = 100 + abs(5 * (user_level - 1))
         enemy_health = 100 + abs(5 * (creature_level - 1) * (size_multiplier + mutation_multiplier))
         critical_chance = 35
@@ -527,7 +527,7 @@ async def fight(ctx):
             # --- USER ATTACK ---
             if battle_state["turn"] == 'user':
                 critical_hit = (random.randint(1, 100) <= critical_chance)
-                damage = (random.randint(20, 35) * user_level) if critical_hit else (random.randint(5, 10) * user_level)
+                damage = (random.randint(5, 10) * user_level + 10) if critical_hit else (random.randint(2, 5) * user_level + 5)
                 
                 battle_state["enemy_health"] = max(0, battle_state["enemy_health"] - damage)
         
@@ -536,6 +536,8 @@ async def fight(ctx):
                     description=f"💥 You dealt **{damage} {'critical ' if critical_hit else ''}damage** to the {creature}."
                                 f"\n\nHealth: {battle_state['user_health']}\nEnemy Health: {battle_state['enemy_health']}"
                 ).set_author(name=interaction.user.name, icon_url=interaction.user.avatar.url))
+
+                await asyncio.sleep(1)
         
                 if battle_state["enemy_health"] <= 0:
                     await interaction.followup.edit_message(interaction.message.id, embed=discord.Embed(
@@ -550,15 +552,17 @@ async def fight(ctx):
         
             # --- ENEMY ATTACK ---
             if battle_state["turn"] == 'enemy':
-                enemy_damage = (random.randint(15, 20) * creature_level * (size_multiplier + mutation_multiplier))
+                enemy_damage = (random.randint(10, 15) * creature_level * (size_multiplier + mutation_multiplier))
         
                 battle_state["user_health"] = max(0, battle_state["user_health"] - enemy_damage)
         
-                await interaction.followup.send(embed=discord.Embed(
+                await interaction.followup.edit_message(embed=discord.Embed(
                     color=int("50B4E6", 16),
                     description=f"⚔️ The {creature} dealt **{enemy_damage} damage** to you."
                                 f"\n\nYour Health: {battle_state['user_health']}\nEnemy Health: {battle_state['enemy_health']}"
                 ).set_author(name=interaction.user.name, icon_url=interaction.user.avatar.url))
+                
+                await asyncio.sleep(1)
         
                 if battle_state["user_health"] <= 0:
                     await interaction.followup.edit_message(interaction.message.id, embed=discord.Embed(
@@ -566,7 +570,7 @@ async def fight(ctx):
                         description=f"❌ You got defeated by the {creature} and lost {risk} experience."
                     ).set_author(name=interaction.user.name, icon_url=interaction.user.avatar.url), view=None)
                     data_functions.set_experience(ctx.author.id, max((data_functions.get_experience(ctx.author.id) - risk), 0))
-                    del battle_states[ctx.author.id]  # Remove battle state after defeat
+                    del battle_states[ctx.author.id]
                     return
         
                 battle_state["turn"] = "user"

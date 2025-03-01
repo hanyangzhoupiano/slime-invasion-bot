@@ -32,6 +32,7 @@ intents.messages = True
 default_prefixes = {"!"}
 prefixes = {}
 user_last_experience_time = {}
+battle_states = {}
 error_logs = []
 never_have_i_ever_questions = resources.get_never_have_i_evers()
 brain_teasers = resources.get_brain_teasers()
@@ -418,6 +419,7 @@ async def experience_drop(ctx):
 @bot.command(aliases=["f"], help="Fight against a creature for rewards.")
 async def fight(ctx):
     if not ctx.author.bot:
+        global battle_states
         global disabled_commands
         if "fight" in disabled_commands:
             await ctx.send(embed=discord.Embed(
@@ -479,9 +481,9 @@ async def fight(ctx):
         risk = random.randint(50, 200)
         
         level_difference = user_level - creature_level
-        critical_chance = 35
-        enemy_health = 100 + abs(5 * (creature_level - 1) * (size_multiplier + mutation_multiplier))
         user_health = 100 + abs(5 * (user_level - 1))
+        enemy_health = 100 + abs(5 * (creature_level - 1) * (size_multiplier + mutation_multiplier))
+        critical_chance = 35
         
         if level_difference > 0:
             critical_chance = math.floor(critical_chance - (5 * math.log1p(abs(level_difference))) - level_difference)
@@ -492,25 +494,34 @@ async def fight(ctx):
         
         encounter_message = (
             f"⚔️ You encountered a**{' ' + size if size else ''}{' ' + mutation if mutation else ''} {creature_type} (Level {creature_level})** in the wild."
-            f"\nYour Health: {user_health}\nCreature Health: {enemy_health}\nCritical Chance: {critical_chance}%\nDifficulty: {difficulty}/10\nRisk: {risk}"
+            f"\n\nYour Health: {user_health}\nCreature Health: {enemy_health}\nCritical Chance: {critical_chance}%\nDifficulty: {difficulty}/10\nRisk: {risk}"
         )
 
         view = discord.ui.View()
 
-        turn = 'user'
+        battle_states[ctx.author.id] = {
+            "turn": "user",
+            "user_health": user_health,
+            "enemy_health": enemy_health,
+            "critical_chance": critical_chance,
+            "creature": f"{' ' + size if size else ''}{' ' + mutation if mutation else ''} {creature_type}"
+        }
 
         async def attack_callback(interaction: discord.Interaction):
-            if interaction.user != ctx.author:
+            if interaction.user != ctx.author or user_id not in battle_state:
                 await interaction.response.send_message(embed=discord.Embed(
                     color=int("FA3939", 16),
                     description="This is not your battle!"
                 ).set_author(name=interaction.user.name, icon_url=interaction.user.avatar.url), ephemeral=True, view=None)
                 return
 
-            global turn
-            global critical_chance
-            global enemy_health
-            global user_health
+            battle_state = battle_states[ctx.author.id]
+            
+            turn = battle_state["turn"]
+            user_health = battle_state["user_health"]
+            enemy_health = battle_state["enemy_health"]
+            critical_chance = battle_state["critical_chance"]
+            creature = battle_state["creature"]
         
             if turn == 'user':
                 critical_hit = (random.randint(1, 100) <= critical_chance)
@@ -518,13 +529,13 @@ async def fight(ctx):
                 enemy_health -= damage
                 await interaction.response.edit_message(embed=discord.Embed(
                     color=int("50B4E6", 16),
-                    description=f"💥 You dealt **{damage} {'critical ' if critical_hit else ''}damage** to the{' ' + size if size else ''}{' ' + mutation if mutation else ''} {creature_type}.\nHealth: {user_health}\nEnemy Health: {enemy_health}"
+                    description=f"💥 You dealt **{damage} {'critical ' if critical_hit else ''}damage** to the{creature}.\nHealth: {user_health}\nEnemy Health: {enemy_health}"
                 ).set_author(name=interaction.user.name, icon_url=interaction.user.avatar.url))
                 
                 if enemy_health <= 0:
                     await interaction.response.edit_message(embed=discord.Embed(
                         color=int("50B4E6", 16),
-                        description=f"✅ You defeated the creature by dealing **{damage} {'critical ' if critical_hit else ''}damage** to the{' ' + size if size else ''}{' ' + mutation if mutation else ''} {creature_type} and gained {reward} experience."
+                        description=f"✅ You defeated the{creature} by dealing **{damage} {'critical ' if critical_hit else ''}damage** and gained {reward} experience."
                     ).set_author(name=interaction.user.name, icon_url=interaction.user.avatar.url), view=None)
                     data_functions.set_experience(ctx.author.id, data_functions.get_experience(ctx.author.id) + reward)
                     return
@@ -534,13 +545,13 @@ async def fight(ctx):
                 user_health -= enemy_damage
                 await interaction.response.edit_message(embed=discord.Embed(
                     color=int("50B4E6", 16),
-                    description=f"⚔️ The {creature_type} dealt **{enemy_damage} damage** to you.\nYour Health: {user_health}\nEnemy Health: {enemy_health}"
+                    description=f"⚔️ The{creature} dealt **{enemy_damage} damage** to you.\nYour Health: {user_health}\nEnemy Health: {enemy_health}"
                 ).set_author(name=interaction.user.name, icon_url=interaction.user.avatar.url))
                 
                 if user_health <= 0:
                     await interaction.response.edit_message(embed=discord.Embed(
                         color=int("FA3939", 16),
-                        description=f"❌ You got defeated by the {' ' + size if size else ''}{' ' + mutation if mutation else ''} {creature_type} and lost {risk} experience."
+                        description=f"❌ You got defeated by the{creature} and lost {risk} experience."
                     ).set_author(name=interaction.user.name, icon_url=interaction.user.avatar.url), view=None)
                     data_functions.set_experience(ctx.author.id, max((data_functions.get_experience(ctx.author.id) - risk), 0))
                     return

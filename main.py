@@ -46,17 +46,13 @@ bot = commands.Bot(command_prefix=lambda bot, message: data_functions.get_prefix
 
 data_functions.setup_database()
 
-sync_text = "No commands synced!"
-
 @bot.event
 async def on_ready():
     guild = discord.Object(id=1292978415552434196)
-    global sync_text
     try:
         synced = await bot.tree.sync()
-        sync_text = f"Commands synced: {len(synced)}"
     except Exception as e:
-        sync_text = e
+        pass
 
 @bot.event
 async def on_disconnect():
@@ -90,7 +86,7 @@ async def on_message(msg):
                 await msg.channel.send(embed=discord.Embed(
                     color=int("50B4E6", 16),
                     title="Experience Drop",
-                    description=f"✅ *{response.author.name}* was the first to claim the **{type}** Experience Drop of {amount}!"
+                    description=f"*{response.author.name}* was the first to claim the **{type}** Experience Drop of {amount}!"
                 ))
                 data_functions.set_experience(response.author.id, data_functions.get_experience(response.author.id) + amount)
         except asyncio.TimeoutError:
@@ -900,23 +896,29 @@ async def trivia(ctx):
             description=f"⏳ Time's up, {ctx.author.mention}! The correct answer was **{correct_choice}: {answer}**."
         ).set_author(name=ctx.author.name, icon_url=ctx.author.display_avatar.url))
 
-@bot.command(aliases=["sync", "sc"], help="Shows the current state of command syncing.")
-async def sync_check(ctx):
+@bot.command(aliases=["sc"], help="Attempts to sync slash commands of the bot.")
+async def sync(ctx):
     if ctx.author.bot:
         return
     global disabled_commands
-    if "sync_check" in disabled_commands:
+    if "sync" in disabled_commands:
         await ctx.send(embed=discord.Embed(
             color=int("FA3939", 16),
             description=f"❌ This command is currently disabled. Please ask **hanyangzhou** to enable it."
         ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
         return
-    global sync_text
     if ctx.author.guild_permissions.manage_guild:
-        await ctx.send(embed=discord.Embed(
-            color=int("50B4E6", 16),
-            description=sync_text
-        ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
+        try:
+            synced = await bot.tree.sync()
+            await ctx.send(embed=discord.Embed(
+                color=int("50B4E6", 16),
+                description=f"✅ Synced Commands: {len(scyned)}"
+            ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
+        except Exception as e:
+            await ctx.send(embed=discord.Embed(
+                color=int("FA3939", 16),
+                description=f"❌ Error during syncing: {e}"
+            ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
     else:
         await ctx.send(embed=discord.Embed(
             color=int("FA3939", 16),

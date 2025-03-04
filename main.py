@@ -372,7 +372,7 @@ async def view_stats(ctx, name: str = None):
             await ctx.send(embed=discord.Embed(
                 color=int("50B4E6", 16),
                 title="User Statistics",
-                description=f"**Level:** {level}\n**Experience:** {experience}\n**Until Next Level:** {experience_left}\n**Messages:** {messages}\n**Server Join Date:** {user.joined_at.strftime('%m/%d/%Y').lstrip('0').replace('/0', '/')}\n**Role:** {user.top_role}"
+                description=f"**Level:** {level}\n**Experience:** {experience}\n**Until Next Level:** {experience_left}\n**Messages:** {messages}\n**Server Join Date:** {user.joined_at.strftime('%m/%d/%Y').lstrip('0').replace('/0', '/')}\n**Role:** {user.top_role}\n**Identification Number:** {user.id}"
             ).set_author(name=user.name, icon_url=user.avatar.url))
 
 @bot.command(aliases=["expdrop", "expd", "ed"], help="Create an experience drop in a channel.")

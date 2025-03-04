@@ -527,7 +527,7 @@ async def fight(ctx):
             # --- USER ATTACK ---
             if battle_state["turn"] == 'user':
                 critical_hit = (random.randint(1, 100) <= critical_chance)
-                damage = (random.randint(5, 10) * user_level + 10) if critical_hit else (random.randint(2, 5) * user_level + 5)
+                damage = (random.randint(5, 10) * math.ceil(user_level/2) + 5) if critical_hit else (random.randint(2, 5) * math.ceil(user_level/2) + 3)
                 
                 battle_state["enemy_health"] = max(0, battle_state["enemy_health"] - damage)
         
@@ -552,7 +552,7 @@ async def fight(ctx):
         
             # --- ENEMY ATTACK ---
             if battle_state["turn"] == 'enemy':
-                enemy_damage = (random.randint(10, 15) * creature_level * (size_multiplier + mutation_multiplier))
+                enemy_damage = (random.randint(3, 8) * math.ceil(creature_level/2) * (size_multiplier + mutation_multiplier))
         
                 battle_state["user_health"] = max(0, battle_state["user_health"] - enemy_damage)
         

@@ -912,7 +912,7 @@ async def sync(ctx):
             synced = await bot.tree.sync()
             await ctx.send(embed=discord.Embed(
                 color=int("50B4E6", 16),
-                description=f"✅ Synced Commands: {len(scyned)}"
+                description=f"✅ Synced Commands: {len(synced)}"
             ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
         except Exception as e:
             await ctx.send(embed=discord.Embed(

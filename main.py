@@ -24,6 +24,7 @@ def home():
 def run_web():
     port = int(os.environ.get("PORT", 8080))
     app.run(host="0.0.0.0", port=port)
+
 Thread(target=run_web).start()
 
 intents = discord.Intents.all()
@@ -45,15 +46,14 @@ bot = commands.Bot(command_prefix=lambda bot, message: data_functions.get_prefix
 
 data_functions.setup_database()
 
-sync_text = f"Commands synced: None"
-
 @bot.event
 async def on_ready():
     guild = discord.Object(id=1292978415552434196)
-    bot.tree.clear_commands(guild=guild)
-    synced = await bot.tree.sync(guild=guild)
-    sync_text = f"Commands synced: {len(synced)}"
-    print(f"Bot is ready and connected to guild: {bot.guilds[0].name}")
+    try:
+        synced = await bot.tree.sync()
+        sync_text = f"Commands synced: {len(synced)}"
+    except Exception as e:
+        sync_text = e
 
 @bot.event
 async def on_disconnect():
@@ -147,10 +147,6 @@ async def help(ctx, command_name: str = None):
             color=int("50B4E6", 16),
             description=f"{help_text}"
         ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
-
-@bot.tree.command(name="say", description="Repeat the inputted message.", guild=discord.Object(id=1292978415552434196))
-async def say(interaction: discord.Interaction, message: str):
-    await interaction.response.send_message(message)
 
 @bot.command(aliases=["dis"], help="Disable a specific command.")
 async def disable(ctx, cmd_name):
@@ -282,6 +278,20 @@ async def set_prefix(ctx, new_prefix: str = None):
             color=int("FA3939", 16),
             description="❌ You do not have permission to use this command.\n**Missing permissions:** *Manage Server*"
         ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
+
+@bot.command(name="viewprefix", description="Shows the current prefix of this bot.")
+async def slash_view_prefix(interaction: discord.Interaction):
+    global disabled_commands
+    if "view_prefix" in disabled_commands:
+        await interaction.response.send(embed=discord.Embed(
+            color=int("FA3939", 16),
+            description=f"❌ This command is currently disabled. Please ask **hanyangzhou** to enable it."
+        ).set_author(name=interaction.user.name, icon_url=interaction.user.avatar.url))
+        return
+    await interaction.response.send(embed=discord.Embed(
+        color=int("50B4E6", 16),
+        description=f"The current prefix is '{data_functions.get_prefix(interaction.guild.id)}'."
+    ).set_author(name=interaction.user.name, icon_url=interaction.user.avatar.url))
 
 @bot.command(aliases=["vs", "msgs", "lvls", "stats"], help="Shows the statistics of a user.")
 async def view_stats(ctx, name: str = None):

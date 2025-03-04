@@ -46,9 +46,12 @@ bot = commands.Bot(command_prefix=lambda bot, message: data_functions.get_prefix
 
 data_functions.setup_database()
 
+sync_text = "No commands synced!"
+
 @bot.event
 async def on_ready():
     guild = discord.Object(id=1292978415552434196)
+    global sync_text
     try:
         synced = await bot.tree.sync()
         sync_text = f"Commands synced: {len(synced)}"

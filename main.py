@@ -476,13 +476,13 @@ async def fight(ctx):
         size_multiplier = 1
         
         mutation = random.choice(list(mutations.keys())) if random.randint(1, 3) == 1 else ""
-        if mutation:
+        if mutation != "":
             mutation_multiplier = mutations[mutation]
             win_chance -= math.ceil(2 * abs(mutation_multiplier))
             creature_level = math.ceil(creature_level * 1.5)
         
         size = random.choice(list(sizes.keys())) if random.randint(1, 3) == 1 else ""
-        if size:
+        if size != "":
             size_multiplier = sizes[size]
             win_chance -= math.ceil(2 * abs(size_multiplier))
             creature_level = math.ceil(creature_level * 1.5)
@@ -524,6 +524,8 @@ async def fight(ctx):
                     description="This is not your battle!"
                 ).set_author(name=interaction.user.name, icon_url=interaction.user.avatar.url), ephemeral=True, view=None)
                 return
+
+            msg_id = interaction.message.id
         
             battle_state = battle_states[ctx.author.id]
             
@@ -540,50 +542,44 @@ async def fight(ctx):
                 
                 battle_state["enemy_health"] = max(0, battle_state["enemy_health"] - damage)
         
-                await interaction.response.edit_message(embed=discord.Embed(
+                await interaction.response.edit_message(msg_id, embed=discord.Embed(
                     color=int("50B4E6", 16),
                     description=f"💥 You dealt **{damage} {'critical ' if critical_hit else ''}damage** to the {creature}."
                                 f"\n\nHealth: {battle_state['user_health']}\nEnemy Health: {battle_state['enemy_health']}"
                 ).set_author(name=interaction.user.name, icon_url=interaction.user.avatar.url))
 
-                await asyncio.sleep(1)
+                await asyncio.sleep(2)
         
                 if battle_state["enemy_health"] <= 0:
-                    await interaction.followup.edit_message(interaction.message.id, embed=discord.Embed(
+                    await interaction.followup.edit_message(msg_id, embed=discord.Embed(
                         color=int("50B4E6", 16),
                         description=f"✅ You defeated the {creature} and gained {reward} experience."
                     ).set_author(name=interaction.user.name, icon_url=interaction.user.avatar.url), view=None)
                     data_functions.set_experience(ctx.author.id, data_functions.get_experience(ctx.author.id) + reward)
                     del battle_states[ctx.author.id]
                     return
-                
-                battle_state["turn"] = "enemy"
+                else:
+                    enemy_damage = (random.randint(3, 7) * math.ceil(creature_level/2) * (size_multiplier + mutation_multiplier))
         
-            # --- ENEMY ATTACK ---
-            if battle_state["turn"] == 'enemy':
-                enemy_damage = (random.randint(3, 8) * math.ceil(creature_level/2) * (size_multiplier + mutation_multiplier))
-        
-                battle_state["user_health"] = max(0, battle_state["user_health"] - enemy_damage)
-        
-                await interaction.followup.edit_message(interaction.message.id, embed=discord.Embed(
-                    color=int("50B4E6", 16),
-                    description=f"⚔️ The {creature} dealt **{enemy_damage} damage** to you."
-                                f"\n\nYour Health: {battle_state['user_health']}\nEnemy Health: {battle_state['enemy_health']}"
-                ).set_author(name=interaction.user.name, icon_url=interaction.user.avatar.url))
-                
-                await asyncio.sleep(1)
-        
-                if battle_state["user_health"] <= 0:
-                    await interaction.followup.edit_message(interaction.message.id, embed=discord.Embed(
-                        color=int("FA3939", 16),
-                        description=f"❌ You got defeated by the {creature} and lost {risk} experience."
-                    ).set_author(name=interaction.user.name, icon_url=interaction.user.avatar.url), view=None)
-                    data_functions.set_experience(ctx.author.id, max((data_functions.get_experience(ctx.author.id) - risk), 0))
-                    del battle_states[ctx.author.id]
-                    return
-        
-                battle_state["turn"] = "user"
-                        
+                    battle_state["user_health"] = max(0, battle_state["user_health"] - enemy_damage)
+            
+                    await interaction.followup.edit_message(msg_id, embed=discord.Embed(
+                        color=int("50B4E6", 16),
+                        description=f"⚔️ The {creature} dealt **{enemy_damage} damage** to you."
+                                    f"\n\nYour Health: {battle_state['user_health']}\nEnemy Health: {battle_state['enemy_health']}"
+                    ).set_author(name=interaction.user.name, icon_url=interaction.user.avatar.url))
+                    
+                    await asyncio.sleep(2)
+            
+                    if battle_state["user_health"] <= 0:
+                        await interaction.followup.edit_message(msg_id, embed=discord.Embed(
+                            color=int("FA3939", 16),
+                            description=f"❌ You got defeated by the {creature} and lost {risk} experience."
+                        ).set_author(name=interaction.user.name, icon_url=interaction.user.avatar.url), view=None)
+                        data_functions.set_experience(ctx.author.id, max((data_functions.get_experience(ctx.author.id) - risk), 0))
+                        del battle_states[ctx.author.id]
+                        return
+                    
         async def escape_callback(interaction: discord.Interaction):
             if interaction.user != ctx.author:
                 await interaction.response.send_message(embed=discord.Embed(
@@ -591,8 +587,10 @@ async def fight(ctx):
                     description="This is not your battle!"
                 ).set_author(name=interaction.user.name, icon_url=interaction.user.avatar.url), ephemeral=True, view=None)
                 return
+
+            msg_id = interaction.response.id
     
-            await interaction.response.edit_message(interaction.response.id, embed=discord.Embed(
+            await interaction.response.edit_message(msg_id, embed=discord.Embed(
                 color=int("50B4E6", 16),
                 description=f"You have successfully escaped the battle!"
             ).set_author(name=interaction.user.name, icon_url=interaction.user.avatar.url), view=None)

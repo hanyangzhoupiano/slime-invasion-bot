@@ -249,6 +249,10 @@ async def reset_leaderboard(ctx):
             description="❌ You do not have permission to use this command.\n**Missing permissions:** *Manage Server*"
         ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
         return
+    await ctx.send(embed=discord.Embed(
+        color=int("50B4E6", 16),
+        description="✅ Successfully reset the leaderboard!"
+    ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
     data_functions.reset_data()
 
 @bot.command(aliases=["vp", "viewp"], help="Shows the current prefix of this bot.")

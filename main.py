@@ -492,7 +492,7 @@ async def fight(ctx):
         
         level_difference = creature_level - user_level
         user_health = 100 + abs(5 * (user_level - 1))
-        enemy_health = 100 + abs(5 * (creature_level - 1) * (size_multiplier + mutation_multiplier))
+        enemy_health = 100 + abs(5 * (creature_level - 1) * size_multiplier * mutation_multiplier)
         critical_chance = 35
         
         if level_difference > 0:
@@ -515,6 +515,7 @@ async def fight(ctx):
             "enemy_health": enemy_health,
             "critical_chance": critical_chance,
             "creature": f"{' ' + size if size else ''}{' ' + mutation if mutation else ''} {creature_type}",
+            "multipliers": size_multiplier * mutation_multiplier
         }
 
         async def attack_callback(interaction: discord.Interaction):
@@ -534,6 +535,7 @@ async def fight(ctx):
             
             critical_chance = battle_state["critical_chance"]
             creature = battle_state["creature"]
+            multipliers = battle_state["multipliers"]
         
             # --- USER ATTACK ---
             if battle_state["turn"] == 'user':
@@ -542,7 +544,7 @@ async def fight(ctx):
                 
                 battle_state["enemy_health"] = max(0, battle_state["enemy_health"] - damage)
         
-                await interaction.response.edit_message(msg_id, embed=discord.Embed(
+                await interaction.response.edit_message(embed=discord.Embed(
                     color=int("50B4E6", 16),
                     description=f"💥 You dealt **{damage} {'critical ' if critical_hit else ''}damage** to the {creature}."
                                 f"\n\nHealth: {battle_state['user_health']}\nEnemy Health: {battle_state['enemy_health']}"
@@ -559,7 +561,7 @@ async def fight(ctx):
                     del battle_states[ctx.author.id]
                     return
                 else:
-                    enemy_damage = (random.randint(3, 7) * math.ceil(creature_level/2) * (size_multiplier + mutation_multiplier))
+                    enemy_damage = (random.randint(3, 7) * math.ceil(creature_level/2) * multipliers)
         
                     battle_state["user_health"] = max(0, battle_state["user_health"] - enemy_damage)
             

@@ -232,6 +232,25 @@ async def leaderboard(ctx):
         embed.description += f"**{index}. {user.name}** - Level {level}\n"
     await ctx.send(embed=embed)
 
+@bot.command(aliases=["reset_lb", "r_lb"], help="Resets the server leaderboard.")
+async def reset_leaderboard(ctx):
+    if ctx.author.bot:
+        return
+    global disabled_commands
+    if "reset_leaderboard" in disabled_commands:
+        await ctx.send(embed=discord.Embed(
+            color=int("FA3939", 16),
+            description=f"❌ This command is currently disabled. Please ask **hanyangzhou** to enable it."
+        ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
+        return
+    if not ctx.author.guild_permissions.manage_guild:
+        await ctx.send(embed=discord.Embed(
+            color=int("FA3939", 16),
+            description="❌ You do not have permission to use this command.\n**Missing permissions:** *Manage Server*"
+        ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
+        return
+    data_functions.reset_data()
+
 @bot.command(aliases=["vp", "viewp"], help="Shows the current prefix of this bot.")
 async def view_prefix(ctx):
     if ctx.author.bot:
@@ -247,6 +266,7 @@ async def view_prefix(ctx):
         color=int("50B4E6", 16),
         description=f"The current prefix is '{data_functions.get_prefix(ctx.guild.id)}'."
     ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
+    
 
 @bot.command(aliases=["sp", "setp"], help="Changes the prefix of this bot.")
 async def set_prefix(ctx, new_prefix: str = None):

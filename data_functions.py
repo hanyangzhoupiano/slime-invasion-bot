@@ -152,7 +152,7 @@ def reset_data():
         conn = connect()
         if conn:
             with conn.cursor() as cursor:
-                cursor.execute("UPDATE experience SET level = 1, exp = 0;")
+                cursor.execute("DELETE FROM experience")
                 conn.commit()
             conn.close()
     except Exception as e:

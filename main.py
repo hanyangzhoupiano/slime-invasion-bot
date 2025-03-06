@@ -502,13 +502,11 @@ async def fight(ctx):
         mutation = random.choice(list(mutations.keys())) if random.randint(1, 3) == 1 else ""
         if mutation != "":
             mutation_multiplier = mutations[mutation]
-            win_chance -= math.ceil(2 * abs(mutation_multiplier))
             creature_level = math.ceil(creature_level * 1.5)
         
         size = random.choice(list(sizes.keys())) if random.randint(1, 3) == 1 else ""
         if size != "":
             size_multiplier = sizes[size]
-            win_chance -= math.ceil(2 * abs(size_multiplier))
             creature_level = math.ceil(creature_level * 1.5)
         
         reward = (random.randint(20, 50) * creature_level * (size_multiplier + mutation_multiplier))
@@ -634,6 +632,155 @@ async def fight(ctx):
             color=int("50B4E6", 16),
             description=encounter_message
         ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url), view=view)
+
+import discord
+from discord import app_commands
+import random
+import math
+import asyncio
+
+battle_states = {}  # Tracks active battles
+
+@bot.tree.command(name="fight", description="Fight against a creature for rewards!")
+async def slash_fight(interaction: discord.Interaction):
+    if interaction.user.id in battle_states:
+        await interaction.response.send_message("❌ You're already in a battle!", ephemeral=True)
+        return
+
+    random_integer = random.randint(1, 100)
+    difficulty = random.randint(1, 10)
+    creature_type = random.choice(["Zombie", "Goblin", "Elf", "Angel", "Demon", "Warrior", "Knight", "Slime"])
+
+    sizes = {
+        "Big": round(random.uniform(1.5, 2.5), 2),
+        "Large": round(random.uniform(2.5, 4), 2),
+        "Huge": round(random.uniform(4, 5.5), 2),
+        "Giant": round(random.uniform(5.5, 8), 2),
+        "Colossal": round(random.uniform(8, 11.5), 2)
+    }
+
+    mutations = {
+        "Possessed": round(random.uniform(2, 3.5), 2),
+        "Phantom": round(random.uniform(4, 6.5), 2),
+        "Ancient": round(random.uniform(5, 8), 2),
+        "Ethereal": round(random.uniform(6, 9), 2),
+        "Heavenly": round(random.uniform(4.5, 10), 2),
+        "Galactic": round(random.uniform(6, 11.5), 2),
+        "Divine": round(random.uniform(8, 12), 2),
+        "Superior": round(random.uniform(3, 5), 2),
+        "Exotic": round(random.uniform(10, 13.5), 2)
+    }
+
+    creature_level = (
+        random.randint(1, 5) if random_integer < 50 else
+        random.randint(5, 14) if random_integer < 70 else
+        random.randint(14, 25) if random_integer < 85 else
+        random.randint(25, 36) if random_integer < 95 else
+        random.randint(36, 65) if random_integer < 98 else
+        random.randint(60, 120)
+    )
+
+    user_level = data_functions.get_levels(interaction.user.id)
+    mutation_multiplier = 1
+    size_multiplier = 1
+
+    mutation = random.choice(list(mutations.keys())) if random.randint(1, 3) == 1 else ""
+    if mutation:
+        mutation_multiplier = mutations[mutation]
+        creature_level = math.ceil(creature_level * 1.5)
+
+    size = random.choice(list(sizes.keys())) if random.randint(1, 3) == 1 else ""
+    if size:
+        size_multiplier = sizes[size]
+        creature_level = math.ceil(creature_level * 1.5)
+
+    reward = (random.randint(20, 50) * creature_level * (size_multiplier + mutation_multiplier))
+    risk = random.randint(50, 200)
+    user_health = 100 + abs(5 * (user_level - 1))
+    enemy_health = 100 + abs(5 * (creature_level - 1) * size_multiplier * mutation_multiplier)
+    critical_chance = 35
+
+    critical_chance = max(5, min(95, critical_chance))
+
+    battle_states[interaction.user.id] = {
+        "turn": "user",
+        "user_health": user_health,
+        "enemy_health": enemy_health,
+        "critical_chance": critical_chance,
+        "creature": f"{' ' + size if size else ''}{' ' + mutation if mutation else ''} {creature_type}",
+        "multipliers": size_multiplier * mutation_multiplier,
+        "reward": reward,
+        "risk": risk
+    }
+
+    encounter_message = (
+        f"⚔️ You encountered a **{' ' + size if size else ''}{' ' + mutation if mutation else ''} {creature_type} (Level {creature_level})** in the wild.\n"
+        f"Your Health: {user_health}\nCreature Health: {enemy_health}\nDifficulty: {difficulty}/10\nRisk: {risk}"
+    )
+
+    view = discord.ui.View()
+
+    async def attack_callback(attack_interaction: discord.Interaction):
+        if attack_interaction.user.id not in battle_states:
+            await attack_interaction.response.send_message("This battle no longer exists!", ephemeral=True)
+            return
+
+        state = battle_states[attack_interaction.user.id]
+        critical_hit = (random.randint(1, 100) <= state["critical_chance"])
+        damage = (random.randint(5, 10) * math.ceil(user_level/2) + 5) if critical_hit else (random.randint(2, 5) * math.ceil(user_level/2) + 3)
+        state["enemy_health"] = max(0, state["enemy_health"] - damage)
+
+        if state["enemy_health"] <= 0:
+            del battle_states[attack_interaction.user.id]
+            await attack_interaction.response.edit_message(embed=discord.Embed(
+                color=int("50B4E6", 16),
+                description=f"✅ You defeated the {state['creature']} and gained {state['reward']} XP!"
+            ), view=None)
+            data_functions.set_experience(interaction.user.id, data_functions.get_experience(interaction.user.id) + state["reward"])
+            return
+
+        enemy_damage = (random.randint(3, 7) * math.ceil(creature_level/2) * state["multipliers"])
+        state["user_health"] = max(0, state["user_health"] - enemy_damage)
+
+        if state["user_health"] <= 0:
+            del battle_states[attack_interaction.user.id]
+            await attack_interaction.response.edit_message(embed=discord.Embed(
+                color=int("FA3939", 16),
+                description=f"❌ You got defeated by the {state['creature']} and lost {state['risk']} XP!"
+            ), view=None)
+            data_functions.set_experience(interaction.user.id, max(0, data_functions.get_experience(interaction.user.id) - state["risk"]))
+            return
+
+        await attack_interaction.response.edit_message(embed=discord.Embed(
+            color=int("50B4E6", 16),
+            description=f"💥 You dealt **{damage} {'critical ' if critical_hit else ''}damage** to the {state['creature']}.\n"
+                        f"⚔️ The {state['creature']} attacked back, dealing **{enemy_damage} damage** to you.\n"
+                        f"Your Health: {state['user_health']} | Enemy Health: {state['enemy_health']}"
+        ))
+
+    async def escape_callback(escape_interaction: discord.Interaction):
+        if escape_interaction.user.id not in battle_states:
+            await escape_interaction.response.send_message("This battle no longer exists!", ephemeral=True)
+            return
+
+        del battle_states[escape_interaction.user.id]
+        await escape_interaction.response.edit_message(embed=discord.Embed(
+            color=int("50B4E6", 16),
+            description="🏃 You successfully escaped the battle!"
+        ), view=None)
+
+    attack_button = discord.ui.Button(label="Attack", style=discord.ButtonStyle.danger)
+    attack_button.callback = attack_callback
+    view.add_item(attack_button)
+
+    escape_button = discord.ui.Button(label="Escape", style=discord.ButtonStyle.secondary)
+    escape_button.callback = escape_callback
+    view.add_item(escape_button)
+
+    await interaction.response.send_message(embed=discord.Embed(
+        color=int("50B4E6", 16),
+        description=encounter_message
+    ), view=view)
 
 @bot.command(aliases=["s", "sy"], help="Make the bot say a specified message.")
 async def say(ctx, *, message: str = None):

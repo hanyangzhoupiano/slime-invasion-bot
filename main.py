@@ -278,16 +278,16 @@ async def set_prefix(ctx, new_prefix: str = None):
             description="❌ You do not have permission to use this command.\n**Missing permissions:** *Manage Server*"
         ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
 
-@bot.tree.command(name="viewprefix", description="Shows the current prefix of this bot.")
+@bot.tree.command(name="view prefix", description="Shows the current prefix of this bot.")
 async def slash_view_prefix(interaction: discord.Interaction):
     global disabled_commands
     if "view_prefix" in disabled_commands:
-        await interaction.response.send(embed=discord.Embed(
+        await interaction.response.send_message(embed=discord.Embed(
             color=int("FA3939", 16),
             description=f"❌ This command is currently disabled. Please ask **hanyangzhou** to enable it."
         ).set_author(name=interaction.user.name, icon_url=interaction.user.avatar.url))
         return
-    await interaction.response.send(embed=discord.Embed(
+    await interaction.response.send_message(embed=discord.Embed(
         color=int("50B4E6", 16),
         description=f"The current prefix is '{data_functions.get_prefix(interaction.guild.id)}'."
     ).set_author(name=interaction.user.name, icon_url=interaction.user.avatar.url))

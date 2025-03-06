@@ -146,6 +146,19 @@ def get_all_user_levels():
         if conn:
             conn.close()
 
+def reset_data():
+    """Reset all levels and experience to default values."""
+    try:
+        conn = connect()
+        if conn:
+            with conn.cursor() as cursor:
+                cursor.execute("UPDATE experience SET level = 1, exp = 0;")
+                conn.commit()
+            conn.close()
+    except Exception as e:
+        print(f"Error in reset_data: {e}")
+        conn.rollback()
+
 def get_prefix(guild_id):
     """Retrieve the prefix for a specific guild."""
     try:

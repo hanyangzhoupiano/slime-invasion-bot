@@ -699,6 +699,8 @@ async def slash_fight(interaction: discord.Interaction):
 
     reward = (random.randint(5, 20) * creature_level * size_multiplier * mutation_multiplier)
     risk = math.ceil(reward / 5)
+
+    level_difference = creature_level - user_level
     user_health = 100 + abs(5 * (user_level - 1))
     enemy_health = 100 + abs(5 * (creature_level - 1) * size_multiplier * mutation_multiplier)
     critical_chance = 35

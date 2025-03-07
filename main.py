@@ -612,7 +612,7 @@ async def fight(ctx):
                 ).set_author(name=interaction.user.name, icon_url=interaction.user.avatar.url), ephemeral=True, view=None)
                 return
 
-            msg_id = interaction.response.id
+            msg_id = interaction.message.id
     
             await interaction.response.edit_message(msg_id, embed=discord.Embed(
                 color=int("50B4E6", 16),
@@ -633,18 +633,21 @@ async def fight(ctx):
             description=encounter_message
         ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url), view=view)
 
-import discord
-from discord import app_commands
-import random
-import math
-import asyncio
-
-battle_states = {}  # Tracks active battles
-
 @bot.tree.command(name="fight", description="Fight against a creature for rewards!")
 async def slash_fight(interaction: discord.Interaction):
-    if interaction.user.id in battle_states:
-        await interaction.response.send_message("❌ You're already in a battle!", ephemeral=True)
+    global battle_states
+    global disabled_commands
+    if "fight" in disabled_commands:
+        await interaction.response.send_message(embed=discord.Embed(
+            color=int("FA3939", 16),
+            description=f"❌ This command is currently disabled. Please ask **hanyangzhou** to enable it."
+        ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
+        return
+    elif interaction.user.id in battle_states:
+        await interaction.response.send_message(embed=discord.Embed(
+            color=int("FA3939", 16),
+            description=f"❌ You are already in a battle!"
+        ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url), ephemeral=True)
         return
 
     random_integer = random.randint(1, 100)
@@ -694,11 +697,16 @@ async def slash_fight(interaction: discord.Interaction):
         size_multiplier = sizes[size]
         creature_level = math.ceil(creature_level * 1.5)
 
-    reward = (random.randint(20, 50) * creature_level * (size_multiplier + mutation_multiplier))
-    risk = random.randint(50, 200)
+    reward = (random.randint(5, 20) * creature_level * size_multiplier * mutation_multiplier)
+    risk = Math.ceil(reward / 5)
     user_health = 100 + abs(5 * (user_level - 1))
     enemy_health = 100 + abs(5 * (creature_level - 1) * size_multiplier * mutation_multiplier)
     critical_chance = 35
+
+    if level_difference > 0:
+            critical_chance = math.floor(critical_chance - (5 * math.log1p(abs(level_difference))) - level_difference)
+        else:
+            critical_chance = math.floor(critical_chance + (5 * math.log1p(abs(level_difference))) + level_difference)
 
     critical_chance = max(5, min(95, critical_chance))
 
@@ -722,41 +730,40 @@ async def slash_fight(interaction: discord.Interaction):
 
     async def attack_callback(attack_interaction: discord.Interaction):
         if attack_interaction.user.id not in battle_states:
-            await attack_interaction.response.send_message("This battle no longer exists!", ephemeral=True)
+            await interaction.response.send_message(embed=discord.Embed(
+                color=int("FA3939", 16),
+                description=f"❌ This battle does not exist anymore!"
+            ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url), ephemeral=True)
+            return
+        elif attack_interaction.user.id != interaction.user.id:
+            await interaction.response.send_message(embed=discord.Embed(
+                color=int("FA3939", 16),
+                description=f"❌ This is not your battle!"
+            ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url), ephemeral=True)
             return
 
         state = battle_states[attack_interaction.user.id]
         critical_hit = (random.randint(1, 100) <= state["critical_chance"])
-        damage = (random.randint(5, 10) * math.ceil(user_level/2) + 5) if critical_hit else (random.randint(2, 5) * math.ceil(user_level/2) + 3)
+
+        damage = (random.randint(5, 10) * math.ceil(user_level/2) + 2) if critical_hit else (random.randint(2, 5) * math.ceil(user_level/2) + 1)
         state["enemy_health"] = max(0, state["enemy_health"] - damage)
 
-        if state["enemy_health"] <= 0:
-            del battle_states[attack_interaction.user.id]
-            await attack_interaction.response.edit_message(embed=discord.Embed(
-                color=int("50B4E6", 16),
-                description=f"✅ You defeated the {state['creature']} and gained {state['reward']} XP!"
-            ), view=None)
-            data_functions.set_experience(interaction.user.id, data_functions.get_experience(interaction.user.id) + state["reward"])
-            return
-
-        enemy_damage = (random.randint(3, 7) * math.ceil(creature_level/2) * state["multipliers"])
+        enemy_damage = (random.randint(3, 7) * math.ceil(creature_level/2 + 2) * state["multipliers"])
         state["user_health"] = max(0, state["user_health"] - enemy_damage)
-
-        if state["user_health"] <= 0:
-            del battle_states[attack_interaction.user.id]
-            await attack_interaction.response.edit_message(embed=discord.Embed(
-                color=int("FA3939", 16),
-                description=f"❌ You got defeated by the {state['creature']} and lost {state['risk']} XP!"
-            ), view=None)
-            data_functions.set_experience(interaction.user.id, max(0, data_functions.get_experience(interaction.user.id) - state["risk"]))
-            return
-
+        
         await attack_interaction.response.edit_message(embed=discord.Embed(
             color=int("50B4E6", 16),
             description=f"💥 You dealt **{damage} {'critical ' if critical_hit else ''}damage** to the {state['creature']}.\n"
-                        f"⚔️ The {state['creature']} attacked back, dealing **{enemy_damage} damage** to you.\n"
+                        f"✅ You defeated the {state['creature']} and gained {state['reward']} experience!" if state["enemy_health"] <= 0 else f"❌ You got defeated by the {state['creature']} and lost {state['risk']} XP!" if state["user_health"] <= 0 else f"⚔️ The {state['creature']} attacked back, dealing **{enemy_damage} damage** to you.\n"
                         f"Your Health: {state['user_health']} | Enemy Health: {state['enemy_health']}"
         ))
+
+        if state["enemy_health"] <= 0:
+            del battle_states[attack_interaction.user.id]
+            data_functions.set_experience(interaction.user.id, data_functions.get_experience(interaction.user.id) + state["reward"])
+        elif state["user_health"] <= 0:
+            del battle_states[attack_interaction.user.id]
+            data_functions.set_experience(interaction.user.id, max(0, data_functions.get_experience(interaction.user.id) - state["risk"]))
 
     async def escape_callback(escape_interaction: discord.Interaction):
         if escape_interaction.user.id not in battle_states:

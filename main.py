@@ -704,9 +704,9 @@ async def slash_fight(interaction: discord.Interaction):
     critical_chance = 35
 
     if level_difference > 0:
-            critical_chance = math.floor(critical_chance - (5 * math.log1p(abs(level_difference))) - level_difference)
-        else:
-            critical_chance = math.floor(critical_chance + (5 * math.log1p(abs(level_difference))) + level_difference)
+        critical_chance = math.floor(critical_chance - (5 * math.log1p(abs(level_difference))) - level_difference)
+    else:
+        critical_chance = math.floor(critical_chance + (5 * math.log1p(abs(level_difference))) + level_difference)
 
     critical_chance = max(5, min(95, critical_chance))
 
@@ -722,8 +722,8 @@ async def slash_fight(interaction: discord.Interaction):
     }
 
     encounter_message = (
-        f"⚔️ You encountered a **{' ' + size if size else ''}{' ' + mutation if mutation else ''} {creature_type} (Level {creature_level})** in the wild.\n"
-        f"Your Health: {user_health}\nCreature Health: {enemy_health}\nDifficulty: {difficulty}/10\nRisk: {risk}"
+        f"⚔️ You encountered a **{' ' + size if size else ''}{' ' + mutation if mutation else ''} {creature_type} (Level {creature_level})** in the wild.\n\n"
+        f"Your Health: {user_health} | Creature Health: {enemy_health} | Difficulty: {difficulty}/10 | Risk: {risk}"
     )
 
     view = discord.ui.View()
@@ -766,8 +766,17 @@ async def slash_fight(interaction: discord.Interaction):
             data_functions.set_experience(interaction.user.id, max(0, data_functions.get_experience(interaction.user.id) - state["risk"]))
 
     async def escape_callback(escape_interaction: discord.Interaction):
-        if escape_interaction.user.id not in battle_states:
-            await escape_interaction.response.send_message("This battle no longer exists!", ephemeral=True)
+        if attack_interaction.user.id not in battle_states:
+            await interaction.response.send_message(embed=discord.Embed(
+                color=int("FA3939", 16),
+                description=f"❌ This battle does not exist anymore!"
+            ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url), ephemeral=True)
+            return
+        elif attack_interaction.user.id != interaction.user.id:
+            await interaction.response.send_message(embed=discord.Embed(
+                color=int("FA3939", 16),
+                description=f"❌ This is not your battle!"
+            ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url), ephemeral=True)
             return
 
         del battle_states[escape_interaction.user.id]
@@ -776,7 +785,7 @@ async def slash_fight(interaction: discord.Interaction):
             description="🏃 You successfully escaped the battle!"
         ), view=None)
 
-    attack_button = discord.ui.Button(label="Attack", style=discord.ButtonStyle.danger)
+    attack_button = discord.ui.Button(label="Attack", style=discord.ButtonStyle.primary)
     attack_button.callback = attack_callback
     view.add_item(attack_button)
 

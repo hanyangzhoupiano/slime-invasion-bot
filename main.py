@@ -697,12 +697,12 @@ async def slash_fight(interaction: discord.Interaction):
         size_multiplier = sizes[size]
         creature_level = math.ceil(creature_level * 1.5)
 
-    reward = (random.randint(5, 20) * creature_level * size_multiplier * mutation_multiplier)
+    reward = math.floor(random.randint(5, 20) * creature_level * size_multiplier * mutation_multiplier)
     risk = math.ceil(reward / 5)
 
     level_difference = creature_level - user_level
-    user_health = 100 + abs(5 * (user_level - 1))
-    enemy_health = 100 + abs(5 * (creature_level - 1) * size_multiplier * mutation_multiplier)
+    user_health = 100 + math.floor(abs(5 * (user_level - 1)))
+    enemy_health = 100 + math.floor(abs(5 * (creature_level - 1) * size_multiplier * mutation_multiplier))
     critical_chance = 35
 
     if level_difference > 0:
@@ -752,29 +752,30 @@ async def slash_fight(interaction: discord.Interaction):
 
         enemy_damage = (random.randint(3, 7) * math.ceil(creature_level/2 + 2) * state["multipliers"])
         state["user_health"] = max(0, state["user_health"] - enemy_damage)
-        
-        await attack_interaction.response.edit_message(embed=discord.Embed(
-            color=int("50B4E6", 16),
-            description=f"💥 You dealt **{damage} {'critical ' if critical_hit else ''}damage** to the {state['creature']}.\n"
-                        f"✅ You defeated the {state['creature']} and gained {state['reward']} experience!" if state["enemy_health"] <= 0 else f"❌ You got defeated by the {state['creature']} and lost {state['risk']} XP!" if state["user_health"] <= 0 else f"⚔️ The {state['creature']} attacked back, dealing **{enemy_damage} damage** to you.\n"
-                        f"Your Health: {state['user_health']} | Enemy Health: {state['enemy_health']}"
-        ))
 
-        if state["enemy_health"] <= 0:
+        if state["enemy_health"] <= 0 || state["user_health"] <= 0:
+            await attack_interaction.response.edit_message(embed=discord.Embed(
+                color=int("50B4E6", 16),
+                description=f"💥 You dealt **{damage} {'critical ' if critical_hit else ''}damage** to the {state['creature']} and defeated it, gaining {state['reward']} experience!" if state["enemy_health"] <= 0 else f"🪦 The {state['creature']} dealt {enemy_damage} and defeated you, so lost {state['risk']} experience!"
+                            f"\n\nYour Health: {state['user_health']}\nEnemy Health: {state['enemy_health']}"
+            ), view=None)
             del battle_states[attack_interaction.user.id]
-            data_functions.set_experience(interaction.user.id, data_functions.get_experience(interaction.user.id) + state["reward"])
-        elif state["user_health"] <= 0:
-            del battle_states[attack_interaction.user.id]
-            data_functions.set_experience(interaction.user.id, max(0, data_functions.get_experience(interaction.user.id) - state["risk"]))
+            data_functions.set_experience(interaction.user.id, data_functions.get_experience(interaction.user.id) + (state["reward"] if state["enemy_health"] <= 0 else -state["risk"]))
+        else:
+            await attack_interaction.response.edit_message(embed=discord.Embed(
+                color=int("50B4E6", 16),
+                description=f"💥 You dealt **{damage} {'critical ' if critical_hit else ''}damage** to the {state['creature']} and it attacked back, dealing **{enemy_damage} damage** to you.\n"
+                            f"\n\nYour Health: {state['user_health']}\nEnemy Health: {state['enemy_health']}"
+            ))
 
     async def escape_callback(escape_interaction: discord.Interaction):
-        if attack_interaction.user.id not in battle_states:
+        if escape_interaction.user.id not in battle_states:
             await interaction.response.send_message(embed=discord.Embed(
                 color=int("FA3939", 16),
                 description=f"❌ This battle does not exist anymore!"
             ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url), ephemeral=True)
             return
-        elif attack_interaction.user.id != interaction.user.id:
+        elif escape_interaction.user.id != interaction.user.id:
             await interaction.response.send_message(embed=discord.Embed(
                 color=int("FA3939", 16),
                 description=f"❌ This is not your battle!"
@@ -787,9 +788,32 @@ async def slash_fight(interaction: discord.Interaction):
             description="🏃 You successfully escaped the battle!"
         ), view=None)
 
+    async def ability_callback(ability_interaction: discord.Interaction):
+        if ability_interaction.user.id not in battle_states:
+            await interaction.response.send_message(embed=discord.Embed(
+                color=int("FA3939", 16),
+                description=f"❌ This battle does not exist anymore!"
+            ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url), ephemeral=True)
+            return
+        elif ability_interaction.user.id != interaction.user.id:
+            await interaction.response.send_message(embed=discord.Embed(
+                color=int("FA3939", 16),
+                description=f"❌ This is not your battle!"
+            ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url), ephemeral=True)
+            return
+        
+        await interaction.response.edit_message(embed=discord.Embed(
+            color=int("50B4E6", 16),
+            description=f"⏰ Coming soon..."
+        ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url), ephemeral=True)
+
     attack_button = discord.ui.Button(label="Attack", style=discord.ButtonStyle.primary)
     attack_button.callback = attack_callback
     view.add_item(attack_button)
+
+    ability_button = discord.ui.Button(label="Ability", style=discord.ButtonStyle.primary)
+    ability_button.callback = ability_callback
+    view.add_item(ability_button)
 
     escape_button = discord.ui.Button(label="Escape", style=discord.ButtonStyle.secondary)
     escape_button.callback = escape_callback
@@ -805,7 +829,7 @@ async def say(ctx, *, message: str = None):
     if ctx.author.bot:
         return
     global disabled_commands
-    if "fight" in disabled_commands:
+    if "say" in disabled_commands:
         await ctx.send(embed=discord.Embed(
             color=int("FA3939", 16),
             description=f"❌ This command is currently disabled. Please ask **hanyangzhou** to enable it."

@@ -733,13 +733,13 @@ async def slash_fight(interaction: discord.Interaction):
 
     async def attack_callback(attack_interaction: discord.Interaction):
         if attack_interaction.user.id not in battle_states:
-            await interaction.response.send_message(embed=discord.Embed(
+            await attack_interaction.response.send_message(embed=discord.Embed(
                 color=int("FA3939", 16),
                 description=f"❌ This battle does not exist anymore!"
             ).set_author(name=attack_interaction.user.name, icon_url=attack_interaction.user.avatar.url), ephemeral=True)
             return
         elif attack_interaction.user.id != interaction.user.id:
-            await interaction.response.send_message(embed=discord.Embed(
+            await attack_interaction.response.send_message(embed=discord.Embed(
                 color=int("FA3939", 16),
                 description=f"❌ This is not your battle!"
             ).set_author(name=attack_interaction.user.name, icon_url=attack_interaction.user.avatar.url), ephemeral=True)
@@ -791,13 +791,13 @@ async def slash_fight(interaction: discord.Interaction):
 
     async def ability_callback(ability_interaction: discord.Interaction):
         if ability_interaction.user.id not in battle_states:
-            await interaction.response.send_message(embed=discord.Embed(
+            await ability_interaction.response.send_message(embed=discord.Embed(
                 color=int("FA3939", 16),
                 description=f"❌ This battle does not exist anymore!"
             ).set_author(name=ability_interaction.user.name, icon_url=ability_interaction.user.avatar.url), ephemeral=True)
             return
         elif ability_interaction.user.id != interaction.user.id:
-            await interaction.response.send_message(embed=discord.Embed(
+            await ability_interaction.response.send_message(embed=discord.Embed(
                 color=int("FA3939", 16),
                 description=f"❌ This is not your battle!"
             ).set_author(name=ability_interaction.user.name, icon_url=ability_interaction.user.avatar.url), ephemeral=True)
@@ -812,18 +812,18 @@ async def slash_fight(interaction: discord.Interaction):
             if not failed:
                 damage = random.randint(15, 25) * math.ceil(user_level/2) + 1
                 state["enemy_health"] = max(0, state["enemy_health"] - damage)
-                await interaction.response.edit_message(embed=discord.Embed(
+                await ability_interaction.response.edit_message(embed=discord.Embed(
                     color=int("50B4E6", 16),
                     description=f"⚔️ You used your ability, dealing **{damage} damage** to the {creature}."
                 ).set_author(name=ability_interaction.user.name, icon_url=ability_interaction.user.avatar.url))
             else:
-                await interaction.response.edit_message(embed=discord.Embed(
+                await ability_interaction.response.edit_message(embed=discord.Embed(
                     color=int("FA3939", 16),
                     description=f"⚔️ You used your ability, but it failed and dealt no damage!"
                 ).set_author(name=ability_interaction.user.name, icon_url=ability_interaction.user.avatar.url))
             battle_states["ability_used"] = True
         else:
-            await interaction.response.send_message(embed=discord.Embed(
+            await ability_interaction.response.send_message(embed=discord.Embed(
                 color=int("FA3939", 16),
                 description=f"❌ You already used your ability!"
             ).set_author(name=ability_interaction.user.name, icon_url=ability_interaction.user.avatar.url), ephemeral=True)

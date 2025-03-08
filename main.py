@@ -753,7 +753,7 @@ async def slash_fight(interaction: discord.Interaction):
         enemy_damage = (random.randint(3, 7) * math.ceil(creature_level/2 + 2) * state["multipliers"])
         state["user_health"] = max(0, state["user_health"] - enemy_damage)
 
-        if state["enemy_health"] <= 0 || state["user_health"] <= 0:
+        if state["enemy_health"] <= 0 or state["user_health"] <= 0:
             await attack_interaction.response.edit_message(embed=discord.Embed(
                 color=int("50B4E6", 16),
                 description=f"💥 You dealt **{damage} {'critical ' if critical_hit else ''}damage** to the {state['creature']} and defeated it, gaining {state['reward']} experience!" if state["enemy_health"] <= 0 else f"🪦 The {state['creature']} dealt {enemy_damage} and defeated you, so lost {state['risk']} experience!"

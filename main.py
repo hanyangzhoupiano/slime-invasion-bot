@@ -821,7 +821,7 @@ async def slash_fight(interaction: discord.Interaction):
                     color=int("FA3939", 16),
                     description=f"⚔️ You used your ability, but it failed and dealt no damage!"
                 ).set_author(name=ability_interaction.user.name, icon_url=ability_interaction.user.avatar.url))
-            battle_states["ability_used"] = True
+            state["ability_used"] = True
         else:
             await ability_interaction.response.send_message(embed=discord.Embed(
                 color=int("FA3939", 16),

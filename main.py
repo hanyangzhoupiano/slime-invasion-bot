@@ -641,13 +641,13 @@ async def slash_fight(interaction: discord.Interaction):
         await interaction.response.send_message(embed=discord.Embed(
             color=int("FA3939", 16),
             description=f"❌ This command is currently disabled. Please ask **hanyangzhou** to enable it."
-        ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
+        ).set_author(name=interaction.user.name, icon_url=interaction.user.avatar.url))
         return
     elif interaction.user.id in battle_states:
         await interaction.response.send_message(embed=discord.Embed(
             color=int("FA3939", 16),
             description=f"❌ You are already in a battle!"
-        ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url), ephemeral=True)
+        ).set_author(name=interaction.user.name, icon_url=interaction.user.avatar.url), ephemeral=True)
         return
 
     random_integer = random.randint(1, 100)

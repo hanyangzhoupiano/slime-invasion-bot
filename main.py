@@ -720,7 +720,8 @@ async def slash_fight(interaction: discord.Interaction):
         "creature": f"{' ' + size if size else ''}{' ' + mutation if mutation else ''} {creature_type}",
         "multipliers": size_multiplier * mutation_multiplier,
         "reward": reward,
-        "risk": risk
+        "risk": risk,
+        "ability_used": False
     }
 
     encounter_message = (
@@ -735,13 +736,13 @@ async def slash_fight(interaction: discord.Interaction):
             await interaction.response.send_message(embed=discord.Embed(
                 color=int("FA3939", 16),
                 description=f"❌ This battle does not exist anymore!"
-            ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url), ephemeral=True)
+            ).set_author(name=attack_interaction.user.name, icon_url=attack_interaction.user.avatar.url), ephemeral=True)
             return
         elif attack_interaction.user.id != interaction.user.id:
             await interaction.response.send_message(embed=discord.Embed(
                 color=int("FA3939", 16),
                 description=f"❌ This is not your battle!"
-            ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url), ephemeral=True)
+            ).set_author(name=attack_interaction.user.name, icon_url=attack_interaction.user.avatar.url), ephemeral=True)
             return
 
         state = battle_states[attack_interaction.user.id]
@@ -756,9 +757,9 @@ async def slash_fight(interaction: discord.Interaction):
         if state["enemy_health"] <= 0 or state["user_health"] <= 0:
             await attack_interaction.response.edit_message(embed=discord.Embed(
                 color=int("50B4E6", 16),
-                description=f"💥 You dealt **{damage} {'critical ' if critical_hit else ''}damage** to the {state['creature']} and defeated it, gaining {state['reward']} experience!" if state["enemy_health"] <= 0 else f"🪦 The {state['creature']} dealt {enemy_damage} and defeated you, so lost {state['risk']} experience!"
+                description=f"🏆 You dealt **{damage} {'critical ' if critical_hit else ''}damage** to the {state['creature']} and defeated it, gaining *{state['reward']} experience*!" if state["enemy_health"] <= 0 else f"🪦 The {state['creature']} dealt **{enemy_damage} damage** and defeated you, so you lost *{state['risk']} experience*!"
                             f"\n\nYour Health: {state['user_health']}\nEnemy Health: {state['enemy_health']}"
-            ), view=None)
+            ).set_author(name=attack_interaction.user.name, icon_url=attack_interaction.user.avatar.url), view=None)
             del battle_states[attack_interaction.user.id]
             data_functions.set_experience(interaction.user.id, data_functions.get_experience(interaction.user.id) + (state["reward"] if state["enemy_health"] <= 0 else -state["risk"]))
         else:
@@ -766,20 +767,20 @@ async def slash_fight(interaction: discord.Interaction):
                 color=int("50B4E6", 16),
                 description=f"💥 You dealt **{damage} {'critical ' if critical_hit else ''}damage** to the {state['creature']} and it attacked back, dealing **{enemy_damage} damage** to you.\n"
                             f"\n\nYour Health: {state['user_health']}\nEnemy Health: {state['enemy_health']}"
-            ))
+            ).set_author(name=attack_interaction.user.name, icon_url=attack_interaction.user.avatar.url))
 
     async def escape_callback(escape_interaction: discord.Interaction):
         if escape_interaction.user.id not in battle_states:
-            await interaction.response.send_message(embed=discord.Embed(
+            await escape_interaction.response.send_message(embed=discord.Embed(
                 color=int("FA3939", 16),
                 description=f"❌ This battle does not exist anymore!"
-            ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url), ephemeral=True)
+            ).set_author(name=escape_interaction.user.name, icon_url=escape_interaction.user.avatar.url), ephemeral=True)
             return
         elif escape_interaction.user.id != interaction.user.id:
-            await interaction.response.send_message(embed=discord.Embed(
+            await escape_interaction.response.send_message(embed=discord.Embed(
                 color=int("FA3939", 16),
                 description=f"❌ This is not your battle!"
-            ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url), ephemeral=True)
+            ).set_author(name=escape_interaction.user.name, icon_url=escape_interaction.user.avatar.url), ephemeral=True)
             return
 
         del battle_states[escape_interaction.user.id]
@@ -793,20 +794,40 @@ async def slash_fight(interaction: discord.Interaction):
             await interaction.response.send_message(embed=discord.Embed(
                 color=int("FA3939", 16),
                 description=f"❌ This battle does not exist anymore!"
-            ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url), ephemeral=True)
+            ).set_author(name=ability_interaction.user.name, icon_url=ability_interaction.user.avatar.url), ephemeral=True)
             return
         elif ability_interaction.user.id != interaction.user.id:
             await interaction.response.send_message(embed=discord.Embed(
                 color=int("FA3939", 16),
                 description=f"❌ This is not your battle!"
-            ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url), ephemeral=True)
+            ).set_author(name=ability_interaction.user.name, icon_url=ability_interaction.user.avatar.url), ephemeral=True)
             return
-        
-        await interaction.response.edit_message(embed=discord.Embed(
-            color=int("50B4E6", 16),
-            description=f"⏰ Coming soon..."
-        ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url), ephemeral=True)
 
+        state = battle_states[ability_interaction.user.id]
+        
+        creature = state["creature"]
+
+        if not state["ability_used"]:
+            failed = (random.randint(1, 3) == 1)
+            if not failed:
+                damage = random.randint(15, 25) * math.ceil(user_level/2) + 1
+                state["enemy_health"] = max(0, state["enemy_health"] - damage)
+                await interaction.response.edit_message(embed=discord.Embed(
+                    color=int("50B4E6", 16),
+                    description=f"⚔️ You used your ability, dealing **{damage} damage** to the {creature}."
+                ).set_author(name=ability_interaction.user.name, icon_url=ability_interaction.user.avatar.url))
+            else:
+                await interaction.response.edit_message(embed=discord.Embed(
+                    color=int("FA3939", 16),
+                    description=f"⚔️ You used your ability, but it failed and dealt no damage!"
+                ).set_author(name=ability_interaction.user.name, icon_url=ability_interaction.user.avatar.url))
+            battle_states["ability_used"] = True
+        else:
+            await interaction.response.send_message(embed=discord.Embed(
+                color=int("FA3939", 16),
+                description=f"❌ You already used your ability!"
+            ).set_author(name=ability_interaction.user.name, icon_url=ability_interaction.user.avatar.url), ephemeral=True)
+    
     attack_button = discord.ui.Button(label="Attack", style=discord.ButtonStyle.primary)
     attack_button.callback = attack_callback
     view.add_item(attack_button)

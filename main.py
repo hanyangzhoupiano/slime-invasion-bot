@@ -748,17 +748,16 @@ async def slash_fight(interaction: discord.Interaction):
         state = battle_states[attack_interaction.user.id]
         critical_hit = (random.randint(1, 100) <= state["critical_chance"])
 
-        damage = (random.randint(5, 10) * math.ceil(user_level/2) + 2) if critical_hit else (random.randint(2, 5) * math.ceil(user_level/2) + 1)
+        damage = math.ceil(random.randint(5, 10) * math.ceil(user_level/2) + 2) if critical_hit else (random.randint(2, 5) * math.ceil(user_level/2) + 1)
         state["enemy_health"] = max(0, state["enemy_health"] - damage)
 
-        enemy_damage = (random.randint(3, 7) * math.ceil(creature_level/2 + 2) * state["multipliers"])
+        enemy_damage = math.ceil(random.randint(3, 7) * math.ceil(creature_level/2 + 2) * state["multipliers"])
         state["user_health"] = max(0, state["user_health"] - enemy_damage)
 
         if state["enemy_health"] <= 0 or state["user_health"] <= 0:
             await attack_interaction.response.edit_message(embed=discord.Embed(
                 color=int("50B4E6", 16),
-                description=f"🏆 You dealt **{damage} {'critical ' if critical_hit else ''}damage** to the {state['creature']} and defeated it, gaining *{state['reward']} experience*!" if state["enemy_health"] <= 0 else f"🪦 The {state['creature']} dealt **{enemy_damage} damage** and defeated you, so you lost *{state['risk']} experience*!"
-                            f"\n\nYour Health: {state['user_health']}\nEnemy Health: {state['enemy_health']}"
+                description=f"🏆 You dealt **{damage} {'critical ' if critical_hit else ''}damage** to the {state['creature']} and defeated it, gaining *{state['reward']} experience*!\n\nYour Health: {state['user_health']}\nEnemy Health: {state['enemy_health']}" if state["enemy_health"] <= 0 else f"🪦 The {state['creature']} dealt **{enemy_damage} damage** and defeated you, so you lost *{state['risk']} experience*!\n\nYour Health: {state['user_health']}\nEnemy Health: {state['enemy_health']}"
             ).set_author(name=attack_interaction.user.name, icon_url=attack_interaction.user.avatar.url), view=None)
             del battle_states[attack_interaction.user.id]
             data_functions.set_experience(interaction.user.id, data_functions.get_experience(interaction.user.id) + (state["reward"] if state["enemy_health"] <= 0 else -state["risk"]))
@@ -810,16 +809,16 @@ async def slash_fight(interaction: discord.Interaction):
         if not state["ability_used"]:
             failed = (random.randint(1, 3) == 1)
             if not failed:
-                damage = random.randint(15, 25) * math.ceil(user_level/2) + 1
+                damage = random.randint(20, 35) * math.ceil(user_level/2) + 1
                 state["enemy_health"] = max(0, state["enemy_health"] - damage)
                 await ability_interaction.response.edit_message(embed=discord.Embed(
                     color=int("50B4E6", 16),
-                    description=f"⚔️ You used your ability, dealing **{damage} damage** to the {creature}."
+                    description=f"⚔️ You used your ability, dealing **{damage} damage** to the {creature}.\n\nYour Health: {state['user_health']}\nEnemy Health: {state['enemy_health']}"
                 ).set_author(name=ability_interaction.user.name, icon_url=ability_interaction.user.avatar.url))
             else:
                 await ability_interaction.response.edit_message(embed=discord.Embed(
                     color=int("FA3939", 16),
-                    description=f"⚔️ You used your ability, but it failed and dealt no damage!"
+                    description=f"⚔️ You used your ability, but it failed and dealt no damage!\n\nYour Health: {state['user_health']}\nEnemy Health: {state['enemy_health']}"
                 ).set_author(name=ability_interaction.user.name, icon_url=ability_interaction.user.avatar.url))
             state["ability_used"] = True
         else:

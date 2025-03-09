@@ -18,6 +18,8 @@ from flask import Flask
 app = Flask(__name__)
 @app.route('/')
 
+# mining ores command?
+
 def home():
     return "Bot is running!"
 

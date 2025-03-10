@@ -36,6 +36,54 @@ default_prefixes = {"!"}
 prefixes = {}
 user_last_experience_time = {}
 battle_states = {}
+
+user_abilities = {}
+
+shop_items = {
+    "Basic Ability Crate (50 Coins)": {
+        "contents": {
+            "Damage I": {"id": 1, "potency": 1, "description": "Instantly deal 150% of your normal damage amount.", "chance": 16},
+            "Healing I": {"id": 2, "potency": 1, "description": "Instantly heal 40% of your max health.", "chance": 16},
+            "Lifesteal I": {"id": 3, "potency": 1, "description": "Steal 25% of your enemy's current health.", "chance": 15},
+            "Shield I": {"id": 4, "potency": 1, "description": "Block the next attack of your enemy.", "chance": 14},
+            "Damage II": {"id": 1, "potency": 2, "description": "Instantly deal 160% of your normal damage amount.", "chance": 9},
+            "Healing II": {"id": 2, "potency": 2, "description": "Instantly heal 45% of your max health.", "chance": 9},
+            "Lifesteal II": {"id": 3, "potency": 2, "description": "Steal 30% of your enemy's current health.", "chance": 8},
+            "Shield II": {"id": 4, "potency": 2, "description": "Block the next two attacks of your enemy.", "chance": 7},
+            "Damage III": {"id": 1, "potency": 3, "description": "Instantly deal 170% of your normal damage amount.", "chance": 6}
+        },
+        "cost": 50
+    },
+    "Standard Ability Crate (200 Coins)": {
+        "contents": {
+            "Damage II": {"id": 1, "potency": 2, "description": "Instantly deal 160% of your normal damage amount.", "chance": 16},
+            "Healing II": {"id": 2, "potency": 2, "description": "Instantly heal 45% of your max health.", "chance": 16},
+            "Lifesteal II": {"id": 3, "potency": 2, "description": "Steal 30% of your enemy's current health.", "chance": 15},
+            "Shield II": {"id": 4, "potency": 2, "description": "Block the next two attacks of your enemy.", "chance": 14},
+            "Damage III": {"id": 1, "potency": 3, "description": "Instantly deal 170% of your normal damage amount.", "chance": 9},
+            "Healing III": {"id": 2, "potency": 3, "description": "Instantly heal 50% of your max health.", "chance": 9},
+            "Lifesteal III": {"id": 3, "potency": 3, "description": "Steal 35% of your enemy's current health.", "chance": 8},
+            "Shield III": {"id": 4, "potency": 3, "description": "Block the next three attacks of your enemy.", "chance": 7},
+            "Damage IV": {"id": 1, "potency": 4, "description": "Instantly deal 180% of your normal damage amount.", "chance": 6}
+        },
+        "cost": 200
+    },
+    "Advanced Ability Crate (1000 Coins)": {
+        "contents": {
+            "Damage III": {"id": 1, "potency": 3, "description": "Instantly deal 170% of your normal damage amount.", "chance": 16},
+            "Healing III": {"id": 2, "potency": 3, "description": "Instantly heal 50% of your max health.", "chance": 16},
+            "Lifesteal III": {"id": 3, "potency": 3, "description": "Steal 35% of your enemy's current health.", "chance": 15},
+            "Shield III": {"id": 4, "potency": 3, "description": "Block the next three attacks of your enemy.", "chance": 14},
+            "Damage IV": {"id": 1, "potency": 4, "description": "Instantly deal 180% of your normal damage amount.", "chance": 9},
+            "Healing IV": {"id": 2, "potency": 4, "description": "Instantly heal 55% of your max health.", "chance": 9},
+            "Lifesteal IV": {"id": 3, "potency": 4, "description": "Steal 40% of your enemy's current health.", "chance": 8},
+            "Shield IV": {"id": 4, "potency": 4, "description": "Block the next four attacks of your enemy.", "chance": 7},
+            "Damage V": {"id": 1, "potency": 5, "description": "Instantly deal 190% of your normal damage amount.", "chance": 6}
+        },
+        "cost": 1000
+    }
+}
+
 error_logs = []
 never_have_i_ever_questions = resources.get_never_have_i_evers()
 brain_teasers = resources.get_brain_teasers()
@@ -451,190 +499,6 @@ async def experience_drop(ctx):
             description="❌ You do not have permission to use this command.\n**Missing permissions:** *Manage Server*"
         ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
 
-@bot.command(aliases=["f"], help="Fight against a creature for rewards.")
-async def fight(ctx):
-    if not ctx.author.bot:
-        global battle_states
-        global disabled_commands
-        if "fight" in disabled_commands:
-            await ctx.send(embed=discord.Embed(
-                color=int("FA3939", 16),
-                description=f"❌ This command is currently disabled. Please ask **hanyangzhou** to enable it."
-            ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
-            return
-        
-        random_integer = random.randint(1, 100)
-        difficulty = random.randint(1, 10)
-        creature_type = random.choice(["Zombie", "Goblin", "Elf", "Angel", "Demon", "Warrior", "Knight", "Slime"])
-        
-        sizes = {
-            "Big": round(random.uniform(1.5, 2.5), 2),
-            "Large": round(random.uniform(2.5, 4), 2),
-            "Huge": round(random.uniform(4, 5.5), 2),
-            "Giant": round(random.uniform(5.5, 8), 2),
-            "Colossal": round(random.uniform(8, 11.5), 2)
-        }
-        
-        mutations = {
-            "Possessed": round(random.uniform(2, 3.5), 2),
-            "Phantom": round(random.uniform(4, 6.5), 2),
-            "Ancient": round(random.uniform(5, 8), 2),
-            "Ethereal": round(random.uniform(6, 9), 2),
-            "Heavenly": round(random.uniform(4.5, 10), 2),
-            "Galactic": round(random.uniform(6, 11.5), 2),
-            "Divine": round(random.uniform(8, 12), 2),
-            "Superior": round(random.uniform(3, 5), 2),
-            "Exotic": round(random.uniform(10, 13.5), 2)
-        }
-        
-        creature_level = (
-            random.randint(1, 5) if random_integer < 50 else
-            random.randint(5, 14) if random_integer < 70 else
-            random.randint(14, 25) if random_integer < 85 else
-            random.randint(25, 36) if random_integer < 95 else
-            random.randint(36, 65) if random_integer < 98 else
-            random.randint(60, 120)
-        )
-                    
-        user_level = data_functions.get_levels(ctx.author.id)
-        
-        mutation_multiplier = 1
-        size_multiplier = 1
-        
-        mutation = random.choice(list(mutations.keys())) if random.randint(1, 3) == 1 else ""
-        if mutation != "":
-            mutation_multiplier = mutations[mutation]
-            creature_level = math.ceil(creature_level * 1.5)
-        
-        size = random.choice(list(sizes.keys())) if random.randint(1, 3) == 1 else ""
-        if size != "":
-            size_multiplier = sizes[size]
-            creature_level = math.ceil(creature_level * 1.5)
-        
-        reward = (random.randint(20, 50) * creature_level * (size_multiplier + mutation_multiplier))
-        risk = random.randint(50, 200)
-        
-        level_difference = creature_level - user_level
-        user_health = 100 + abs(5 * (user_level - 1))
-        enemy_health = 100 + abs(5 * (creature_level - 1) * size_multiplier * mutation_multiplier)
-        critical_chance = 35
-        
-        if level_difference > 0:
-            critical_chance = math.floor(critical_chance - (5 * math.log1p(abs(level_difference))) - level_difference)
-        else:
-            critical_chance = math.floor(critical_chance + (5 * math.log1p(abs(level_difference))) + level_difference)
-
-        critical_chance = max(5, min(95, critical_chance))
-        
-        encounter_message = (
-            f"⚔️ You encountered a**{' ' + size if size else ''}{' ' + mutation if mutation else ''} {creature_type} (Level {creature_level})** in the wild."
-            f"\n\nYour Health: {user_health}\nCreature Health: {enemy_health}\nCritical Chance: {critical_chance}%\nDifficulty: {difficulty}/10\nRisk: {risk}"
-        )
-
-        view = discord.ui.View()
-
-        battle_states[ctx.author.id] = {
-            "turn": "user",
-            "user_health": user_health,
-            "enemy_health": enemy_health,
-            "critical_chance": critical_chance,
-            "creature": f"{' ' + size if size else ''}{' ' + mutation if mutation else ''} {creature_type}",
-            "multipliers": size_multiplier * mutation_multiplier
-        }
-
-        async def attack_callback(interaction: discord.Interaction):
-            if interaction.user != ctx.author or ctx.author.id not in battle_states:
-                await interaction.response.send_message(embed=discord.Embed(
-                    color=int("FA3939", 16),
-                    description="This is not your battle!"
-                ).set_author(name=interaction.user.name, icon_url=interaction.user.avatar.url), ephemeral=True, view=None)
-                return
-
-            msg_id = interaction.message.id
-        
-            battle_state = battle_states[ctx.author.id]
-            
-            user_health = battle_state["user_health"]
-            enemy_health = battle_state["enemy_health"]
-            
-            critical_chance = battle_state["critical_chance"]
-            creature = battle_state["creature"]
-            multipliers = battle_state["multipliers"]
-        
-            # --- USER ATTACK ---
-            if battle_state["turn"] == 'user':
-                critical_hit = (random.randint(1, 100) <= critical_chance)
-                damage = (random.randint(5, 10) * math.ceil(user_level/2) + 5) if critical_hit else (random.randint(2, 5) * math.ceil(user_level/2) + 3)
-                
-                battle_state["enemy_health"] = max(0, battle_state["enemy_health"] - damage)
-        
-                await interaction.response.edit_message(embed=discord.Embed(
-                    color=int("50B4E6", 16),
-                    description=f"💥 You dealt **{damage} {'critical ' if critical_hit else ''}damage** to the {creature}."
-                                f"\n\nHealth: {battle_state['user_health']}\nEnemy Health: {battle_state['enemy_health']}"
-                ).set_author(name=interaction.user.name, icon_url=interaction.user.avatar.url))
-
-                await asyncio.sleep(2)
-        
-                if battle_state["enemy_health"] <= 0:
-                    await interaction.followup.edit_message(msg_id, embed=discord.Embed(
-                        color=int("50B4E6", 16),
-                        description=f"✅ You defeated the {creature} and gained {reward} experience."
-                    ).set_author(name=interaction.user.name, icon_url=interaction.user.avatar.url), view=None)
-                    data_functions.set_experience(ctx.author.id, data_functions.get_experience(ctx.author.id) + reward)
-                    del battle_states[ctx.author.id]
-                    return
-                else:
-                    enemy_damage = (random.randint(3, 7) * math.ceil(creature_level/2) * multipliers)
-        
-                    battle_state["user_health"] = max(0, battle_state["user_health"] - enemy_damage)
-            
-                    await interaction.followup.edit_message(msg_id, embed=discord.Embed(
-                        color=int("50B4E6", 16),
-                        description=f"⚔️ The {creature} dealt **{enemy_damage} damage** to you."
-                                    f"\n\nYour Health: {battle_state['user_health']}\nEnemy Health: {battle_state['enemy_health']}"
-                    ).set_author(name=interaction.user.name, icon_url=interaction.user.avatar.url))
-                    
-                    await asyncio.sleep(2)
-            
-                    if battle_state["user_health"] <= 0:
-                        await interaction.followup.edit_message(msg_id, embed=discord.Embed(
-                            color=int("FA3939", 16),
-                            description=f"❌ You got defeated by the {creature} and lost {risk} experience."
-                        ).set_author(name=interaction.user.name, icon_url=interaction.user.avatar.url), view=None)
-                        data_functions.set_experience(ctx.author.id, max((data_functions.get_experience(ctx.author.id) - risk), 0))
-                        del battle_states[ctx.author.id]
-                        return
-                    
-        async def escape_callback(interaction: discord.Interaction):
-            if interaction.user != ctx.author:
-                await interaction.response.send_message(embed=discord.Embed(
-                    color=int("FA3939", 16),
-                    description="This is not your battle!"
-                ).set_author(name=interaction.user.name, icon_url=interaction.user.avatar.url), ephemeral=True, view=None)
-                return
-
-            msg_id = interaction.message.id
-    
-            await interaction.response.edit_message(msg_id, embed=discord.Embed(
-                color=int("50B4E6", 16),
-                description=f"You have successfully escaped the battle!"
-            ).set_author(name=interaction.user.name, icon_url=interaction.user.avatar.url), view=None)
-            return
-    
-        attack_button = discord.ui.Button(label="Attack", style=discord.ButtonStyle.primary)
-        attack_button.callback = attack_callback
-        view.add_item(attack_button)
-
-        escape_button = discord.ui.Button(label="Escape", style=discord.ButtonStyle.secondary)
-        escape_button.callback = escape_callback
-        view.add_item(escape_button)
-
-        await ctx.send(embed=discord.Embed(
-            color=int("50B4E6", 16),
-            description=encounter_message
-        ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url), view=view)
-
 @bot.tree.command(name="fight", description="Fight against a creature for rewards!")
 async def slash_fight(interaction: discord.Interaction):
     global battle_states
@@ -677,12 +541,12 @@ async def slash_fight(interaction: discord.Interaction):
     }
 
     creature_level = (
-        random.randint(1, 5) if random_integer < 50 else
-        random.randint(5, 14) if random_integer < 70 else
-        random.randint(14, 25) if random_integer < 85 else
-        random.randint(25, 36) if random_integer < 95 else
-        random.randint(36, 65) if random_integer < 98 else
-        random.randint(60, 120)
+        random.randint(1, 3) if random_integer < 50 else
+        random.randint(3, 15) if random_integer < 70 else
+        random.randint(15, 35) if random_integer < 85 else
+        random.randint(35, 60) if random_integer < 95 else
+        random.randint(60, 95) if random_integer < 98 else
+        random.randint(95, 140)
     )
 
     user_level = data_functions.get_levels(interaction.user.id)
@@ -723,7 +587,8 @@ async def slash_fight(interaction: discord.Interaction):
         "multipliers": size_multiplier * mutation_multiplier,
         "reward": reward,
         "risk": risk,
-        "ability_used": False
+        "ability_used": False,
+        "tags": []
     }
 
     encounter_message = (
@@ -846,6 +711,65 @@ async def slash_fight(interaction: discord.Interaction):
         description=encounter_message
     ), view=view)
 
+@bot.tree.command(name="shop", description="Spend coins on numerous special items.")
+async def slash_shop(interaction: discord.Interaction):
+    global shop_items
+    global user_abilities
+    if "shop" in disabled_commands:
+        await interaction.response.send_message(embed=discord.Embed(
+            color=int("FA3939", 16),
+            description=f"❌ This command is currently disabled. Please ask **hanyangzhou** to enable it."
+        ).set_author(name=interaction.user.name, icon_url=interaction.user.avatar.url))
+        return
+    
+    user_id = interaction.user.id
+    coins = data_functions.get_coins(user_id)
+
+    options = [
+        discord.SelectOption(label=item, description=f"{shop_items[item]['cost']} Coins") for item in shop_items
+    ]
+
+    select = discord.ui.Select(placeholder="Select a crate to purchase...", options=options)
+
+    async def select_callback(interaction: discord.Interaction):
+        selected_crate = select.values[0]
+        crate_cost = shop_items[selected_crate]["cost"]
+
+        if coins < crate_cost:
+            await interaction.response.send_message(embed=discord.Embed(
+                color=int("FA3939", 16),
+                description="❌ You do not have enough coins!"
+            ), ephemeral=True)
+            return
+
+        abilities = list(shop_items[selected_crate]["contents"].keys())
+        chosen_ability = random.choices(abilities, weights=[shop_items[selected_crate]["contents"][ab]["chance"] for ab in abilities])[0]
+        ability_data = shop_items[selected_crate]["contents"][chosen_ability]
+        
+        data_functions.set_coins(user_id, coins - crate_cost)
+        user_abilities[user_id] = chosen_ability
+
+        embed = discord.Embed(
+            title="🧰 Crate Opened!",
+            description=f"You received **{chosen_ability} ({ability_data['chance']}% Chance)**!\n\n_{ability_data['description']}_",
+            color=int("50B4E6", 16)
+        )
+        embed.set_footer(text=f"Remaining Coins: {data_functions.get_coins(user_id)}")
+
+        await interaction.response.edit_message(embed=embed, view=None)
+
+    select.callback = select_callback
+
+    view = discord.ui.View()
+    view.add_item(select)
+
+    embed = discord.Embed(
+        title="🛒 Shop",
+        description=f"💰 Your Balance: **{coins} Coins**\n\nSelect a crate from the menu below!{f'\nCurrent Ability: {user_abilities[user_id]}' if user_id in user_abilities else ''}",
+        color=int("50B4E6", 16)
+    )
+    await interaction.response.send_message(embed=embed, view=view)
+    
 @bot.command(aliases=["s", "sy"], help="Make the bot say a specified message.")
 async def say(ctx, *, message: str = None):
     if ctx.author.bot:

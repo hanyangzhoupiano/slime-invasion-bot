@@ -768,7 +768,10 @@ async def slash_shop(interaction: discord.Interaction):
 
     embed = discord.Embed(
         title="🛒 Shop",
-        description=f"💰 Your Balance: **{coins} Coins**\n\nSelect a crate from the menu below!{f'\nCurrent Ability: {user_abilities[user_id]}' if user_id in user_abilities else ''}",
+        description=(
+            f"💰 Your Balance: **{coins} Coins**\n\nSelect a crate from the menu below!"
+            + (f"\nCurrent Ability: {user_abilities[user_id]}" if user_id in user_abilities else "")
+        ),
         color=int("50B4E6", 16)
     )
     await interaction.response.send_message(embed=embed, view=view)

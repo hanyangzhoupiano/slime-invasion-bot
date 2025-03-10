@@ -630,9 +630,11 @@ async def slash_fight(interaction: discord.Interaction):
             del battle_states[attack_interaction.user.id]
             user_experience = data_functions.get_experience(interaction.user.id)
             user_coins = data_functions.get_coins(interaction.user.id)
-            data_functions.set_experience(interaction.user.id, user_experience + (state["reward"] if state["enemy_health"] <= 0 else max(user_experience - state["risk"], 0)))
-            if state["ememy_health"] <= 0:
-                data_functions.set_coins(interaction.user.id, (user_coins + math.ceil(state["reward"]/12)))
+            if state["enemy_health"] <= 0:
+                data_functions.set_coins(interaction.user.id, user_coins + math.ceil(state["reward"] / 12))
+                data_functions.set_experience(interaction.user.id, user_experience + state["reward"])
+            else:
+                data_functions.set_experience(interaction.user.id, max(user_experience - state["risk"], 0))
         else:
             state["user_health"] = max(0, state["user_health"] - enemy_damage)
             await attack_interaction.response.edit_message(embed=discord.Embed(

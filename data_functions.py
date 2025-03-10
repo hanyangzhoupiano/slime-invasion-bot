@@ -144,7 +144,7 @@ def get_coins(user_id):
         print(f"Error in get_coins: {e}")
         conn.rollback()
 
-def set_coins(user_id, level):
+def set_coins(user_id, coins):
     """Set or update the coins of a user."""
     try:
         conn = connect()
@@ -155,7 +155,7 @@ def set_coins(user_id, level):
                     VALUES (%s, %s) 
                     ON CONFLICT (user_id) 
                     DO UPDATE SET coins = EXCLUDED.coins
-                """, (user_id, level))
+                """, (user_id, coins))
                 conn.commit()
             conn.close()
     except Exception as e:

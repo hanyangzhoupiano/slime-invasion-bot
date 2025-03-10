@@ -40,7 +40,7 @@ battle_states = {}
 user_abilities = {}
 
 shop_items = {
-    "Basic Ability Crate (50 Coins)": {
+    "Basic Ability Crate": {
         "contents": {
             "Damage I": {"id": 1, "potency": 1, "description": "Instantly deal 150% of your normal damage amount.", "chance": 16},
             "Healing I": {"id": 2, "potency": 1, "description": "Instantly heal 40% of your max health.", "chance": 16},
@@ -54,7 +54,7 @@ shop_items = {
         },
         "cost": 50
     },
-    "Standard Ability Crate (200 Coins)": {
+    "Standard Ability Crate": {
         "contents": {
             "Damage II": {"id": 1, "potency": 2, "description": "Instantly deal 160% of your normal damage amount.", "chance": 16},
             "Healing II": {"id": 2, "potency": 2, "description": "Instantly heal 45% of your max health.", "chance": 16},
@@ -68,7 +68,7 @@ shop_items = {
         },
         "cost": 200
     },
-    "Advanced Ability Crate (1000 Coins)": {
+    "Advanced Ability Crate": {
         "contents": {
             "Damage III": {"id": 1, "potency": 3, "description": "Instantly deal 170% of your normal damage amount.", "chance": 16},
             "Healing III": {"id": 2, "potency": 3, "description": "Instantly heal 50% of your max health.", "chance": 16},
@@ -726,7 +726,6 @@ async def slash_shop(interaction: discord.Interaction):
         return
     
     user_id = interaction.user.id
-    coins = data_functions.get_coins(user_id)
 
     options = [
         discord.SelectOption(label=item, description=f"{shop_items[item]['cost']} Coins") for item in shop_items
@@ -736,6 +735,7 @@ async def slash_shop(interaction: discord.Interaction):
 
     async def select_callback(interaction: discord.Interaction):
         selected_crate = select.values[0]
+        coins = data_functions.get_coins(user_id)
         crate_cost = shop_items[selected_crate]["cost"]
 
         if coins < crate_cost:
@@ -749,7 +749,7 @@ async def slash_shop(interaction: discord.Interaction):
         chosen_ability = random.choices(abilities, weights=[shop_items[selected_crate]["contents"][ab]["chance"] for ab in abilities])[0]
         ability_data = shop_items[selected_crate]["contents"][chosen_ability]
         
-        data_functions.set_coins(user_id, coins - crate_cost)
+        data_functions.set_coins(user_id, max((coins - crate_cost), 0))
         user_abilities[user_id] = chosen_ability
 
         embed = discord.Embed(
@@ -769,7 +769,7 @@ async def slash_shop(interaction: discord.Interaction):
     embed = discord.Embed(
         title="🛒 Shop",
         description=(
-            f"💰 Your Balance: **{coins} Coins**\n\nSelect a crate from the menu below!"
+            f"💰 Your Balance: **{data_functions.get_coins(user_id)} Coins**\n\nSelect a crate from the menu below!"
             + (f"\nCurrent Ability: {user_abilities[user_id]}" if user_id in user_abilities else "")
         ),
         color=int("50B4E6", 16)

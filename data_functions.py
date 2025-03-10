@@ -47,6 +47,7 @@ def get_messages(user_id):
                 cursor.execute("SELECT count FROM messages WHERE user_id = %s", (user_id,))
                 row = cursor.fetchone()
                 return row[0] if row else 0
+            conn.close()
     except Exception as e:
         print(f"Error in get_messages: {e}")
         conn.rollback()
@@ -78,6 +79,7 @@ def get_experience(user_id):
                 cursor.execute("SELECT experience FROM statistics WHERE user_id = %s", (user_id,))
                 row = cursor.fetchone()
                 return row[0] if row else 0
+            conn.close()
     except Exception as e:
         print(f"Error in get_experience: {e}")
         conn.rollback()
@@ -89,7 +91,7 @@ def set_experience(user_id, exp):
         if conn:
             with conn.cursor() as cursor:
                 cursor.execute("""
-                    INSERT INTO statistics (user_id, exp) 
+                    INSERT INTO statistics (user_id, experience) 
                     VALUES (%s, %s) 
                     ON CONFLICT (user_id) 
                     DO UPDATE SET experience = EXCLUDED.experience
@@ -109,6 +111,7 @@ def get_levels(user_id):
                 cursor.execute("SELECT level FROM statistics WHERE user_id = %s", (user_id,))
                 row = cursor.fetchone()
                 return row[0] if row else 1
+            conn.close()
     except Exception as e:
         print(f"Error in get_levels: {e}")
         conn.rollback()
@@ -140,6 +143,7 @@ def get_coins(user_id):
                 cursor.execute("SELECT coins FROM statistics WHERE user_id = %s", (user_id,))
                 row = cursor.fetchone()
                 return row[0] if row else 0
+            conn.close()
     except Exception as e:
         print(f"Error in get_coins: {e}")
         conn.rollback()
@@ -171,6 +175,7 @@ def get_all_user_levels():
                 cursor.execute("SELECT user_id, level FROM statistics")
                 rows = cursor.fetchall()
                 return {row[0]: row[1] for row in rows}
+            conn.close()
     except Exception as e:
         print(f"Error in get_all_user_levels: {e}")
         conn.rollback()
@@ -184,7 +189,7 @@ def reset_data():
         conn = connect()
         if conn:
             with conn.cursor() as cursor:
-                cursor.execute("DELETE FROM experience")
+                cursor.execute("DELETE FROM statistics")
                 conn.commit()
             conn.close()
     except Exception as e:
@@ -200,8 +205,9 @@ def get_prefix(guild_id):
                 cursor.execute("SELECT prefix FROM prefixes WHERE guild_id = %s", (guild_id,))
                 row = cursor.fetchone()
                 return row[0] if row else "!"
+            conn.close()
     except Exception as e:
-        print(f"Error in set_messages: {e}")
+        print(f"Error in get_prefix: {e}")
         conn.rollback()
 
 def set_prefix(guild_id, prefix):
@@ -219,5 +225,5 @@ def set_prefix(guild_id, prefix):
                 conn.commit()
             conn.close()
     except Exception as e:
-        print(f"Error in set_messages: {e}")
+        print(f"Error in set_prefix: {e}")
         conn.rollback()

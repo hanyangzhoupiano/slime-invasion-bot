@@ -139,7 +139,7 @@ def get_coins(user_id):
             with conn.cursor() as cursor:
                 cursor.execute("SELECT coins FROM statistics WHERE user_id = %s", (user_id,))
                 row = cursor.fetchone()
-                return row[0] if row else 1
+                return row[0] if row else 0
     except Exception as e:
         print(f"Error in get_coins: {e}")
         conn.rollback()

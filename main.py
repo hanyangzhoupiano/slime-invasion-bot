@@ -625,13 +625,14 @@ async def slash_fight(interaction: discord.Interaction):
                 state["user_health"] = max(0, state["user_health"] - enemy_damage)
             await attack_interaction.response.edit_message(embed=discord.Embed(
                 color=int("50B4E6", 16),
-                description=f"🏆 You dealt **{damage} {'critical ' if critical_hit else ''}damage** to the {state['creature']} and defeated it!\n\n+{state['reward']} Experience\n+{math.ceil(state['reward']/12)} Coins\n\nYour Health: {state['user_health']}\nEnemy Health: {state['enemy_health']}" if state["enemy_health"] <= 0 else f"🪦 The {state['creature']} dealt **{enemy_damage} damage** and defeated you!\n\n-{state['risk']} experience\n\nYour Health: {state['user_health']}\nEnemy Health: {state['enemy_health']}"
+                description=f"🏆 You dealt **{damage} {'critical ' if critical_hit else ''}damage** to the {state['creature']} and defeated it!\n\n*+{state['reward']} Experience*\n*+{math.ceil(state['reward']/12)} Coins*\n\nYour Health: {state['user_health']}\nEnemy Health: {state['enemy_health']}" if state["enemy_health"] <= 0 else f"🪦 The {state['creature']} dealt **{enemy_damage} damage** and defeated you!\n\n*-{state['risk']} Experience*\n\nYour Health: {state['user_health']}\nEnemy Health: {state['enemy_health']}"
             ).set_author(name=attack_interaction.user.name, icon_url=attack_interaction.user.avatar.url), view=None)
             del battle_states[attack_interaction.user.id]
             user_experience = data_functions.get_experience(interaction.user.id)
             user_coins = data_functions.get_coins(interaction.user.id)
             data_functions.set_experience(interaction.user.id, user_experience + (state["reward"] if state["enemy_health"] <= 0 else max(user_experience - state["risk"], 0)))
-            data_functions.set_coins(interaction.user.id, user_coins + math.ceil(state["reward"]/12) if state["ememy_health"] <= 0 else user_coins)
+            if state["ememy_health"] <= 0:
+                data_functions.set_coins(interaction.user.id, (user_coins + math.ceil(state["reward"]/12)))
         else:
             state["user_health"] = max(0, state["user_health"] - enemy_damage)
             await attack_interaction.response.edit_message(embed=discord.Embed(

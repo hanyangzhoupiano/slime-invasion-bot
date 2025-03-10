@@ -24,10 +24,11 @@ def setup_database():
                     user_id BIGINT PRIMARY KEY,
                     count INTEGER DEFAULT 0
                 );
-                CREATE TABLE IF NOT EXISTS experience (
+                CREATE TABLE IF NOT EXISTS statistics (
                     user_id BIGINT PRIMARY KEY,
                     level INTEGER DEFAULT 1,
-                    exp INTEGER DEFAULT 0
+                    experience INTEGER DEFAULT 0,
+                    coins INTEGER DEFAULT 0
                 );
                 CREATE TABLE IF NOT EXISTS prefixes (
                     guild_id BIGINT PRIMARY KEY,
@@ -47,7 +48,7 @@ def get_messages(user_id):
                 row = cursor.fetchone()
                 return row[0] if row else 0
     except Exception as e:
-        print(f"Error in set_messages: {e}")
+        print(f"Error in get_messages: {e}")
         conn.rollback()
 
 def set_messages(user_id, count):
@@ -74,11 +75,11 @@ def get_experience(user_id):
         conn = connect()
         if conn:
             with conn.cursor() as cursor:
-                cursor.execute("SELECT exp FROM experience WHERE user_id = %s", (user_id,))
+                cursor.execute("SELECT experience FROM statistics WHERE user_id = %s", (user_id,))
                 row = cursor.fetchone()
                 return row[0] if row else 0
     except Exception as e:
-        print(f"Error in set_messages: {e}")
+        print(f"Error in get_experience: {e}")
         conn.rollback()
 
 def set_experience(user_id, exp):
@@ -88,15 +89,15 @@ def set_experience(user_id, exp):
         if conn:
             with conn.cursor() as cursor:
                 cursor.execute("""
-                    INSERT INTO experience (user_id, exp) 
+                    INSERT INTO statistics (user_id, exp) 
                     VALUES (%s, %s) 
                     ON CONFLICT (user_id) 
-                    DO UPDATE SET exp = EXCLUDED.exp
+                    DO UPDATE SET experience = EXCLUDED.experience
                 """, (user_id, exp))
                 conn.commit()
             conn.close()
     except Exception as e:
-        print(f"Error in set_messages: {e}")
+        print(f"Error in set_experience: {e}")
         conn.rollback()
 
 def get_levels(user_id):
@@ -105,11 +106,11 @@ def get_levels(user_id):
         conn = connect()
         if conn:
             with conn.cursor() as cursor:
-                cursor.execute("SELECT level FROM experience WHERE user_id = %s", (user_id,))
+                cursor.execute("SELECT level FROM statistics WHERE user_id = %s", (user_id,))
                 row = cursor.fetchone()
                 return row[0] if row else 1
     except Exception as e:
-        print(f"Error in set_messages: {e}")
+        print(f"Error in get_levels: {e}")
         conn.rollback()
 
 def set_levels(user_id, level):
@@ -119,7 +120,7 @@ def set_levels(user_id, level):
         if conn:
             with conn.cursor() as cursor:
                 cursor.execute("""
-                    INSERT INTO experience (user_id, level) 
+                    INSERT INTO statistics (user_id, level) 
                     VALUES (%s, %s) 
                     ON CONFLICT (user_id) 
                     DO UPDATE SET level = EXCLUDED.level
@@ -127,7 +128,38 @@ def set_levels(user_id, level):
                 conn.commit()
             conn.close()
     except Exception as e:
-        print(f"Error in set_messages: {e}")
+        print(f"Error in set_levels: {e}")
+        conn.rollback()
+
+def get_coins(user_id):
+    """Retrieve the coins of a user."""
+    try:
+        conn = connect()
+        if conn:
+            with conn.cursor() as cursor:
+                cursor.execute("SELECT coins FROM statistics WHERE user_id = %s", (user_id,))
+                row = cursor.fetchone()
+                return row[0] if row else 1
+    except Exception as e:
+        print(f"Error in get_coins: {e}")
+        conn.rollback()
+
+def set_coins(user_id, level):
+    """Set or update the coins of a user."""
+    try:
+        conn = connect()
+        if conn:
+            with conn.cursor() as cursor:
+                cursor.execute("""
+                    INSERT INTO statistics (user_id, coins) 
+                    VALUES (%s, %s) 
+                    ON CONFLICT (user_id) 
+                    DO UPDATE SET coins = EXCLUDED.coins
+                """, (user_id, level))
+                conn.commit()
+            conn.close()
+    except Exception as e:
+        print(f"Error in set_coins: {e}")
         conn.rollback()
 
 def get_all_user_levels():
@@ -136,7 +168,7 @@ def get_all_user_levels():
         conn = connect()
         if conn:
             with conn.cursor() as cursor:
-                cursor.execute("SELECT user_id, level FROM experience")
+                cursor.execute("SELECT user_id, level FROM statistics")
                 rows = cursor.fetchall()
                 return {row[0]: row[1] for row in rows}
     except Exception as e:

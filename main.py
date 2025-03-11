@@ -619,10 +619,10 @@ async def slash_fight(interaction: discord.Interaction):
         state = battle_states[attack_interaction.user.id]
         critical_hit = (random.randint(1, 100) <= state["critical_chance"])
 
-        damage = math.ceil(random.randint(5, 10) * math.ceil(user_level/2) + 2) if critical_hit else (random.randint(2, 5) * math.ceil(user_level/2) + 1)
+        damage = math.ceil(random.randint(8, 15) * math.ceil(user_level / 2) + 2) if critical_hit else (random.randint(2, 8) * math.ceil(user_level / 2) + 1)
         state["enemy_health"] = max(0, state["enemy_health"] - damage)
 
-        enemy_damage = math.ceil(random.randint(3, 7) * math.ceil(creature_level/2 + 2) * state["multipliers"])
+        enemy_damage = math.ceil(random.randint(2, 7) * (math.ceil(creature_level / 2) + 2) * state["multipliers"])
 
         if state["blocks"] > 0:
             state["blocks"] = max(0, state["blocks"] - 1)

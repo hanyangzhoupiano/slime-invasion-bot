@@ -502,6 +502,7 @@ async def experience_drop(ctx):
 @bot.tree.command(name="fight", description="Fight against a creature for rewards!")
 async def slash_fight(interaction: discord.Interaction):
     global battle_states
+    global user_abilities
     global disabled_commands
     if "fight" in disabled_commands:
         await interaction.response.send_message(embed=discord.Embed(
@@ -588,7 +589,8 @@ async def slash_fight(interaction: discord.Interaction):
         "reward": reward,
         "risk": risk,
         "ability_used": False,
-        "tags": []
+        "tags": [],
+        "blocks": 0
     }
 
     encounter_message = (
@@ -619,6 +621,14 @@ async def slash_fight(interaction: discord.Interaction):
         state["enemy_health"] = max(0, state["enemy_health"] - damage)
 
         enemy_damage = math.ceil(random.randint(3, 7) * math.ceil(creature_level/2 + 2) * state["multipliers"])
+
+        if state["blocks"] > 0:
+            state["blocks"] = max(0, state["blocks"] - 1)
+            await attack_interaction.response.edit_message(embed=discord.Embed(
+                color=int("50B4E6", 16),
+                description=f"🛡️ Your shield blocked the attack!{(' Remaining shields: ' + state['blocks']) if state['blocks'] > 0 else ''}\n\nYour Health: {state['user_health']}\nEnemy Health: {state['enemy_health']}"
+            ).set_author(name=attack_interaction.user.name, icon_url=attack_interaction.user.avatar.url))
+            return
 
         if state["enemy_health"] <= 0 or (state["user_health"] - enemy_damage <= 0):
             if state["user_health"] - enemy_damage <= 0:
@@ -676,6 +686,12 @@ async def slash_fight(interaction: discord.Interaction):
                 description=f"❌ This is not your battle!"
             ).set_author(name=ability_interaction.user.name, icon_url=ability_interaction.user.avatar.url), ephemeral=True)
             return
+        elif ability_interaction.user.id not in user_abilities:
+            await ability_interaction.response.send_message(embed=discord.Embed(
+                color=int("FA3939", 16),
+                description=f"❌ You do not have an ability!"
+            ).set_author(name=ability_interaction.user.name, icon_url=ability_interaction.user.avatar.url), ephemeral=True)
+            return
 
         state = battle_states[ability_interaction.user.id]
         
@@ -684,16 +700,49 @@ async def slash_fight(interaction: discord.Interaction):
         if not state["ability_used"]:
             failed = (random.randint(1, 3) == 1)
             if not failed:
-                damage = random.randint(20, 35) * math.ceil(user_level/2) + 1
-                state["enemy_health"] = max(0, state["enemy_health"] - damage)
-                await ability_interaction.response.edit_message(embed=discord.Embed(
-                    color=int("50B4E6", 16),
-                    description=f"⚔️ You used your ability, dealing **{damage} damage** to the {creature}.\n\nYour Health: {state['user_health']}\nEnemy Health: {state['enemy_health']}"
-                ).set_author(name=ability_interaction.user.name, icon_url=ability_interaction.user.avatar.url))
+                ability_name = user_abilities[ability_interaction.user.id]
+                ability = None
+                for crate in shop_items.values():
+                    if ability_name in crate["contents"]:
+                        ability = crate["contents"][ability_name]
+                        break
+                if ability is None:
+                    return
+                if ability["id"] == 1:
+                    critical_hit = (random.randint(1, 100) <= state["critical_chance"])
+                    damage = math.ceil(random.randint(5, 10) * math.ceil(user_level/2) + 2) if critical_hit else (random.randint(2, 5) * math.ceil(user_level/2) + 1) * ((150 + (10 * ability["potency"])) / 100)
+                    
+                    state["enemy_health"] = max(0, state["enemy_health"] - damage)
+                    await ability_interaction.response.edit_message(embed=discord.Embed(
+                        color=int("50B4E6", 16),
+                        description=f"⚔️ You used your ability ({ability_name}), dealing **{damage} {'critical ' if critical_hit else ''}damage** to the {creature}.\n\nYour Health: {state['user_health']}\nEnemy Health: {state['enemy_health']}"
+                    ).set_author(name=ability_interaction.user.name, icon_url=ability_interaction.user.avatar.url))
+                elif ability["id"] == 2:
+                    heal = state["user_health"] * math.ceil((40 + (ability["potency"] * 5)) / 100)
+                    state["user_health"] += heal
+                    await ability_interaction.response.edit_message(embed=discord.Embed(
+                        color=int("50B4E6", 16),
+                        description=f"🩹 You used your ability ({ability_name}), healing **{heal} health**.\n\nYour Health: {state['user_health']}\nEnemy Health: {state['enemy_health']}"
+                    ).set_author(name=ability_interaction.user.name, icon_url=ability_interaction.user.avatar.url))
+                elif ability["id"] == 3:
+                    steal = state["enemy_health"] * math.ceil((25 + (ability["potency"] * 5)) / 100)
+                    state["enemy_health"] = max(0, state["enemy_health"] - steal)
+                    state["user_health"] += steal
+                    await ability_interaction.response.edit_message(embed=discord.Embed(
+                        color=int("50B4E6", 16),
+                        description=f"🧪 You used your ability ({ability_name}), stealing **{steal} health** from the {creature}.\n\nYour Health: {state['user_health']}\nEnemy Health: {state['enemy_health']}"
+                    ).set_author(name=ability_interaction.user.name, icon_url=ability_interaction.user.avatar.url))
+                elif ability["id"] == 4:
+                    shield = 1 + (ability["potency"] - 1)
+                    state["blocks"] += shield
+                    await ability_interaction.response.edit_message(embed=discord.Embed(
+                        color=int("50B4E6", 16),
+                        description=f"🛡️ You used your ability ({ability_name}), blocking the {creature} from attacking for the next {shield} turns.\n\nYour Health: {state['user_health']}\nEnemy Health: {state['enemy_health']}"
+                    ).set_author(name=ability_interaction.user.name, icon_url=ability_interaction.user.avatar.url))
             else:
                 await ability_interaction.response.edit_message(embed=discord.Embed(
                     color=int("FA3939", 16),
-                    description=f"⚔️ You used your ability, but it failed!\n\nYour Health: {state['user_health']}\nEnemy Health: {state['enemy_health']}"
+                    description=f"❌ You used your ability, but it failed!\n\nYour Health: {state['user_health']}\nEnemy Health: {state['enemy_health']}"
                 ).set_author(name=ability_interaction.user.name, icon_url=ability_interaction.user.avatar.url))
             state["ability_used"] = True
         else:

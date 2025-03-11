@@ -616,6 +616,8 @@ async def slash_fight(interaction: discord.Interaction):
             ).set_author(name=attack_interaction.user.name, icon_url=attack_interaction.user.avatar.url), ephemeral=True)
             return
 
+        shielded = False
+        
         state = battle_states[attack_interaction.user.id]
         critical_hit = (random.randint(1, 100) <= state["critical_chance"])
 
@@ -626,14 +628,14 @@ async def slash_fight(interaction: discord.Interaction):
 
         if state["blocks"] > 0:
             state["blocks"] = max(0, state["blocks"] - 1)
+            shielded = True
             await attack_interaction.response.edit_message(embed=discord.Embed(
                 color=int("50B4E6", 16),
                 description=f"🛡️ You dealt **{damage} {'critical ' if critical_hit else ''}damage** to the {state['creature']} and your shield blocked it from attacking back!{(' Remaining shields: ' + str(state['blocks'])) if state['blocks'] > 0 else ''}\n\nYour Health: {state['user_health']}\nEnemy Health: {state['enemy_health']}"
             ).set_author(name=attack_interaction.user.name, icon_url=attack_interaction.user.avatar.url))
-            return
 
         if state["enemy_health"] <= 0 or (state["user_health"] - enemy_damage <= 0):
-            if state["user_health"] - enemy_damage <= 0:
+            if state["user_health"] - enemy_damage <= 0 and not shielded:
                 state["user_health"] = max(0, state["user_health"] - enemy_damage)
             await attack_interaction.response.edit_message(embed=discord.Embed(
                 color=int("50B4E6", 16),

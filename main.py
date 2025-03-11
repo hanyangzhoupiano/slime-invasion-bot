@@ -581,6 +581,8 @@ async def slash_fight(interaction: discord.Interaction):
 
     battle_states[interaction.user.id] = {
         "turn": "user",
+        "user_max_health": user_health,
+        "enemy_max_health": enemy_health,
         "user_health": user_health,
         "enemy_health": enemy_health,
         "critical_chance": critical_chance,
@@ -626,7 +628,7 @@ async def slash_fight(interaction: discord.Interaction):
             state["blocks"] = max(0, state["blocks"] - 1)
             await attack_interaction.response.edit_message(embed=discord.Embed(
                 color=int("50B4E6", 16),
-                description=f"🛡️ Your shield blocked the attack!{(' Remaining shields: ' + str(state['blocks'])) if state['blocks'] > 0 else ''}\n\nYour Health: {state['user_health']}\nEnemy Health: {state['enemy_health']}"
+                description=f"🛡️ You dealt **{damage} {'critical ' if critical_hit else ''}damage** to the {state['creature']} and your shield blocked it from attacking back!{(' Remaining shields: ' + str(state['blocks'])) if state['blocks'] > 0 else ''}\n\nYour Health: {state['user_health']}\nEnemy Health: {state['enemy_health']}"
             ).set_author(name=attack_interaction.user.name, icon_url=attack_interaction.user.avatar.url))
             return
 
@@ -718,14 +720,14 @@ async def slash_fight(interaction: discord.Interaction):
                         description=f"⚔️ You used your ability ({ability_name}), dealing **{damage} {'critical ' if critical_hit else ''}damage** to the {creature}.\n\nYour Health: {state['user_health']}\nEnemy Health: {state['enemy_health']}"
                     ).set_author(name=ability_interaction.user.name, icon_url=ability_interaction.user.avatar.url))
                 elif ability["id"] == 2:
-                    heal = state["user_health"] * math.ceil((40 + (ability["potency"] * 5)) / 100)
+                    heal = math.ceil(state["user_max_health"] * (40 + (ability["potency"] * 5)) / 100)
                     state["user_health"] += heal
                     await ability_interaction.response.edit_message(embed=discord.Embed(
                         color=int("50B4E6", 16),
                         description=f"🩹 You used your ability ({ability_name}), healing **{heal} health**.\n\nYour Health: {state['user_health']}\nEnemy Health: {state['enemy_health']}"
                     ).set_author(name=ability_interaction.user.name, icon_url=ability_interaction.user.avatar.url))
                 elif ability["id"] == 3:
-                    steal = state["enemy_health"] * math.ceil((25 + (ability["potency"] * 5)) / 100)
+                    steal = math.ceil(state["enemy_max_health"] * (25 + (ability["potency"] * 5)) / 100)
                     state["enemy_health"] = max(0, state["enemy_health"] - steal)
                     state["user_health"] += steal
                     await ability_interaction.response.edit_message(embed=discord.Embed(

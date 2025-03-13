@@ -51,6 +51,7 @@ def get_messages(user_id):
     except Exception as e:
         print(f"Error in get_messages: {e}")
         conn.rollback()
+        return 0
 
 def set_messages(user_id, count):
     """Set or update the message count for a user."""
@@ -83,6 +84,7 @@ def get_experience(user_id):
     except Exception as e:
         print(f"Error in get_experience: {e}")
         conn.rollback()
+        return 0
 
 def set_experience(user_id, exp):
     """Set or update the experience points of a user."""
@@ -115,6 +117,7 @@ def get_levels(user_id):
     except Exception as e:
         print(f"Error in get_levels: {e}")
         conn.rollback()
+        return 1
 
 def set_levels(user_id, level):
     """Set or update the level of a user."""
@@ -147,6 +150,7 @@ def get_coins(user_id):
     except Exception as e:
         print(f"Error in get_coins: {e}")
         conn.rollback()
+        return 0
 
 def set_coins(user_id, coins):
     """Set or update the coins of a user."""
@@ -179,6 +183,7 @@ def get_all_user_levels():
     except Exception as e:
         print(f"Error in get_all_user_levels: {e}")
         conn.rollback()
+        return {}
     finally:
         if conn:
             conn.close()
@@ -209,6 +214,7 @@ def get_prefix(guild_id):
     except Exception as e:
         print(f"Error in get_prefix: {e}")
         conn.rollback()
+        return "!"
 
 def set_prefix(guild_id, prefix):
     """Set or update the prefix for a specific guild."""

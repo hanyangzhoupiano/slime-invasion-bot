@@ -44,7 +44,7 @@ def get_messages(user_id):
         conn = connect()
         if conn:
             with conn.cursor() as cursor:
-                cursor.execute("SELECT count FROM messages WHERE user_id = %s", (user_id,))
+                cursor.execute("SELECT count FROM messages WHERE user_id = %s", (user_id))
                 row = cursor.fetchone()
                 return row[0] if row else 0
             conn.close()

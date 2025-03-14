@@ -1,235 +1,140 @@
-import psycopg2
+from supabase import create_client, Client
 import os
 
-DATABASE_URL = os.getenv("DATABASE_URL")
+SUPABASE_URL = os.getenv("SUPABASE_URL")
+SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 
-if DATABASE_URL is None:
-    raise ValueError("DATABASE_URL not found!")
+if SUPABASE_URL is None or SUPABASE_KEY is None:
+    raise ValueError("Supabase URL or Key not found!")
+
+supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 def connect():
-    """Initialize the database connection."""
-    try:
-        return psycopg2.connect(DATABASE_URL, sslmode="require")
-    except Exception as e:
-        print(f"Database connection error: {e}")
-        return None
+    """Initialize the database connection (handled by Supabase)."""
+    return supabase
 
 def setup_database():
     """Create necessary tables if they don't exist."""
     conn = connect()
-    if conn:
-        with conn.cursor() as cursor:
-            cursor.execute("""
-                CREATE TABLE IF NOT EXISTS messages (
-                    user_id BIGINT PRIMARY KEY,
-                    count INTEGER DEFAULT 0
-                );
-                CREATE TABLE IF NOT EXISTS statistics (
-                    user_id BIGINT PRIMARY KEY,
-                    level INTEGER DEFAULT 1,
-                    experience INTEGER DEFAULT 0,
-                    coins INTEGER DEFAULT 0
-                );
-                CREATE TABLE IF NOT EXISTS prefixes (
-                    guild_id BIGINT PRIMARY KEY,
-                    prefix TEXT DEFAULT '!'
-                );
-            """)
-            conn.commit()
-        conn.close()
+    try:
+        # Create tables if they do not exist already
+        conn.table('messages').upsert([
+            {"user_id": 0, "count": 0}
+        ], on_conflict=["user_id"]).execute()
+
+        conn.table('statistics').upsert([
+            {"user_id": 0, "level": 1, "experience": 0, "coins": 0}
+        ], on_conflict=["user_id"]).execute()
+
+        conn.table('prefixes').upsert([
+            {"guild_id": 0, "prefix": '!'}
+        ], on_conflict=["guild_id"]).execute()
+
+    except Exception as e:
+        print(f"Error setting up database: {e}")
 
 def get_messages(user_id):
     """Retrieve the message count for a user."""
     try:
-        conn = connect()
-        if conn:
-            with conn.cursor() as cursor:
-                cursor.execute("SELECT count FROM messages WHERE user_id = %s", (user_id))
-                row = cursor.fetchone()
-                return row[0] if row else 0
-            conn.close()
+        result = supabase.table('messages').select('count').eq('user_id', user_id).single().execute()
+        return result.data['count'] if result.data else 0
     except Exception as e:
         print(f"Error in get_messages: {e}")
-        conn.rollback()
         return 0
 
 def set_messages(user_id, count):
     """Set or update the message count for a user."""
     try:
-        conn = connect()
-        if conn:
-            with conn.cursor() as cursor:
-                cursor.execute("""
-                    INSERT INTO messages (user_id, count) 
-                    VALUES (%s, %s) 
-                    ON CONFLICT (user_id) 
-                    DO UPDATE SET count = EXCLUDED.count
-                """, (user_id, count))
-                conn.commit()
-            conn.close()
+        supabase.table('messages').upsert([
+            {"user_id": user_id, "count": count}
+        ], on_conflict=["user_id"]).execute()
     except Exception as e:
         print(f"Error in set_messages: {e}")
-        conn.rollback()
 
 def get_experience(user_id):
     """Retrieve the experience points of a user."""
     try:
-        conn = connect()
-        if conn:
-            with conn.cursor() as cursor:
-                cursor.execute("SELECT experience FROM statistics WHERE user_id = %s", (user_id,))
-                row = cursor.fetchone()
-                return row[0] if row else 0
-            conn.close()
+        result = supabase.table('statistics').select('experience').eq('user_id', user_id).single().execute()
+        return result.data['experience'] if result.data else 0
     except Exception as e:
         print(f"Error in get_experience: {e}")
-        conn.rollback()
         return 0
 
 def set_experience(user_id, exp):
     """Set or update the experience points of a user."""
     try:
-        conn = connect()
-        if conn:
-            with conn.cursor() as cursor:
-                cursor.execute("""
-                    INSERT INTO statistics (user_id, experience) 
-                    VALUES (%s, %s) 
-                    ON CONFLICT (user_id) 
-                    DO UPDATE SET experience = EXCLUDED.experience
-                """, (user_id, exp))
-                conn.commit()
-            conn.close()
+        supabase.table('statistics').upsert([
+            {"user_id": user_id, "experience": exp}
+        ], on_conflict=["user_id"]).execute()
     except Exception as e:
         print(f"Error in set_experience: {e}")
-        conn.rollback()
 
 def get_levels(user_id):
     """Retrieve the level of a user."""
     try:
-        conn = connect()
-        if conn:
-            with conn.cursor() as cursor:
-                cursor.execute("SELECT level FROM statistics WHERE user_id = %s", (user_id,))
-                row = cursor.fetchone()
-                return row[0] if row else 1
-            conn.close()
+        result = supabase.table('statistics').select('level').eq('user_id', user_id).single().execute()
+        return result.data['level'] if result.data else 1
     except Exception as e:
         print(f"Error in get_levels: {e}")
-        conn.rollback()
         return 1
 
 def set_levels(user_id, level):
     """Set or update the level of a user."""
     try:
-        conn = connect()
-        if conn:
-            with conn.cursor() as cursor:
-                cursor.execute("""
-                    INSERT INTO statistics (user_id, level) 
-                    VALUES (%s, %s) 
-                    ON CONFLICT (user_id) 
-                    DO UPDATE SET level = EXCLUDED.level
-                """, (user_id, level))
-                conn.commit()
-            conn.close()
+        supabase.table('statistics').upsert([
+            {"user_id": user_id, "level": level}
+        ], on_conflict=["user_id"]).execute()
     except Exception as e:
         print(f"Error in set_levels: {e}")
-        conn.rollback()
 
 def get_coins(user_id):
     """Retrieve the coins of a user."""
     try:
-        conn = connect()
-        if conn:
-            with conn.cursor() as cursor:
-                cursor.execute("SELECT coins FROM statistics WHERE user_id = %s", (user_id,))
-                row = cursor.fetchone()
-                return row[0] if row else 0
-            conn.close()
+        result = supabase.table('statistics').select('coins').eq('user_id', user_id).single().execute()
+        return result.data['coins'] if result.data else 0
     except Exception as e:
         print(f"Error in get_coins: {e}")
-        conn.rollback()
         return 0
 
 def set_coins(user_id, coins):
     """Set or update the coins of a user."""
     try:
-        conn = connect()
-        if conn:
-            with conn.cursor() as cursor:
-                cursor.execute("""
-                    INSERT INTO statistics (user_id, coins) 
-                    VALUES (%s, %s) 
-                    ON CONFLICT (user_id) 
-                    DO UPDATE SET coins = EXCLUDED.coins
-                """, (user_id, coins))
-                conn.commit()
-            conn.close()
+        supabase.table('statistics').upsert([
+            {"user_id": user_id, "coins": coins}
+        ], on_conflict=["user_id"]).execute()
     except Exception as e:
         print(f"Error in set_coins: {e}")
-        conn.rollback()
 
 def get_all_user_levels():
     """Retrieve levels for all users."""
     try:
-        conn = connect()
-        if conn:
-            with conn.cursor() as cursor:
-                cursor.execute("SELECT user_id, level FROM statistics")
-                rows = cursor.fetchall()
-                return {row[0]: row[1] for row in rows}
-            conn.close()
+        result = supabase.table('statistics').select('user_id, level').execute()
+        return {row['user_id']: row['level'] for row in result.data} if result.data else {}
     except Exception as e:
         print(f"Error in get_all_user_levels: {e}")
-        conn.rollback()
         return {}
-    finally:
-        if conn:
-            conn.close()
 
 def reset_data():
     """Reset all levels and experience to default values."""
     try:
-        conn = connect()
-        if conn:
-            with conn.cursor() as cursor:
-                cursor.execute("DELETE FROM statistics")
-                conn.commit()
-            conn.close()
+        supabase.table('statistics').update({"level": 1, "experience": 0, "coins": 0}).execute()
     except Exception as e:
         print(f"Error in reset_data: {e}")
-        conn.rollback()
 
 def get_prefix(guild_id):
     """Retrieve the prefix for a specific guild."""
     try:
-        conn = connect()
-        if conn:
-            with conn.cursor() as cursor:
-                cursor.execute("SELECT prefix FROM prefixes WHERE guild_id = %s", (guild_id,))
-                row = cursor.fetchone()
-                return row[0] if row else "!"
-            conn.close()
+        result = supabase.table('prefixes').select('prefix').eq('guild_id', guild_id).single().execute()
+        return result.data['prefix'] if result.data else "!"
     except Exception as e:
         print(f"Error in get_prefix: {e}")
-        conn.rollback()
         return "!"
 
 def set_prefix(guild_id, prefix):
     """Set or update the prefix for a specific guild."""
     try:
-        conn = connect()
-        if conn:
-            with conn.cursor() as cursor:
-                cursor.execute("""
-                    INSERT INTO prefixes (guild_id, prefix) 
-                    VALUES (%s, %s) 
-                    ON CONFLICT (guild_id) 
-                    DO UPDATE SET prefix = EXCLUDED.prefix
-                """, (guild_id, prefix))
-                conn.commit()
-            conn.close()
+        supabase.table('prefixes').upsert([
+            {"guild_id": guild_id, "prefix": prefix}
+        ], on_conflict=["guild_id"]).execute()
     except Exception as e:
         print(f"Error in set_prefix: {e}")
-        conn.rollback()

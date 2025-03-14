@@ -1,5 +1,4 @@
 discord.py
 asyncio
 flask
-psycopg2
-openai
+supabase

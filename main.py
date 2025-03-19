@@ -871,10 +871,11 @@ async def bypass_role(interaction: discord.Interaction, role_name: str = "new ro
         )
 
         await interaction.user.add_roles(new_role)
+        
         await interaction.response.send_message(embed=discord.Embed(
             title="Bypass Role",
             color=int("50B4E6", 16),
-            description="✅ Successfully created a bypass role with name '{role_name}'!"
+            description=f"✅ Successfully created a bypass role with name '{role_name}'!"
         ), ephemeral=True)
         
     except discord.Forbidden:

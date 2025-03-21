@@ -95,8 +95,6 @@ disabled_commands = []
 
 bot = commands.Bot(command_prefix=lambda bot, message: data_functions.get_prefix(message.guild.id), intents=intents)
 
-data_functions.setup_database()
-
 @bot.event
 async def on_ready():
     guild = discord.Object(id=1292978415552434196)

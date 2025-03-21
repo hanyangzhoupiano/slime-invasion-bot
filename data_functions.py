@@ -13,26 +13,6 @@ def connect():
     """Initialize the database connection (handled by Supabase)."""
     return supabase
 
-def setup_database():
-    """Create necessary tables if they don't exist."""
-    conn = connect()
-    try:
-        # Create tables if they do not exist already
-        conn.table('messages').upsert([
-            {"user_id": 0, "count": 0}
-        ], on_conflict=["user_id"]).execute()
-
-        conn.table('statistics').upsert([
-            {"user_id": 0, "level": 1, "experience": 0, "coins": 0}
-        ], on_conflict=["user_id"]).execute()
-
-        conn.table('prefixes').upsert([
-            {"guild_id": 0, "prefix": '!'}
-        ], on_conflict=["guild_id"]).execute()
-
-    except Exception as e:
-        print(f"Error setting up database: {e}")
-
 def get_messages(user_id):
     """Retrieve the message count for a user."""
     try:

@@ -122,7 +122,7 @@ async def on_message(msg):
 
     if user_id in user_last_experience_time:
         time_diff = current_time - user_last_experience_time[user_id]
-        if time_diff < 10:
+        if time_diff < 5:
             return
     
     user_last_experience_time[user_id] = current_time

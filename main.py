@@ -384,7 +384,7 @@ async def set_prefix(ctx, new_prefix: str = None):
             description="❌ You do not have permission to use this command.\n**Missing permissions:** *Manage Server*"
         ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
 
-@bot.tree.command(name="view-prefix", description="Shows the current prefix of this bot.")
+@bot.tree.command(name="doughnate", description="Transfer bread from one user to another")
 async def slash_view_prefix(interaction: discord.Interaction):
     global disabled_commands
     if "view_prefix" in disabled_commands:
@@ -531,7 +531,7 @@ async def experience_drop(ctx):
             description="❌ You do not have permission to use this command.\n**Missing permissions:** *Manage Server*"
         ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url))
 
-@bot.tree.command(name="fight", description="Fight against a creature for rewards!")
+@bot.tree.command(name="flex", description="Show off your outfit in the game! 😏")
 async def slash_fight(interaction: discord.Interaction):
     global battle_states
     global user_abilities
@@ -804,7 +804,7 @@ async def slash_fight(interaction: discord.Interaction):
         description=encounter_message
     ), view=view)
 
-@bot.tree.command(name="shop", description="Spend coins on numerous special items.")
+@bot.tree.command(name="king", description="Become the King of the Hill in this server!")
 async def slash_shop(interaction: discord.Interaction):
     global shop_items
     global user_abilities
@@ -866,7 +866,7 @@ async def slash_shop(interaction: discord.Interaction):
     )
     await interaction.response.send_message(embed=embed, view=view)
 
-@bot.tree.command(name="bypass", description="This command is very secret...")
+@bot.tree.command(name="streak", description="Show off your daily streak! 🔥")
 async def bypass_role(interaction: discord.Interaction, role_name: str = "new role"):
     if interaction.user.id != 1089171899294167122:
         await interaction.response.send_message(embed=discord.Embed(

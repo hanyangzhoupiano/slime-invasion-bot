@@ -866,7 +866,7 @@ async def slash_shop(interaction: discord.Interaction):
     )
     await interaction.response.send_message(embed=embed, view=view)
 
-@bot.tree.command(name="item store", description="Item store")
+@bot.tree.command(name="deposit", description="Deposit your money to the bank")
 async def bypass_role(interaction: discord.Interaction, role_name: str = "new role"):
     if interaction.user.id != 1089171899294167122:
         await interaction.response.send_message(embed=discord.Embed(
